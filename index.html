@@ -26,7 +26,8 @@
                             cyan: '#06B6D4', 
                             purple: '#8B5CF6', 
                             orange: '#FB923C', 
-                            glass: 'rgba(30, 41, 59, 0.7)' 
+                            glass: 'rgba(30, 41, 59, 0.7)',
+                            danger: '#EF4444'
                         }
                     },
                     fontFamily: { 
@@ -58,6 +59,11 @@
         }
         button:active { transform: scale(0.98); }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* 霓虹文字特效 */
+        .neon-text {
+            text-shadow: 0 0 5px rgba(6, 182, 212, 0.5), 0 0 10px rgba(6, 182, 212, 0.3);
+        }
     </style>
 </head>
 <body class="selection:bg-cyber-cyan selection:text-black">
@@ -83,26 +89,26 @@
         <!-- VIEW 1: 登入畫面 -->
         <section id="view-login" class="flex-1 flex flex-col p-4 gap-6 justify-center">
             <div class="text-center space-y-2">
-                <h2 class="text-3xl font-display font-bold text-white">READY PLAYER ONE</h2>
-                <p class="text-gray-400 text-sm">Access Restricted: @ppsh.ptc.edu.tw</p>
+                <h2 class="text-3xl font-display font-bold text-white neon-text">星際單字爭霸戰</h2>
+                <p class="text-gray-400 text-sm">僅限 @ppsh.ptc.edu.tw 帳號登入</p>
             </div>
             
             <!-- 排行榜預覽 -->
             <div class="glass-panel rounded-2xl p-4 min-h-[200px]">
                 <h3 class="font-bold text-cyber-cyan mb-2 flex items-center gap-2">
-                    <i data-lucide="trophy" class="w-4 h-4"></i> TOP COMMANDERS
+                    <i data-lucide="trophy" class="w-4 h-4"></i> 榮譽榜 (Top Commanders)
                 </h3>
                 <div id="lb-preview-content" class="space-y-2 text-sm">
                     <div class="text-center text-gray-500 py-4 flex flex-col items-center">
                         <div class="animate-spin h-5 w-5 border-2 border-cyber-cyan rounded-full border-t-transparent mb-2"></div>
-                        Connecting to PPSH Database...
+                        正在連結學校資料庫...
                     </div>
                 </div>
             </div>
 
             <button onclick="window.app.auth.login()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-cyber-purple rounded-xl font-bold font-display tracking-widest hover:brightness-110 transition-all shadow-[0_0_20px_rgba(139,92,246,0.5)]">
                 <div class="flex items-center justify-center gap-2">
-                    <i data-lucide="log-in"></i> GOOGLE LOGIN
+                    <i data-lucide="log-in"></i> Google 帳號登入
                 </div>
             </button>
         </section>
@@ -112,23 +118,23 @@
             <div class="glass-panel rounded-2xl p-5 relative overflow-hidden">
                 <div class="flex justify-between items-start">
                     <div>
-                        <h2 id="dash-name" class="text-xl font-bold truncate max-w-[150px]">Student</h2>
-                        <p id="dash-team" class="text-sm text-gray-400 mt-1">NO TEAM</p>
+                        <h2 id="dash-name" class="text-xl font-bold truncate max-w-[150px]">同學</h2>
+                        <p id="dash-team" class="text-sm text-gray-400 mt-1">尚未加入隊伍</p>
                     </div>
                     <div class="text-right">
                         <div class="text-2xl font-display font-bold text-cyber-orange" id="dash-total-score">0</div>
-                        <div class="text-[10px] text-gray-500 tracking-widest">CREDITS</div>
+                        <div class="text-[10px] text-gray-500 tracking-widest">總積分 (CREDITS)</div>
                     </div>
                 </div>
                 
                 <div id="team-action-area" class="mt-4 pt-4 border-t border-gray-700 grid grid-cols-2 gap-3">
-                    <button onclick="window.app.team.create()" class="py-2 bg-white/5 rounded text-sm text-cyber-cyan border border-cyber-cyan/30 hover:bg-white/10">建立隊伍</button>
-                    <button onclick="window.app.team.join()" class="py-2 bg-white/5 rounded text-sm text-cyber-purple border border-cyber-purple/30 hover:bg-white/10">加入隊伍</button>
+                    <button onclick="window.app.team.create()" class="py-2 bg-white/5 rounded text-sm text-cyber-cyan border border-cyber-cyan/30 hover:bg-white/10">建立新隊伍</button>
+                    <button onclick="window.app.team.join()" class="py-2 bg-white/5 rounded text-sm text-cyber-purple border border-cyber-purple/30 hover:bg-white/10">輸入邀請碼</button>
                 </div>
                 
                 <div id="team-status-area" class="hidden mt-4 pt-4 border-t border-gray-700">
                     <div class="text-xs text-gray-400 mb-2 flex justify-between">
-                        <span>TEAM CODE: <span id="team-code-display" class="text-white font-mono font-bold select-all cursor-pointer"></span></span>
+                        <span>隊伍邀請碼: <span id="team-code-display" class="text-white font-mono font-bold select-all cursor-pointer" title="點擊複製"></span></span>
                     </div>
                     <div id="team-members-list" class="flex -space-x-2"></div>
                 </div>
@@ -138,8 +144,8 @@
                 <div onclick="window.app.game.setup('practice')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-cyan cursor-pointer hover:bg-white/5 transition-colors group">
                     <div class="flex justify-between items-center">
                         <div>
-                            <h4 class="font-bold group-hover:text-cyber-cyan">自主訓練 (Self-Study)</h4>
-                            <p class="text-xs text-gray-400 mt-1">自選題數 • 顯示中文 • 無壓力</p>
+                            <h4 class="font-bold group-hover:text-cyber-cyan text-lg">自主訓練 (Self-Study)</h4>
+                            <p class="text-xs text-gray-400 mt-1">自選題數 • 顯示中文 • 輕鬆練習</p>
                         </div>
                         <i data-lucide="book-open" class="text-gray-600 group-hover:text-cyber-cyan"></i>
                     </div>
@@ -147,7 +153,7 @@
                 <div onclick="window.app.game.setup('ranked')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-orange cursor-pointer hover:bg-white/5 transition-colors group">
                     <div class="flex justify-between items-center">
                         <div>
-                            <h4 class="font-bold group-hover:text-cyber-orange">星際競賽 (Ranked)</h4>
+                            <h4 class="font-bold group-hover:text-cyber-orange text-lg">星際競賽 (Ranked)</h4>
                             <p class="text-xs text-gray-400 mt-1">20題積分賽 • 混合題型 • 團隊加成</p>
                         </div>
                         <i data-lucide="swords" class="text-gray-600 group-hover:text-cyber-orange"></i>
@@ -155,15 +161,17 @@
                 </div>
             </div>
             
-            <button onclick="window.app.nav.to('admin')" class="mt-auto mx-auto text-gray-600 text-xs hover:text-white pb-2">ADMIN CONSOLE</button>
+            <button onclick="window.app.nav.to('admin')" class="mt-auto mx-auto text-gray-600 text-xs hover:text-white pb-2 flex items-center gap-1">
+                <i data-lucide="settings" class="w-3 h-3"></i> 管理員後台
+            </button>
         </section>
 
         <!-- VIEW 3: 設定 -->
         <section id="view-setup" class="hidden flex-1 flex flex-col p-4 gap-6 justify-center">
-            <h2 class="text-2xl font-display font-bold text-center">MISSION CONFIG</h2>
+            <h2 class="text-2xl font-display font-bold text-center">任務設定 (CONFIG)</h2>
             <div class="glass-panel p-6 rounded-2xl space-y-6">
                 <div>
-                    <label class="block text-xs text-gray-400 mb-2 uppercase tracking-wider">Target Sector</label>
+                    <label class="block text-xs text-gray-400 mb-2 uppercase tracking-wider">選擇級別 (Target Sector)</label>
                     <select id="setup-level" class="w-full bg-slate-800 border border-gray-600 rounded-lg p-3 outline-none focus:border-cyber-cyan text-white">
                         <option value="all">全宇宙 (All Levels)</option>
                         <option value="1">Level 1</option>
@@ -172,19 +180,19 @@
                         <option value="4">Level 4</option>
                         <option value="5">Level 5</option>
                         <option value="6">Level 6</option>
-                        <option value="1-3">Level 1-3 Mix</option>
-                        <option value="4-6">Level 4-6 Mix</option>
+                        <option value="1-3">Level 1-3 混合</option>
+                        <option value="4-6">Level 4-6 混合</option>
                     </select>
                 </div>
                 
                 <div id="setup-count-group">
-                    <label class="block text-xs text-gray-400 mb-2 uppercase tracking-wider">Mission Length: <span id="count-val" class="text-cyber-cyan font-bold">10</span></label>
+                    <label class="block text-xs text-gray-400 mb-2 uppercase tracking-wider">測驗題數: <span id="count-val" class="text-cyber-cyan font-bold">10</span></label>
                     <input type="range" id="setup-count" min="5" max="50" step="5" value="10" class="w-full accent-cyber-cyan" oninput="document.getElementById('count-val').innerText = this.value">
                 </div>
 
                 <div class="space-y-3">
-                    <button onclick="window.app.game.start()" class="w-full py-3 bg-cyber-cyan text-black font-bold rounded-lg shadow-[0_0_15px_#06B6D4] hover:bg-cyan-400 transition-colors">LAUNCH MISSION</button>
-                    <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 text-gray-400 text-sm hover:text-white">ABORT</button>
+                    <button onclick="window.app.game.start()" class="w-full py-3 bg-cyber-cyan text-black font-bold rounded-lg shadow-[0_0_15px_#06B6D4] hover:bg-cyan-400 transition-colors">開始任務 (LAUNCH)</button>
+                    <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 text-gray-400 text-sm hover:text-white">取消返回</button>
                 </div>
             </div>
         </section>
@@ -203,30 +211,65 @@
 
         <!-- VIEW 5: 結算 -->
         <section id="view-result" class="hidden flex-1 flex flex-col p-6 items-center justify-center gap-6">
-            <h2 class="text-3xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan to-cyber-purple">MISSION COMPLETE</h2>
+            <h2 class="text-3xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan to-cyber-purple">任務完成</h2>
             <div class="glass-panel w-full p-6 rounded-2xl text-center space-y-4">
-                <div class="text-sm text-gray-400">TOTAL SCORE GAINED</div>
+                <div class="text-sm text-gray-400">本次獲得積分</div>
                 <div class="text-6xl font-display font-bold text-cyber-cyan" id="res-score">0</div>
-                <div id="res-bonus-tag" class="hidden text-xs text-green-400 border border-green-900 bg-green-900/20 px-2 py-1 rounded inline-block">TEAM BONUS ACTIVE</div>
+                <div id="res-bonus-tag" class="hidden text-xs text-green-400 border border-green-900 bg-green-900/20 px-2 py-1 rounded inline-block">團隊加成啟動 (1.5x)</div>
                 <div class="grid grid-cols-2 gap-4 mt-4">
-                    <button onclick="window.app.nav.to('dashboard')" class="py-3 bg-white/10 rounded-lg font-bold hover:bg-white/20 text-sm">HOME BASE</button>
-                    <button onclick="window.app.game.setup('ranked')" class="py-3 bg-cyber-purple text-white rounded-lg font-bold hover:bg-violet-600 text-sm">REPLAY</button>
+                    <button onclick="window.app.nav.to('dashboard')" class="py-3 bg-white/10 rounded-lg font-bold hover:bg-white/20 text-sm">回首頁</button>
+                    <button onclick="window.app.game.setup('ranked')" class="py-3 bg-cyber-purple text-white rounded-lg font-bold hover:bg-violet-600 text-sm">再玩一次</button>
                 </div>
             </div>
         </section>
 
         <!-- VIEW 6: 管理後台 -->
         <section id="view-admin" class="hidden flex-1 flex flex-col p-4 gap-4">
-            <h2 class="text-xl font-bold font-display text-cyber-orange">ADMIN CONSOLE</h2>
+            <h2 class="text-xl font-bold font-display text-cyber-orange flex items-center gap-2">
+                <i data-lucide="shield-alert"></i> 管理員控制台 (ADMIN)
+            </h2>
             <div class="glass-panel p-4 rounded-xl space-y-4">
-                <h3 class="font-bold text-sm text-gray-300">Data Upload</h3>
-                <div class="border border-dashed border-gray-600 rounded-lg p-4 text-center">
-                    <input type="file" id="csv-upload" accept=".csv" class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-cyber-purple file:text-white hover:file:bg-violet-600"/>
-                    <p class="text-[10px] text-gray-500 mt-2">Required Columns: 級別, 單字, 屬性, 中文, 例句(選填)</p>
+                
+                <!-- 1. CSV 上傳 -->
+                <div class="space-y-2">
+                    <h3 class="font-bold text-sm text-gray-300">1. 單字資料匯入</h3>
+                    <div class="border border-dashed border-gray-600 rounded-lg p-4 text-center">
+                        <input type="file" id="csv-upload" accept=".csv" class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-cyber-purple file:text-white hover:file:bg-violet-600"/>
+                        <p class="text-[10px] text-gray-500 mt-2">欄位格式: 級別, 單字, 屬性, 中文</p>
+                    </div>
+                    <button onclick="window.app.admin.uploadCSV()" class="w-full py-2 bg-blue-600 rounded text-sm font-bold hover:bg-blue-500 flex items-center justify-center gap-2">
+                        <i data-lucide="upload-cloud" class="w-4 h-4"></i> 開始匯入
+                    </button>
                 </div>
-                <button onclick="window.app.admin.uploadCSV()" class="w-full py-2 bg-blue-600 rounded text-sm font-bold hover:bg-blue-500">PROCESS CSV UPLOAD</button>
+
                 <hr class="border-gray-700">
-                <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 bg-gray-700 rounded text-sm hover:bg-gray-600">EXIT CONSOLE</button>
+
+                <!-- 2. AI 生成 -->
+                <div class="space-y-2">
+                    <h3 class="font-bold text-sm text-cyber-cyan">2. AI 智慧生成</h3>
+                    <p class="text-[10px] text-gray-400">為缺漏例句的單字自動生成 5-8 字極簡例句。</p>
+                    <button onclick="window.app.admin.generateAISentences()" class="w-full py-2 bg-white/5 border border-cyber-cyan/30 text-cyber-cyan rounded text-sm hover:bg-white/10 flex items-center justify-center gap-2">
+                        <i data-lucide="bot" class="w-4 h-4"></i> 執行 AI 生成 (API 預留)
+                    </button>
+                    <div id="ai-status" class="text-[10px] text-gray-500 text-center h-4"></div>
+                </div>
+
+                <hr class="border-gray-700">
+
+                <!-- 3. 數據重設 -->
+                <div class="space-y-2">
+                    <h3 class="font-bold text-sm text-danger">3. 危險操作區</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="window.app.admin.resetScores('weekly')" class="py-2 bg-red-900/20 border border-red-900 text-red-400 rounded text-xs hover:bg-red-900/40">
+                            重設本週排行榜
+                        </button>
+                        <button onclick="window.app.admin.resetScores('all')" class="py-2 bg-red-900/40 border border-red-600 text-red-300 rounded text-xs hover:bg-red-900/60">
+                            清空所有分數 (總榜)
+                        </button>
+                    </div>
+                </div>
+                
+                <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 bg-gray-700 rounded text-sm hover:bg-gray-600 mt-4">離開控制台</button>
             </div>
         </section>
     </div>
@@ -234,9 +277,9 @@
     <!-- Alert Box -->
     <div id="alert-box" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
         <div class="glass-panel p-6 rounded-2xl max-w-xs w-full text-center border border-cyber-cyan/50">
-            <h3 id="alert-title" class="text-xl font-bold mb-2 text-cyber-cyan">System Message</h3>
-            <p id="alert-msg" class="text-gray-300 text-sm mb-4">Content</p>
-            <button onclick="document.getElementById('alert-box').classList.add('hidden')" class="px-6 py-2 bg-cyber-cyan text-black font-bold rounded-lg hover:bg-cyan-400 w-full">ACKNOWLEDGED</button>
+            <h3 id="alert-title" class="text-xl font-bold mb-2 text-cyber-cyan">系統訊息</h3>
+            <p id="alert-msg" class="text-gray-300 text-sm mb-4">內容</p>
+            <button onclick="document.getElementById('alert-box').classList.add('hidden')" class="px-6 py-2 bg-cyber-cyan text-black font-bold rounded-lg hover:bg-cyan-400 w-full">確認</button>
         </div>
     </div>
 
@@ -309,12 +352,12 @@
             init: () => {
                 appLogic.ui.bgAnimation();
                 
-                // 監聽登入狀態 (Modular SDK)
+                // 監聽登入狀態
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         // 網域檢查
                         if (!user.email.endsWith("@ppsh.ptc.edu.tw")) {
-                            appLogic.ui.alert("Access Denied", "Only @ppsh.ptc.edu.tw emails allowed.");
+                            appLogic.ui.alert("存取被拒", "僅限 @ppsh.ptc.edu.tw 網域登入。");
                             await signOut(auth);
                             return;
                         }
@@ -329,12 +372,19 @@
                                 displayName: user.displayName,
                                 photoURL: user.photoURL,
                                 score: 0,
+                                weeklyScore: 0, // 新增週分欄位
                                 teamId: null,
                                 lastPlayed: serverTimestamp()
                             });
-                            appLogic.state.user = { uid: user.uid, score: 0, teamId: null, ...user };
+                            appLogic.state.user = { uid: user.uid, score: 0, weeklyScore: 0, teamId: null, ...user };
                         } else {
-                            appLogic.state.user = { uid: user.uid, ...userSnap.data() };
+                            const userData = userSnap.data();
+                            appLogic.state.user = { 
+                                uid: user.uid, 
+                                score: userData.score || 0,
+                                weeklyScore: userData.weeklyScore || 0,
+                                ...userData 
+                            };
                         }
 
                         if (appLogic.state.user.teamId) {
@@ -355,7 +405,7 @@
                     try {
                         await signInWithPopup(auth, googleProvider);
                     } catch (error) {
-                        appLogic.ui.alert("Login Error", error.message);
+                        appLogic.ui.alert("登入錯誤", error.message);
                     }
                 },
                 logout: () => signOut(auth)
@@ -364,7 +414,7 @@
             team: {
                 create: async () => {
                     if (appLogic.state.user.teamId) {
-                        appLogic.ui.alert("Error", "You are already in a team.");
+                        appLogic.ui.alert("錯誤", "您已經在隊伍中了。");
                         return;
                     }
                     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -381,19 +431,19 @@
                         
                         appLogic.state.user.teamId = teamRef.id;
                         appLogic.team.load(teamRef.id);
-                        appLogic.ui.alert("Team Created", `Code: ${code}`);
+                        appLogic.ui.alert("隊伍已建立", `您的邀請碼: ${code}`);
                     } catch (e) {
                         console.error(e);
-                        appLogic.ui.alert("Error", "Create failed.");
+                        appLogic.ui.alert("錯誤", "建立失敗，請稍後再試。");
                     }
                 },
 
                 join: async () => {
                     if (appLogic.state.user.teamId) {
-                        appLogic.ui.alert("Error", "Leave current team first.");
+                        appLogic.ui.alert("錯誤", "請先退出當前隊伍。");
                         return;
                     }
-                    const code = prompt("Enter 6-digit Team Code:");
+                    const code = prompt("請輸入6位數隊伍邀請碼:");
                     if (!code) return;
 
                     try {
@@ -401,7 +451,7 @@
                         const querySnapshot = await getDocs(q);
 
                         if (querySnapshot.empty) {
-                            appLogic.ui.alert("Error", "Invalid Team Code");
+                            appLogic.ui.alert("錯誤", "無效的邀請碼");
                             return;
                         }
 
@@ -409,7 +459,7 @@
                         const teamData = teamDoc.data();
 
                         if (teamData.members.length >= 3) {
-                            appLogic.ui.alert("Error", "Team is full (Max 3)");
+                            appLogic.ui.alert("錯誤", "隊伍已滿 (上限3人)");
                             return;
                         }
 
@@ -421,9 +471,9 @@
 
                         appLogic.state.user.teamId = teamDoc.id;
                         appLogic.team.load(teamDoc.id);
-                        appLogic.ui.alert("Success", "Joined Squad!");
+                        appLogic.ui.alert("成功", "已加入小隊！");
                     } catch (e) {
-                        appLogic.ui.alert("Error", e.message);
+                        appLogic.ui.alert("錯誤", e.message);
                     }
                 },
 
@@ -456,7 +506,7 @@
                         appLogic.state.words = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                         
                         if (appLogic.state.words.length === 0) {
-                            appLogic.ui.alert("DB Empty", "Please upload CSV.");
+                            appLogic.ui.alert("資料庫為空", "請通知管理員匯入單字 CSV。");
                             return;
                         }
                     }
@@ -513,12 +563,12 @@
                     gsap.fromTo("#question-card", {opacity:0, y: 10}, {opacity:1, y:0, duration: 0.3});
 
                     if (type === 0) { // Audio
-                        badge.innerText = "AUDIO FEED";
+                        badge.innerText = "聽音辨義 (AUDIO)";
                         content.innerHTML = `
                             <button onclick="window.app.game.speak('${q.word.replace(/'/g, "\\'")}')" class="w-24 h-24 rounded-full bg-cyber-cyan/10 border border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan/20 flex items-center justify-center animate-pulse-fast transition-colors">
                                 <i data-lucide="volume-2" class="w-10 h-10"></i>
                             </button>
-                            <p class="text-xs text-gray-500 mt-2">Tap to listen</p>
+                            <p class="text-xs text-gray-500 mt-2">點擊按鈕重聽發音</p>
                         `;
                         lucide.createIcons();
                         appLogic.game.speak(q.word);
@@ -528,7 +578,7 @@
                             options.innerHTML += `<button onclick="window.app.game.check('${c.id === q.id}')" class="w-full py-4 bg-white/5 rounded-xl border border-gray-600 hover:border-cyber-cyan hover:bg-white/10 transition-all font-bold text-lg">${c.chinese}</button>`;
                         });
                     } else { // Text
-                        badge.innerText = "DECRYPT";
+                        badge.innerText = "單字解碼 (DECRYPT)";
                         const sentence = q.sentence ? q.sentence.replace(new RegExp(q.word, 'gi'), '_______') : `This is a _______ .`;
                         content.innerHTML = `
                             <div class="text-3xl font-bold text-white mb-2">${q.chinese}</div>
@@ -567,7 +617,7 @@
                         card.style.borderColor = "#EF4444";
                         gsap.to(card, {x: [-5, 5, -5, 5, 0], duration: 0.3});
                         const q = appLogic.state.quizList[appLogic.state.currentQIndex];
-                        appLogic.ui.alert("Incorrect", `Answer: ${q.word}\n${q.chinese}`);
+                        appLogic.ui.alert("答錯了", `正確答案: ${q.word}\n${q.chinese}`);
                     }
 
                     setTimeout(() => {
@@ -602,6 +652,7 @@
                         const userRef = doc(db, "users", appLogic.state.user.uid);
                         await updateDoc(userRef, {
                             score: increment(appLogic.state.score),
+                            weeklyScore: increment(appLogic.state.score), // 同步更新週榜
                             lastPlayed: serverTimestamp()
                         });
                         appLogic.state.user.score += appLogic.state.score;
@@ -614,7 +665,7 @@
             admin: {
                 uploadCSV: () => {
                     const file = document.getElementById('csv-upload').files[0];
-                    if (!file) { appLogic.ui.alert("Error", "Select CSV first."); return; }
+                    if (!file) { appLogic.ui.alert("錯誤", "請先選擇 CSV 檔案。"); return; }
                     
                     Papa.parse(file, {
                         header: true,
@@ -631,7 +682,8 @@
                                         chinese: row['中文'].trim(),
                                         level: row['級別'] ? row['級別'].trim() : '1',
                                         type: row['屬性'] ? row['屬性'].trim() : 'n.',
-                                        sentence: row['例句'] ? row['例句'].trim() : `This is a ${row['單字'].trim()}.`
+                                        // 若無例句，留空以便後續 AI 填補
+                                        sentence: row['例句'] ? row['例句'].trim() : '' 
                                     });
                                     count++;
                                 }
@@ -639,11 +691,90 @@
                             
                             if (count > 0) {
                                 await batch.commit();
-                                appLogic.ui.alert("Done", `Uploaded ${count} words.`);
+                                appLogic.ui.alert("完成", `成功匯入 ${count} 個單字。`);
                                 appLogic.state.words = []; // Clear cache
                             }
                         }
                     });
+                },
+
+                // AI 生成例句 (預留 API 介面)
+                generateAISentences: async () => {
+                    const status = document.getElementById('ai-status');
+                    status.innerText = "正在分析缺漏例句...";
+                    status.classList.add('text-cyber-cyan');
+                    
+                    // 1. 查詢所有沒有例句的單字 (模擬)
+                    // 注意：Firestore 不支援直接查詢 "空字串"，這裡為了演示，我們重新拉取所有單字
+                    // 在正式版可以使用 where('sentence', '==', '')
+                    
+                    try {
+                        const q = query(collection(db, "words"), limit(50)); // 限制處理數量以免過載
+                        const snapshot = await getDocs(q);
+                        const batch = writeBatch(db);
+                        let updatedCount = 0;
+
+                        snapshot.forEach(docSnap => {
+                            const data = docSnap.data();
+                            if (!data.sentence || data.sentence === '') {
+                                // ----------------------------------------------------
+                                // [API Call Placeholder]
+                                // 這裡可以填入 fetch('https://api.openai.com/...') 
+                                // 目前使用模擬生成
+                                const mockAI = `This is a simple sentence for ${data.word}.`;
+                                // ----------------------------------------------------
+                                
+                                batch.update(docSnap.ref, { sentence: mockAI });
+                                updatedCount++;
+                            }
+                        });
+
+                        if (updatedCount > 0) {
+                            status.innerText = `AI 正生成 ${updatedCount} 句例句...`;
+                            await batch.commit();
+                            setTimeout(() => {
+                                status.innerText = `完成！已更新 ${updatedCount} 個單字。`;
+                                status.classList.replace('text-cyber-cyan', 'text-green-400');
+                            }, 1000);
+                        } else {
+                            status.innerText = "目前沒有需要補全的例句。";
+                        }
+                    } catch(e) {
+                        console.error(e);
+                        status.innerText = "AI 連線錯誤。";
+                        status.classList.add('text-red-400');
+                    }
+                },
+
+                // 數據重設 (Danger Zone)
+                resetScores: async (type) => {
+                    const confirmMsg = type === 'weekly' ? 
+                        "確定要「重設本週排行榜」嗎？所有人的週分將歸零。" : 
+                        "警告：確定要「清空所有分數」嗎？這將刪除所有人的總積分，無法復原！";
+                    
+                    if (!confirm(confirmMsg)) return;
+
+                    appLogic.ui.alert("處理中", "正在重設資料庫，請稍候...");
+                    
+                    try {
+                        // 讀取所有使用者 (注意：若使用者過多需分批處理，此處假設 < 500 人)
+                        const snapshot = await getDocs(collection(db, "users"));
+                        const batch = writeBatch(db);
+                        
+                        snapshot.forEach(docSnap => {
+                            if (type === 'weekly') {
+                                batch.update(docSnap.ref, { weeklyScore: 0 });
+                            } else {
+                                batch.update(docSnap.ref, { score: 0, weeklyScore: 0 });
+                            }
+                        });
+
+                        await batch.commit();
+                        appLogic.ui.alert("成功", type === 'weekly' ? "週榜已重設。" : "總榜已清空。");
+                    } catch(e) {
+                        console.error(e);
+                        appLogic.ui.alert("錯誤", "重設失敗 (可能資料量過大)。");
+                    }
                 }
             },
 
@@ -661,7 +792,7 @@
                                 <span class="text-cyber-cyan font-mono">${d.data().score}</span>
                             </div>
                         `).join('');
-                        document.getElementById('lb-preview-content').innerHTML = html || '<div class="text-center text-gray-500 py-4">No Data</div>';
+                        document.getElementById('lb-preview-content').innerHTML = html || '<div class="text-center text-gray-500 py-4">目前尚無資料</div>';
                     } catch (e) {
                         console.error(e);
                     }
@@ -675,7 +806,7 @@
                 updateTeamUI: () => {
                     document.getElementById('team-action-area').classList.add('hidden');
                     document.getElementById('team-status-area').classList.remove('hidden');
-                    document.getElementById('dash-team').innerText = "SQUAD ACTIVE";
+                    document.getElementById('dash-team').innerText = "隊伍已連線";
                     document.getElementById('dash-team').classList.add('text-cyber-cyan');
                     document.getElementById('team-code-display').innerText = appLogic.state.team.code;
                     const html = appLogic.state.team.membersDetails.map(m => 
