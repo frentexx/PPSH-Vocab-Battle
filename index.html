@@ -39,12 +39,6 @@
                     animation: { 
                         'radar-spin': 'spin 4s linear infinite',
                         'pulse-glow': 'pulseGlow 2s ease-in-out infinite'
-                    },
-                    keyframes: {
-                        pulseGlow: {
-                            '0%, 100%': { boxShadow: '0 0 20px rgba(6, 182, 212, 0.2)' },
-                            '50%': { boxShadow: '0 0 40px rgba(6, 182, 212, 0.5)' }
-                        }
                     }
                 }
             }
@@ -52,101 +46,35 @@
     </script>
 
     <style>
-        body { 
-            background-color: #0B0F19; 
-            color: #E2E8F0; 
-            font-family: 'Noto Sans TC', sans-serif; 
-            min-height: 100vh; 
-            overflow-x: hidden; 
-            user-select: none;
-        }
-        
-        .version-tag {
-            position: fixed; top: 10px; right: 10px; font-family: 'Orbitron'; font-size: 10px;
-            color: rgba(255,255,255,0.3); z-index: 9999; pointer-events: none;
-        }
-
-        /* 首頁圓形雷達 */
-        .radar-circle {
-            width: 120px; height: 120px;
-            border-radius: 50%;
-            border: 2px solid #06B6D4;
-            box-shadow: 0 0 30px #06B6D4;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(6, 182, 212, 0.1);
-            position: relative;
-        }
-        .radar-circle::after {
-            content: ''; position: absolute; inset: -5px;
-            border-radius: 50%; border: 1px solid rgba(6, 182, 212, 0.3);
-            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-        }
-
-        /* 玻璃擬態 */
-        .glass-panel { 
-            background: rgba(19, 27, 46, 0.6); 
-            backdrop-filter: blur(12px); 
-            border: 1px solid rgba(255, 255, 255, 0.05); 
-        }
-
+        body { background-color: #0B0F19; color: #E2E8F0; font-family: 'Noto Sans TC', sans-serif; min-height: 100vh; overflow-x: hidden; user-select: none; }
+        .version-tag { position: fixed; top: 10px; right: 10px; font-family: 'Orbitron'; font-size: 10px; color: rgba(255,255,255,0.3); z-index: 9999; pointer-events: none; }
+        .glass-panel { background: rgba(19, 27, 46, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
-
-        /* --- 遊戲特效 --- */
         
         /* 拔河光束 */
-        .tug-beam-container {
-            width: 90%; height: 20px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 10px;
-            position: relative;
-            margin: 20px auto;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .tug-beam {
-            position: absolute; top: 50%; left: 0; right: 0; height: 4px;
-            background: linear-gradient(90deg, #8B5CF6, #06B6D4, #8B5CF6);
-            transform: translateY(-50%);
-            box-shadow: 0 0 15px #06B6D4;
-        }
-        .tug-node {
-            width: 40px; height: 40px;
-            background: #fff;
-            border-radius: 50%;
-            position: absolute; top: 50%; left: 50%; /* JS control translateX */
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 30px #fff, 0 0 60px #06B6D4;
-            z-index: 10;
-            transition: left 0.3s ease-out;
-        }
-        .tug-zone {
-            position: absolute; top: 0; bottom: 0; width: 2px;
-            background: rgba(255,255,255,0.2);
-        }
+        .tug-beam-container { width: 90%; height: 20px; background: rgba(0,0,0,0.5); border-radius: 10px; position: relative; margin: 20px auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); }
+        .tug-beam { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #8B5CF6, #06B6D4, #8B5CF6); transform: translateY(-50%); box-shadow: 0 0 15px #06B6D4; }
+        .tug-node { width: 40px; height: 40px; background: #fff; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 30px #fff, 0 0 60px #06B6D4; z-index: 10; transition: left 0.3s ease-out; }
         
-        /* 疾速破冰 */
-        @keyframes balloonFall {
-            0% { top: -120px; opacity: 0; transform: scale(0.8); }
-            10% { opacity: 1; transform: scale(1); }
-            100% { top: 100vh; opacity: 1; }
-        }
-        .balloon-item {
-            position: absolute; animation-name: balloonFall; animation-timing-function: linear;
-            cursor: pointer; z-index: 50; transition: transform 0.1s; will-change: top;
-        }
+        /* 氣球 */
+        @keyframes balloonFall { 0% { top: -120px; opacity: 0; transform: scale(0.8); } 10% { opacity: 1; transform: scale(1); } 100% { top: 100vh; opacity: 1; } }
+        .balloon-item { position: absolute; animation-name: balloonFall; animation-timing-function: linear; cursor: pointer; z-index: 50; transition: transform 0.1s; will-change: top; }
         
-        /* 記憶配對 */
+        /* 翻牌 */
         .perspective-1000 { perspective: 1000px; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
         .card-flipped .card-inner { transform: rotateY(180deg); }
         .card-front, .card-back { position: absolute; inset: 0; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; }
         .card-front { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); }
         .card-back { background: #4c1d95; transform: rotateY(180deg); border: 1px solid #8B5CF6; }
+
+        /* 分頁按鈕 */
+        .tab-active { background-color: rgba(6, 182, 212, 0.2); border-color: #06B6D4; color: #fff; }
     </style>
 </head>
 <body class="selection:bg-cyber-cyan selection:text-black">
 
-    <div class="version-tag">Ver 3.0.0</div>
+    <div class="version-tag">Ver 3.1.0</div>
     <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
 
     <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col z-10">
@@ -166,13 +94,12 @@
             </div>
         </header>
 
-        <!-- VIEW 1: 首頁 (符合圖 1) -->
+        <!-- VIEW 1: 首頁 -->
         <section id="view-login" class="flex-1 flex flex-col relative overflow-hidden justify-center px-6">
-            
-            <!-- Logo Area -->
             <div class="flex flex-col items-center mb-10">
-                <div class="radar-circle mb-6">
+                <div class="w-32 h-32 rounded-full border-2 border-cyber-cyan flex items-center justify-center bg-cyber-cyan/10 relative shadow-[0_0_30px_#06B6D4] mb-6">
                     <span class="text-4xl animate-bounce">🚀</span>
+                    <div class="absolute inset-[-5px] rounded-full border border-cyber-cyan/30 animate-ping"></div>
                 </div>
                 <h1 class="text-center">
                     <span class="block text-3xl font-bold text-cyber-cyan mb-1 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">屏北高中</span>
@@ -180,8 +107,6 @@
                     <span class="block text-xs text-gray-400 tracking-[0.2em] font-display">PPSH VOCABULARY BATTLE</span>
                 </h1>
             </div>
-
-            <!-- Rank Cards -->
             <div class="grid grid-cols-2 gap-4 mb-10">
                 <div class="glass-panel p-4 rounded-xl flex flex-col items-center justify-center min-h-[120px] bg-cyber-card/80 border border-white/5">
                     <h3 class="text-cyber-cyan font-bold text-sm mb-2">最強單字王</h3>
@@ -192,14 +117,10 @@
                     <div id="login-lb-team" class="text-xs text-gray-400">讀取中...</div>
                 </div>
             </div>
-
-            <!-- Login Button -->
             <button onclick="window.app.auth.login()" class="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyber-purple text-white font-bold text-lg shadow-[0_0_25px_rgba(139,92,246,0.4)] hover:scale-[1.02] transition-transform flex items-center justify-center gap-2">
-                <i data-lucide="log-in" class="w-5 h-5"></i>
-                使用 Google 帳號登入
+                <i data-lucide="log-in" class="w-5 h-5"></i> 使用 Google 帳號登入
             </button>
             <p class="text-center text-[10px] text-gray-500 mt-4">僅限 @ppsh.ptc.edu.tw 網域使用</p>
-
         </section>
 
         <!-- VIEW 2: Dashboard -->
@@ -218,24 +139,21 @@
                 </div>
             </div>
 
-            <!-- 1. 個人挑戰區 (符合圖 2) -->
+            <!-- 1. 個人挑戰區 -->
             <div>
                 <h3 class="text-base font-bold text-cyber-cyan mb-4 tracking-wider font-display">個人挑戰區 (SOLO)</h3>
                 <div class="grid grid-cols-2 gap-4 mb-4">
-                    <!-- 配對遊戲 (綠) -->
                     <div onclick="window.app.game.setup('practice', 'match')" class="glass-panel p-4 rounded-xl border border-cyber-green/50 cursor-pointer hover:bg-cyber-green/10 transition-colors h-32 flex flex-col justify-center">
                         <i data-lucide="link" class="w-8 h-8 text-cyber-green mb-2"></i>
                         <h4 class="font-bold text-white">配對遊戲</h4>
                         <p class="text-xs text-gray-400">Match</p>
                     </div>
-                    <!-- 命運輪盤 (黃) -->
                     <div onclick="window.app.game.setup('practice', 'wheel')" class="glass-panel p-4 rounded-xl border border-cyber-yellow/50 cursor-pointer hover:bg-cyber-yellow/10 transition-colors h-32 flex flex-col justify-center">
                         <i data-lucide="aperture" class="w-8 h-8 text-cyber-yellow mb-2"></i>
                         <h4 class="font-bold text-white">命運輪盤</h4>
                         <p class="text-xs text-gray-400">Wheel</p>
                     </div>
                 </div>
-                <!-- 聽音辨義 (藍) -->
                 <div onclick="window.app.game.setup('practice', 'standard')" class="glass-panel p-4 rounded-xl border border-cyber-cyan/50 cursor-pointer hover:bg-cyber-cyan/10 transition-colors flex items-center gap-4">
                     <i data-lucide="headphones" class="w-8 h-8 text-cyber-cyan"></i>
                     <div>
@@ -249,11 +167,10 @@
             <div>
                 <h3 class="text-base font-bold text-cyber-purple mb-4 tracking-wider font-display mt-2">團體競技區 (TEAM)</h3>
                 <div class="space-y-3">
-                    <!-- 光速拔河 (新) -->
                     <div onclick="window.app.game.setup('ranked', 'tug')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-purple cursor-pointer hover:bg-white/5 flex justify-between items-center group">
                         <div>
                             <h4 class="font-bold text-cyber-purple group-hover:text-white transition-colors">🚀 光速拔河 (Tug-of-War)</h4>
-                            <p class="text-xs text-gray-400 mt-1">團隊對抗 • 拉力競賽</p>
+                            <p class="text-xs text-gray-400 mt-1">混合題型對抗 • 拉力競賽</p>
                         </div>
                         <i data-lucide="move-horizontal" class="text-cyber-purple"></i>
                     </div>
@@ -261,10 +178,19 @@
                     <div onclick="window.app.game.setup('ranked', 'speed')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-danger cursor-pointer hover:bg-white/5 flex justify-between items-center group">
                         <div>
                             <h4 class="font-bold text-cyber-danger group-hover:text-white transition-colors">🎈 疾速破冰 (Speed Pop)</h4>
-                            <p class="text-xs text-gray-400 mt-1">氣球掉落 • 極限反應</p>
+                            <p class="text-xs text-gray-400 mt-1">聽音/中翻英 • 極限反應</p>
                         </div>
                         <i data-lucide="zap" class="text-cyber-danger"></i>
                     </div>
+                </div>
+                
+                <!-- 戰情中心 (新增) -->
+                <div onclick="window.app.leaderboard.show()" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-green cursor-pointer hover:bg-white/5 flex justify-between items-center group mt-3">
+                    <div>
+                        <h4 class="font-bold text-cyber-green group-hover:text-white transition-colors">📊 戰情中心 (Leaderboard)</h4>
+                        <p class="text-xs text-gray-400 mt-1">查看個人與團隊排名</p>
+                    </div>
+                    <i data-lucide="bar-chart-2" class="text-cyber-green"></i>
                 </div>
             </div>
 
@@ -328,7 +254,7 @@
         <!-- VIEW 5: Result -->
         <section id="view-result" class="hidden flex-1 flex flex-col p-6 items-center justify-center gap-8 relative">
             <div class="text-center space-y-2 z-10">
-                <h2 class="text-3xl font-display font-bold text-white neon-text">MISSION COMPLETE</h2>
+                <h2 class="text-3xl font-display font-bold text-white">MISSION COMPLETE</h2>
                 <div class="text-sm text-gray-400 tracking-widest">本次戰果報告</div>
             </div>
             <div class="glass-panel w-full max-w-sm p-8 rounded-2xl text-center space-y-6 z-10 border-t-4 border-cyber-cyan">
@@ -339,12 +265,20 @@
             </div>
         </section>
 
+        <!-- VIEW 6: Leaderboard -->
+        <section id="view-leaderboard" class="hidden flex-1 flex flex-col p-4 gap-4">
+             <div class="flex justify-between items-center"><h2 class="text-xl font-bold font-display text-cyber-green">INTELLIGENCE</h2><button onclick="window.app.nav.to('dashboard')" class="p-2 hover:text-white"><i data-lucide="x"></i></button></div>
+             <div class="glass-panel p-2 rounded-xl flex gap-2"><button id="subtab-user" onclick="window.app.leaderboard.switchSubTab('user')" class="flex-1 py-2 rounded text-xs font-bold tab-active transition-all">個人排行</button><button id="subtab-team" onclick="window.app.leaderboard.switchSubTab('team')" class="flex-1 py-2 rounded text-xs font-bold text-gray-400 transition-all">團隊排行</button></div>
+             <div id="lb-detail-content" class="flex-1 overflow-y-auto space-y-2 pb-10"></div>
+        </section>
+
         <!-- VIEW 7: Admin -->
         <section id="view-admin" class="hidden flex-1 flex flex-col p-4 gap-4">
             <h2 class="text-xl font-bold text-cyber-orange flex gap-2 items-center"><i data-lucide="shield-alert"></i> ADMIN CONSOLE</h2>
             <div class="glass-panel p-4 rounded-xl space-y-4">
-                <div class="border border-dashed border-gray-600 p-4 rounded text-center"><input type="file" id="csv-upload" accept=".csv" class="block w-full text-xs text-gray-400 file:bg-cyber-purple file:text-white"/></div>
+                <div class="border border-dashed border-gray-600 p-4 rounded text-center"><input type="file" id="csv-upload" accept=".csv" class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-cyber-purple file:text-white"/></div>
                 <button onclick="window.app.admin.uploadCSV()" class="w-full py-2 bg-blue-600 rounded text-sm font-bold">Process Upload</button>
+                <hr class="border-gray-700">
                 <button onclick="window.app.admin.hardReset()" class="w-full py-3 bg-red-900/50 text-red-200 font-bold rounded text-sm border border-red-500">SYSTEM HARD RESET</button>
                 <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 bg-gray-700 rounded text-sm">Exit</button>
             </div>
@@ -381,7 +315,7 @@
         const googleProvider = new GoogleAuthProvider();
         lucide.createIcons();
 
-        // Cultural Icons
+        // Icons
         const ICONS = {
             lily: `<svg viewBox="0 0 100 100" class="w-5 h-5 inline drop-shadow"><path d="M50 20 C60 5 80 20 50 50 C20 20 40 5 50 20 Z" fill="#fff"/><path d="M50 80 C40 95 20 80 50 50 C80 80 60 95 50 80 Z" fill="#fff"/><path d="M20 50 C5 40 20 20 50 50 C20 80 5 60 20 50 Z" fill="#fff"/><path d="M80 50 C95 60 80 80 50 50 C80 20 95 40 80 50 Z" fill="#fff"/><circle cx="50" cy="50" r="6" fill="#DC2626"/></svg>`,
             pot: `<svg viewBox="0 0 100 100" class="w-5 h-5 inline drop-shadow"><path d="M30 30 Q50 90 70 30 L60 20 L40 20 Z" fill="#5D4037"/><circle cx="50" cy="40" r="8" fill="none" stroke="#222" stroke-dasharray="2"/></svg>`,
@@ -389,14 +323,7 @@
         };
 
         const appLogic = {
-            state: { 
-                user: null, team: null, words: [], 
-                quizList: [], wrongList: [], currentQIndex: 0, 
-                score: 0, streak: 0, correctCount: 0,
-                mode: 'practice', gameType: 'standard', 
-                timer: null, tugPos: 50 // 0-100, 50 is center
-            },
-            
+            state: { user: null, team: null, words: [], quizList: [], wrongList: [], currentQIndex: 0, score: 0, streak: 0, correctCount: 0, mode: 'practice', gameType: 'standard', timer: null, tugPos: 50, lbSubTab: 'user' },
             init: () => {
                 appLogic.ui.bgAnimation();
                 onAuthStateChanged(auth, async (user) => {
@@ -417,8 +344,7 @@
 
             game: {
                 setup: async (mode, type) => {
-                    appLogic.state.mode = mode;
-                    appLogic.state.gameType = type;
+                    appLogic.state.mode = mode; appLogic.state.gameType = type;
                     if (mode === 'review') { appLogic.game.start(); return; }
                     if (appLogic.state.words.length === 0) {
                         const q = query(collection(db, "words"), limit(600)); const snapshot = await getDocs(q);
@@ -428,13 +354,9 @@
                     document.getElementById('setup-count-group').style.display = mode === 'ranked' ? 'none' : 'block';
                     appLogic.nav.to('setup');
                 },
-
                 start: () => {
-                    appLogic.state.currentQIndex = 0; appLogic.state.score = 0;
-                    appLogic.state.streak = 0; appLogic.state.correctCount = 0;
-                    appLogic.state.tugPos = 50; // Reset tug
+                    appLogic.state.currentQIndex = 0; appLogic.state.score = 0; appLogic.state.streak = 0; appLogic.state.correctCount = 0; appLogic.state.tugPos = 50;
                     if (appLogic.state.timer) clearInterval(appLogic.state.timer);
-                    
                     if (appLogic.state.mode !== 'review') {
                         appLogic.state.wrongList = [];
                         const level = document.getElementById('setup-level').value;
@@ -448,102 +370,62 @@
                         pool.sort(() => Math.random() - 0.5);
                         appLogic.state.quizList = pool.slice(0, countVal);
                     }
-
-                    appLogic.nav.to('game');
-                    document.getElementById('game-mode-label').innerText = appLogic.state.gameType.toUpperCase();
-                    document.getElementById('in-game-score').innerText = "0";
-                    document.getElementById('danger-line').classList.add('hidden');
-
+                    appLogic.nav.to('game'); document.getElementById('game-mode-label').innerText = appLogic.state.gameType.toUpperCase(); document.getElementById('in-game-score').innerText = "0"; document.getElementById('danger-line').classList.add('hidden');
+                    
                     if (appLogic.state.gameType === 'speed') appLogic.game.startSpeedGame();
                     else if (appLogic.state.gameType === 'tug') appLogic.game.startTugGame();
                     else if (appLogic.state.gameType === 'match') appLogic.game.startMatchGame();
                     else if (appLogic.state.gameType === 'wheel') appLogic.game.startWheelGame();
                     else appLogic.game.nextStandard(); 
                 },
-
                 quit: () => { gsap.killTweensOf("*"); appLogic.nav.to('dashboard'); },
 
-                // --- 1. 光速拔河 (Tug-of-War) ---
+                // --- 1. 光速拔河 (Tug-of-War) [混合題型] ---
                 startTugGame: () => {
                     const stage = document.getElementById('game-stage');
-                    stage.innerHTML = `
-                        <div class="w-full flex justify-between items-center mb-4 px-4">
-                            <span class="text-cyber-cyan font-bold">TEAM</span>
-                            <span class="text-red-500 font-bold">SYSTEM</span>
-                        </div>
-                        
-                        <div class="tug-beam-container">
-                            <div class="tug-beam"></div>
-                            <div class="tug-zone" style="left: 50%"></div>
-                            <div id="tug-node" class="tug-node" style="left: 50%"></div>
-                        </div>
-                        
-                        <div id="tug-q-area" class="w-full flex flex-col items-center mt-8"></div>
-                    `;
-                    
-                    // AI Pull Back Logic
-                    appLogic.state.timer = setInterval(() => {
-                        appLogic.state.tugPos = Math.min(100, appLogic.state.tugPos + 1); // AI pulls right
-                        appLogic.game.updateTugUI();
-                        if (appLogic.state.tugPos >= 95) appLogic.game.finishTug(false);
-                    }, 800);
-
+                    stage.innerHTML = `<div class="w-full flex justify-between items-center mb-4 px-4"><span class="text-cyber-cyan font-bold">TEAM</span><span class="text-red-500 font-bold">SYSTEM</span></div><div class="tug-beam-container"><div class="tug-beam"></div><div class="tug-zone" style="left: 50%"></div><div id="tug-node" class="tug-node" style="left: 50%"></div></div><div id="tug-q-area" class="w-full flex flex-col items-center mt-8"></div>`;
+                    appLogic.state.timer = setInterval(() => { appLogic.state.tugPos = Math.min(100, appLogic.state.tugPos + 1); appLogic.game.updateTugUI(); if (appLogic.state.tugPos >= 95) appLogic.game.finishTug(false); }, 800);
                     appLogic.game.nextTugQuestion();
                 },
-
-                updateTugUI: () => {
-                    const node = document.getElementById('tug-node');
-                    if(node) node.style.left = `${appLogic.state.tugPos}%`;
-                },
-
-                finishTug: (win) => {
-                    if(appLogic.state.timer) clearInterval(appLogic.state.timer);
-                    if(win) appLogic.state.score += 100;
-                    appLogic.ui.alert(win ? "VICTORY" : "DEFEAT", win ? "光束奪取成功！" : "被系統拉走了...");
-                    setTimeout(appLogic.game.finish, 1500);
-                },
-
+                updateTugUI: () => { const node = document.getElementById('tug-node'); if(node) node.style.left = `${appLogic.state.tugPos}%`; },
+                finishTug: (win) => { if(appLogic.state.timer) clearInterval(appLogic.state.timer); if(win) appLogic.state.score += 100; appLogic.ui.alert(win ? "VICTORY" : "DEFEAT", win ? "光束奪取成功！" : "被系統拉走了..."); setTimeout(appLogic.game.finish, 1500); },
                 nextTugQuestion: () => {
                     if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finishTug(true); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
                     appLogic.ui.updateGameProgress();
-
                     const area = document.getElementById('tug-q-area');
+                    
+                    // 隨機題型生成 (0: 英翻中, 1: 中翻英, 2: 聽音, 3: 拼字)
+                    const subType = Math.floor(Math.random() * 4);
+                    let qText = q.word, isAudio = false, options = appLogic.game.getDistractors(q, 3);
+                    
+                    if (subType === 1) { qText = q.chinese; options.forEach(o => o.display = o.word); q.display = q.word; } // 中翻英
+                    else if (subType === 2) { qText = "🔊 點擊播放"; isAudio = true; options.forEach(o => o.display = o.chinese); q.display = q.chinese; } // 聽音
+                    else if (subType === 3) { qText = q.word.split('').sort(()=>Math.random()-0.5).join('-'); options.forEach(o => o.display = o.word); q.display = q.word; } // 拼字
+                    else { options.forEach(o => o.display = o.chinese); q.display = q.chinese; } // 英翻中 (預設)
+
                     area.innerHTML = `
-                        <div class="text-3xl font-bold text-white mb-6 animate-pulse">${q.word}</div>
+                        <div class="text-3xl font-bold text-white mb-6 animate-pulse cursor-pointer" onclick="${isAudio ? `window.app.game.speak('${q.word.replace(/'/g,"\\'")}')` : ''}">${qText}</div>
                         <div class="grid grid-cols-2 gap-4 w-full max-w-md" id="tug-opts"></div>
                     `;
-                    
-                    let options = appLogic.game.getDistractors(q, 3);
+                    if(isAudio) appLogic.game.speak(q.word);
+
                     options.forEach(opt => {
                         const btn = document.createElement('button');
                         btn.className = "py-6 bg-white/10 border border-white/20 rounded-xl text-lg font-bold hover:bg-cyber-cyan/30 hover:border-cyber-cyan transition-all";
-                        btn.innerText = opt.chinese;
+                        btn.innerText = opt.display;
                         btn.onclick = () => {
                             if (opt.id === q.id) {
-                                // Correct
-                                let pull = 10;
-                                if (appLogic.state.streak >= 4) { pull = 30; gsap.to("#app-container", {x:[-2,2,-2,2,0], duration:0.2}); } // Power Pull
-                                appLogic.state.tugPos = Math.max(0, appLogic.state.tugPos - pull);
-                                appLogic.game.updateTugUI();
-                                appLogic.game.handleAnswer(true);
-                                
-                                if (appLogic.state.tugPos <= 5) appLogic.game.finishTug(true);
-                                else {
-                                    appLogic.state.currentQIndex++;
-                                    appLogic.game.nextTugQuestion();
-                                }
-                            } else {
-                                appLogic.state.tugPos += 10; // Penalty
-                                appLogic.game.updateTugUI();
-                                appLogic.game.handleAnswer(false);
-                            }
+                                let pull = 10; if (appLogic.state.streak >= 4) { pull = 30; gsap.to("#app-container", {x:[-2,2,-2,2,0], duration:0.2}); }
+                                appLogic.state.tugPos = Math.max(0, appLogic.state.tugPos - pull); appLogic.game.updateTugUI(); appLogic.game.handleAnswer(true);
+                                if (appLogic.state.tugPos <= 5) appLogic.game.finishTug(true); else { appLogic.state.currentQIndex++; appLogic.game.nextTugQuestion(); }
+                            } else { appLogic.state.tugPos += 10; appLogic.game.updateTugUI(); appLogic.game.handleAnswer(false); }
                         };
                         document.getElementById('tug-opts').appendChild(btn);
                     });
                 },
 
-                // --- 2. 疾速破冰 (Speed Pop) ---
+                // --- 2. 疾速破冰 (Speed Pop) [混合題型] ---
                 startSpeedGame: () => {
                     if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
@@ -551,24 +433,29 @@
                     const stage = document.getElementById('game-stage');
                     document.getElementById('danger-line').classList.remove('hidden');
                     
+                    const subType = Math.floor(Math.random() * 2); // 0: 英顯示(含聽), 選中; 1: 中顯示, 選英
+                    let qDisplay = q.word, optDisplayKey = 'chinese';
+                    if (subType === 1) { qDisplay = q.chinese; optDisplayKey = 'word'; }
+                    
                     stage.innerHTML = `
                         <div class="z-0 pointer-events-none flex flex-col items-center animate-pulse-slow">
-                            <div class="text-4xl md:text-6xl font-display font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 drop-shadow-2xl text-center">${q.word}</div>
-                            <div class="text-xs text-cyber-cyan mt-2 tracking-[0.5em] opacity-70">${q.type || 'VOCAB'}</div>
+                            <div class="text-4xl md:text-6xl font-display font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 drop-shadow-2xl text-center">${qDisplay}</div>
+                            <div class="text-xs text-cyber-cyan mt-2 tracking-[0.5em] opacity-70">${subType===0?'EN→CH':'CH→EN'}</div>
                         </div>
                         <div id="balloon-container" class="absolute inset-0 w-full h-full overflow-hidden"></div>
                     `;
+                    if(subType === 0) appLogic.game.speak(q.word);
 
                     let options = appLogic.game.getDistractors(q, 2); options.sort(() => Math.random() - 0.5);
                     const container = document.getElementById('balloon-container');
 
                     options.forEach((opt, i) => {
                         const balloon = document.createElement('div');
-                        balloon.className = "balloon-item absolute p-4 w-24 h-24 rounded-full flex items-center justify-center text-center text-sm font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] border border-white/20 backdrop-blur-md";
+                        balloon.className = "balloon-item absolute p-4 w-24 h-24 rounded-full flex items-center justify-center text-center text-sm font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] border border-white/20 backdrop-blur-md break-all";
                         if (i === 0) balloon.classList.add('bg-cyber-purple/80', 'text-white');
                         else if (i === 1) balloon.classList.add('bg-blue-600/80', 'text-white');
                         else balloon.classList.add('bg-cyber-cyan/80', 'text-black');
-                        balloon.innerText = opt.chinese;
+                        balloon.innerText = opt[optDisplayKey];
                         
                         balloon.style.left = `${10 + Math.random() * 70}%`;
                         balloon.style.animationDelay = `${i * 0.8}s`;
@@ -581,7 +468,7 @@
                         };
                         balloon.addEventListener('animationend', () => {
                             balloon.remove();
-                            if (opt.id === q.id) { appLogic.game.handleAnswer(false); appLogic.ui.alert("MISS!", `答案：${q.chinese}`); setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 1000); }
+                            if (opt.id === q.id) { appLogic.game.handleAnswer(false); appLogic.ui.alert("MISS!", `答案：${q[optDisplayKey]}`); setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 1000); }
                         });
                         container.appendChild(balloon);
                     });
@@ -628,61 +515,32 @@
                     };
                 },
 
-                // --- Standard / Review ---
+                // --- Standard ---
                 nextStandard: () => {
                     if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
                     appLogic.ui.updateGameProgress();
                     const stage = document.getElementById('game-stage');
                     document.getElementById('danger-line').classList.add('hidden');
-
-                    stage.innerHTML = `
-                        <div class="glass-panel w-full max-w-sm p-6 rounded-2xl flex flex-col items-center text-center">
-                            <div class="w-full flex justify-between items-center mb-6 border-b border-white/10 pb-2">
-                                <span class="text-xs text-gray-500 font-mono">${q.level ? 'LEVEL '+q.level : 'LEVEL 1'}</span>
-                                <span class="text-xs text-cyber-cyan font-mono tracking-widest">${q.type || 'N.'}</span>
-                            </div>
-                            <button onclick="window.app.game.speak('${q.word.replace(/'/g, "\\'")}')" class="w-20 h-20 rounded-full bg-cyber-cyan/10 border border-cyber-cyan text-cyber-cyan flex items-center justify-center hover:bg-cyber-cyan/20 transition-all mb-4 animate-pulse-slow"><i data-lucide="volume-2" class="w-8 h-8"></i></button>
-                            <div class="text-xs text-gray-500 mb-6 tracking-wider">點擊發音</div>
-                            <div class="grid w-full gap-3" id="std-options"></div>
-                        </div>
-                    `;
-                    lucide.createIcons();
-                    appLogic.game.speak(q.word);
-
+                    stage.innerHTML = `<div class="glass-panel w-full max-w-sm p-6 rounded-2xl flex flex-col items-center text-center"><div class="w-full flex justify-between items-center mb-6 border-b border-white/10 pb-2"><span class="text-xs text-gray-500 font-mono">${q.level ? 'LEVEL '+q.level : 'LEVEL 1'}</span><span class="text-xs text-cyber-cyan font-mono tracking-widest">${q.type || 'N.'}</span></div><button onclick="window.app.game.speak('${q.word.replace(/'/g, "\\'")}')" class="w-20 h-20 rounded-full bg-cyber-cyan/10 border border-cyber-cyan text-cyber-cyan flex items-center justify-center hover:bg-cyber-cyan/20 transition-all mb-4 animate-pulse-slow"><i data-lucide="volume-2" class="w-8 h-8"></i></button><div class="text-xs text-gray-500 mb-6 tracking-wider">點擊發音</div><div class="grid w-full gap-3" id="std-options"></div></div>`;
+                    lucide.createIcons(); appLogic.game.speak(q.word);
                     const optContainer = document.getElementById('std-options');
                     let options = appLogic.game.getDistractors(q, 3);
                     options.forEach(opt => {
                         const btn = document.createElement('button');
                         btn.className = "w-full py-4 bg-white/5 border border-white/10 rounded-xl hover:border-cyber-cyan hover:bg-white/10 transition-all font-bold text-gray-200 text-lg relative overflow-hidden active:scale-95";
                         btn.innerText = opt.chinese;
-                        btn.onclick = () => {
-                            if (opt.id === q.id) {
-                                btn.classList.add('bg-green-500/20', 'border-green-500');
-                                appLogic.game.handleAnswer(true);
-                                setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.nextStandard(); }, 600);
-                            } else {
-                                btn.classList.add('bg-red-500/20', 'border-red-500');
-                                appLogic.game.handleAnswer(false);
-                                appLogic.ui.alert("WRONG", `正確答案: ${q.chinese}`);
-                                setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.nextStandard(); }, 1500);
-                            }
-                        };
+                        btn.onclick = () => { if (opt.id === q.id) { btn.classList.add('bg-green-500/20', 'border-green-500'); appLogic.game.handleAnswer(true); setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.nextStandard(); }, 600); } else { btn.classList.add('bg-red-500/20', 'border-red-500'); appLogic.game.handleAnswer(false); appLogic.ui.alert("WRONG", `正確答案: ${q.chinese}`); setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.nextStandard(); }, 1500); } };
                         optContainer.appendChild(btn);
                     });
                 },
-                checkStandard: (isCorrectStr) => { /* Helper for Wheel */
-                    if(isCorrectStr==='true') { appLogic.game.handleAnswer(true); setTimeout(()=>{ appLogic.state.currentQIndex++; appLogic.game.startWheelGame(); },1000); }
-                    else { appLogic.game.handleAnswer(false); setTimeout(()=>{ appLogic.state.currentQIndex++; appLogic.game.startWheelGame(); },1000); }
-                },
+                checkStandard: (isCorrectStr) => { if(isCorrectStr==='true') { appLogic.game.handleAnswer(true); setTimeout(()=>{ appLogic.state.currentQIndex++; appLogic.game.startWheelGame(); },1000); } else { appLogic.game.handleAnswer(false); setTimeout(()=>{ appLogic.state.currentQIndex++; appLogic.game.startWheelGame(); },1000); } },
 
-                // --- Core Logic ---
                 handleAnswer: (isCorrect) => {
                     const currentQ = appLogic.state.quizList[appLogic.state.currentQIndex];
                     if (isCorrect) {
                         appLogic.state.score += 10 + (appLogic.state.streak * 2);
                         appLogic.state.streak++; appLogic.state.correctCount++;
-                        if (appLogic.state.streak === 5) appLogic.ui.triggerNeonFrenzy();
                         document.getElementById('in-game-score').innerText = appLogic.state.score;
                         confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 }, colors: ['#06B6D4', '#8B5CF6'] });
                     } else {
@@ -691,15 +549,7 @@
                         gsap.to("#app-container", { x: [-5, 5, -5, 5, 0], duration: 0.3 });
                     }
                 },
-                getDistractors: (correct, count) => {
-                    let choices = [correct]; let pool = appLogic.state.words; let safety = 0;
-                    while (choices.length < count + 1 && safety < 50) {
-                        let rnd = pool[Math.floor(Math.random() * pool.length)];
-                        if (!choices.find(c => c.id === rnd.id)) choices.push(rnd);
-                        safety++;
-                    }
-                    return choices.sort(() => Math.random() - 0.5);
-                },
+                getDistractors: (correct, count) => { let choices = [correct]; let pool = appLogic.state.words; let safety = 0; while (choices.length < count + 1 && safety < 50) { let rnd = pool[Math.floor(Math.random() * pool.length)]; if (!choices.find(c => c.id === rnd.id)) choices.push(rnd); safety++; } return choices.sort(() => Math.random() - 0.5); },
                 speak: (txt) => { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = 'en-US'; window.speechSynthesis.speak(u); },
                 
                 finish: async () => {
@@ -707,27 +557,14 @@
                     document.getElementById('res-score').innerText = appLogic.state.score;
                     document.getElementById('res-accuracy').innerText = (Math.round((appLogic.state.correctCount / appLogic.state.quizList.length) * 100) || 0) + "%";
                     document.getElementById('res-streak').innerText = appLogic.state.streak;
-                    
                     const reviewBtn = document.getElementById('btn-review-wrong');
-                    if (appLogic.state.wrongList.length > 0) {
-                        reviewBtn.classList.remove('hidden'); document.getElementById('wrong-count').innerText = appLogic.state.wrongList.length;
-                    } else { reviewBtn.classList.add('hidden'); }
-
+                    if (appLogic.state.wrongList.length > 0) { reviewBtn.classList.remove('hidden'); document.getElementById('wrong-count').innerText = appLogic.state.wrongList.length; } else { reviewBtn.classList.add('hidden'); }
                     if (appLogic.state.mode === 'ranked') {
-                        try {
-                            const userRef = doc(db, "users", appLogic.state.user.uid);
-                            await updateDoc(userRef, { score: increment(appLogic.state.score), weeklyScore: increment(appLogic.state.score), lastPlayed: serverTimestamp() });
-                            if (appLogic.state.user.teamId) await updateDoc(doc(db, "teams", appLogic.state.user.teamId), { score: increment(appLogic.state.score) });
-                            appLogic.state.user.score += appLogic.state.score; appLogic.ui.updateHeader();
-                        } catch(e) { console.error(e); }
+                        try { const userRef = doc(db, "users", appLogic.state.user.uid); await updateDoc(userRef, { score: increment(appLogic.state.score), weeklyScore: increment(appLogic.state.score), lastPlayed: serverTimestamp() }); if (appLogic.state.user.teamId) await updateDoc(doc(db, "teams", appLogic.state.user.teamId), { score: increment(appLogic.state.score) }); appLogic.state.user.score += appLogic.state.score; appLogic.ui.updateHeader(); } catch(e) { console.error(e); }
                     }
                     appLogic.nav.to('result');
                 },
-                startWrongReview: () => {
-                    appLogic.state.quizList = [...appLogic.state.wrongList];
-                    appLogic.state.mode = 'review'; appLogic.state.gameType = 'standard';
-                    appLogic.game.start();
-                }
+                startWrongReview: () => { appLogic.state.quizList = [...appLogic.state.wrongList]; appLogic.state.mode = 'review'; appLogic.state.gameType = 'standard'; appLogic.game.start(); }
             },
 
             ui: {
@@ -735,25 +572,44 @@
                 updateGameProgress: () => { document.getElementById('game-progress').style.width = `${(appLogic.state.currentQIndex / appLogic.state.quizList.length) * 100}%`; },
                 updateHeader: () => { document.getElementById('header-avatar').src = appLogic.state.user.photoURL; document.getElementById('header-score').innerText = appLogic.state.user.score; document.getElementById('app-header').classList.remove('hidden'); document.getElementById('dash-name').innerText = appLogic.state.user.displayName; },
                 alert: (t, m) => { document.getElementById('alert-title').innerText=t; document.getElementById('alert-msg').innerText=m; document.getElementById('alert-box').classList.remove('hidden'); },
-                triggerNeonFrenzy: () => { const layer = document.getElementById('frenzy-layer'); layer.classList.add('neon-frenzy-bg', 'opacity-100'); setTimeout(() => { layer.classList.remove('opacity-100'); setTimeout(() => layer.classList.remove('neon-frenzy-bg'), 1000); }, 2000); },
-                bgAnimation: () => { /* Particle Code */ }
+                bgAnimation: () => { /* ... */ }
             },
-            team: {
-                create: async () => { /* Same */ }, join: async () => { /* Same */ }, load: (tid) => { /* Same */ }
-            },
-            admin: {
-                uploadCSV: () => { /* Same */ }, hardReset: async () => { /* Same */ }
-            },
+            team: { create: async () => { /* ... */ }, join: async () => { /* ... */ }, load: (tid) => { /* ... */ } },
+            admin: { uploadCSV: () => { /* ... */ }, hardReset: async () => { /* ... */ } },
             leaderboard: {
                 renderPreview: async () => {
+                    const icons = [ICONS.lily, ICONS.pot, ICONS.snake];
                     const uQ = query(collection(db, "users"), orderBy("score", "desc"), limit(3)); const uSnap = await getDocs(uQ);
-                    document.getElementById('login-lb-user').innerHTML = uSnap.docs.map((d,i)=>`<div class="flex justify-between w-full mb-1 border-b border-white/5 pb-1"><span class="text-xs text-white">${i+1}. ${d.data().displayName}</span><span class="text-cyber-cyan">${d.data().score}</span></div>`).join('');
+                    document.getElementById('login-lb-user').innerHTML = uSnap.docs.map((d, i) => `<div class="flex justify-between items-center bg-white/5 p-2 rounded border-b border-white/5"><div class="flex items-center gap-2">${icons[i]||'<span>'+(i+1)+'</span>'} ${d.data().displayName}</div><span class="text-cyber-cyan font-mono">${d.data().score}</span></div>`).join('');
                     const tQ = query(collection(db, "teams"), orderBy("score", "desc"), limit(3)); const tSnap = await getDocs(tQ);
-                    document.getElementById('login-lb-team').innerHTML = tSnap.docs.map((d,i)=>`<div class="flex justify-between w-full mb-1 border-b border-white/5 pb-1"><span class="text-xs text-white">${i+1}. ${d.data().name}</span><span class="text-cyber-purple">${d.data().score}</span></div>`).join('');
+                    document.getElementById('login-lb-team').innerHTML = tSnap.docs.map((d, i) => `<div class="flex justify-between items-center bg-white/5 p-2 rounded border-b border-white/5"><div class="flex items-center gap-2">${icons[i]||'<span>'+(i+1)+'</span>'} ${d.data().name}</div><span class="text-cyber-purple font-mono">${d.data().score}</span></div>`).join('');
                 },
                 show: () => { appLogic.nav.to('leaderboard'); appLogic.leaderboard.fetchData(); },
-                switchSubTab: (subTab) => { /* ... */ },
-                fetchData: async () => { /* ... */ }
+                switchSubTab: (subTab) => {
+                    appLogic.state.lbSubTab = subTab;
+                    const userBtn = document.getElementById('subtab-user'); const teamBtn = document.getElementById('subtab-team');
+                    if(subTab === 'user') { userBtn.classList.add('tab-active'); userBtn.classList.remove('text-gray-400'); teamBtn.classList.remove('tab-active'); teamBtn.classList.add('text-gray-400'); }
+                    else { teamBtn.classList.add('tab-active'); teamBtn.classList.remove('text-gray-400'); userBtn.classList.remove('tab-active'); userBtn.classList.add('text-gray-400'); }
+                    appLogic.leaderboard.fetchData();
+                },
+                fetchData: async () => {
+                    const container = document.getElementById('lb-detail-content'); container.innerHTML = '<div class="text-center text-gray-500 py-4">讀取中...</div>';
+                    try {
+                        let q; if (appLogic.state.lbSubTab === 'team') q = query(collection(db, "teams"), orderBy("score", "desc"), limit(20)); else q = query(collection(db, "users"), orderBy("score", "desc"), limit(20));
+                        const snapshot = await getDocs(q);
+                        if (snapshot.empty) { container.innerHTML = `<div class="text-center text-gray-400 mt-10">暫無資料</div>`; } else {
+                            const icons = [ICONS.lily, ICONS.pot, ICONS.snake];
+                            let html = '';
+                            snapshot.docs.forEach((doc, index) => {
+                                const data = doc.data(); const score = data.score || 0;
+                                let name, img;
+                                if (appLogic.state.lbSubTab === 'team') { name = data.name || "Unknown"; img = "https://api.dicebear.com/7.x/identicon/svg?seed=" + doc.id; } else { name = data.displayName; img = data.photoURL; }
+                                html += `<div class="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/5"><div class="flex items-center gap-3"><div class="flex items-center justify-center w-8 h-8 font-display font-bold text-xl ${index < 3 ? 'text-cyber-orange' : 'text-gray-500'}">${index < 3 ? icons[index] : index + 1}</div><img src="${img}" class="w-8 h-8 rounded-full bg-black object-cover"><div class="flex flex-col"><span class="text-sm font-bold text-gray-200">${name}</span></div></div><div class="font-mono font-bold text-cyber-cyan">${score}</div></div>`;
+                            });
+                            container.innerHTML = html;
+                        }
+                    } catch (e) { container.innerHTML = `<div class="text-center text-red-400 mt-4">載入失敗</div>`; }
+                }
             },
             nav: { to: (id) => { document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); document.getElementById('view-'+id).classList.remove('hidden'); if(id==='login') document.getElementById('app-header').classList.add('hidden'); else document.getElementById('app-header').classList.remove('hidden'); }}
         };
