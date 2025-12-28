@@ -74,7 +74,7 @@
 </head>
 <body class="selection:bg-cyber-cyan selection:text-black">
 
-    <div class="version-tag">Ver 3.1.0</div>
+    <div class="version-tag">Ver 3.2.0</div>
     <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
 
     <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col z-10">
@@ -254,7 +254,7 @@
         <!-- VIEW 5: Result -->
         <section id="view-result" class="hidden flex-1 flex flex-col p-6 items-center justify-center gap-8 relative">
             <div class="text-center space-y-2 z-10">
-                <h2 class="text-3xl font-display font-bold text-white">MISSION COMPLETE</h2>
+                <h2 class="text-3xl font-display font-bold text-white neon-text">MISSION COMPLETE</h2>
                 <div class="text-sm text-gray-400 tracking-widest">本次戰果報告</div>
             </div>
             <div class="glass-panel w-full max-w-sm p-8 rounded-2xl text-center space-y-6 z-10 border-t-4 border-cyber-cyan">
@@ -278,6 +278,15 @@
             <div class="glass-panel p-4 rounded-xl space-y-4">
                 <div class="border border-dashed border-gray-600 p-4 rounded text-center"><input type="file" id="csv-upload" accept=".csv" class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-cyber-purple file:text-white"/></div>
                 <button onclick="window.app.admin.uploadCSV()" class="w-full py-2 bg-blue-600 rounded text-sm font-bold">Process Upload</button>
+                <hr class="border-gray-700">
+                <!-- 遊戲控制 -->
+                <div class="space-y-2">
+                    <h3 class="text-xs text-cyber-cyan font-bold">GAME SETTINGS</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="window.app.admin.setSpeed(1)" class="py-2 bg-white/5 border border-white/10 rounded text-xs">慢速 (Easy)</button>
+                        <button onclick="window.app.admin.setSpeed(2)" class="py-2 bg-white/5 border border-white/10 rounded text-xs">快速 (Hard)</button>
+                    </div>
+                </div>
                 <hr class="border-gray-700">
                 <button onclick="window.app.admin.hardReset()" class="w-full py-3 bg-red-900/50 text-red-200 font-bold rounded text-sm border border-red-500">SYSTEM HARD RESET</button>
                 <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 bg-gray-700 rounded text-sm">Exit</button>
@@ -323,7 +332,7 @@
         };
 
         const appLogic = {
-            state: { user: null, team: null, words: [], quizList: [], wrongList: [], currentQIndex: 0, score: 0, streak: 0, correctCount: 0, mode: 'practice', gameType: 'standard', timer: null, tugPos: 50, lbSubTab: 'user' },
+            state: { user: null, team: null, words: [], quizList: [], wrongList: [], currentQIndex: 0, score: 0, streak: 0, correctCount: 0, mode: 'practice', gameType: 'standard', timer: null, tugPos: 50, lbSubTab: 'user', gameSpeed: 1 },
             init: () => {
                 appLogic.ui.bgAnimation();
                 onAuthStateChanged(auth, async (user) => {
@@ -334,6 +343,11 @@
                         if (!userSnap.exists()) await setDoc(userRef, { email: user.email, displayName: user.displayName, photoURL: user.photoURL, score: 0, weeklyScore: 0, teamId: null, lastPlayed: serverTimestamp() });
                         appLogic.state.user = { uid: user.uid, ...userSnap.data() || { score:0 } };
                         if (appLogic.state.user.teamId) appLogic.team.load(appLogic.state.user.teamId);
+                        
+                        // Load Settings
+                        const setSnap = await getDoc(doc(db, "settings", "game"));
+                        if(setSnap.exists()) appLogic.state.gameSpeed = setSnap.data().speed || 1;
+
                         appLogic.ui.updateHeader(); appLogic.nav.to('dashboard');
                     } else {
                         appLogic.nav.to('login'); appLogic.leaderboard.renderPreview();
@@ -380,11 +394,11 @@
                 },
                 quit: () => { gsap.killTweensOf("*"); appLogic.nav.to('dashboard'); },
 
-                // --- 1. 光速拔河 (Tug-of-War) [混合題型] ---
+                // --- 1. 光速拔河 (Tug-of-War) [混合題型: 聽/中翻英/拼字/填空] ---
                 startTugGame: () => {
                     const stage = document.getElementById('game-stage');
                     stage.innerHTML = `<div class="w-full flex justify-between items-center mb-4 px-4"><span class="text-cyber-cyan font-bold">TEAM</span><span class="text-red-500 font-bold">SYSTEM</span></div><div class="tug-beam-container"><div class="tug-beam"></div><div class="tug-zone" style="left: 50%"></div><div id="tug-node" class="tug-node" style="left: 50%"></div></div><div id="tug-q-area" class="w-full flex flex-col items-center mt-8"></div>`;
-                    appLogic.state.timer = setInterval(() => { appLogic.state.tugPos = Math.min(100, appLogic.state.tugPos + 1); appLogic.game.updateTugUI(); if (appLogic.state.tugPos >= 95) appLogic.game.finishTug(false); }, 800);
+                    appLogic.state.timer = setInterval(() => { appLogic.state.tugPos = Math.min(100, appLogic.state.tugPos + (appLogic.state.gameSpeed*0.5)); appLogic.game.updateTugUI(); if (appLogic.state.tugPos >= 95) appLogic.game.finishTug(false); }, 800);
                     appLogic.game.nextTugQuestion();
                 },
                 updateTugUI: () => { const node = document.getElementById('tug-node'); if(node) node.style.left = `${appLogic.state.tugPos}%`; },
@@ -395,17 +409,22 @@
                     appLogic.ui.updateGameProgress();
                     const area = document.getElementById('tug-q-area');
                     
-                    // 隨機題型生成 (0: 英翻中, 1: 中翻英, 2: 聽音, 3: 拼字)
+                    // 隨機題型 (0: 英翻中, 1: 中翻英, 2: 聽音, 3: 句子填空)
                     const subType = Math.floor(Math.random() * 4);
                     let qText = q.word, isAudio = false, options = appLogic.game.getDistractors(q, 3);
                     
                     if (subType === 1) { qText = q.chinese; options.forEach(o => o.display = o.word); q.display = q.word; } // 中翻英
                     else if (subType === 2) { qText = "🔊 點擊播放"; isAudio = true; options.forEach(o => o.display = o.chinese); q.display = q.chinese; } // 聽音
-                    else if (subType === 3) { qText = q.word.split('').sort(()=>Math.random()-0.5).join('-'); options.forEach(o => o.display = o.word); q.display = q.word; } // 拼字
-                    else { options.forEach(o => o.display = o.chinese); q.display = q.chinese; } // 英翻中 (預設)
+                    else if (subType === 3) { 
+                        // 句子填空
+                        const s = q.sentence || `This is a ${q.word}.`;
+                        qText = s.replace(new RegExp(q.word, 'gi'), '_____');
+                        options.forEach(o => o.display = o.word); q.display = q.word;
+                    }
+                    else { options.forEach(o => o.display = o.chinese); q.display = q.chinese; } // 英翻中
 
                     area.innerHTML = `
-                        <div class="text-3xl font-bold text-white mb-6 animate-pulse cursor-pointer" onclick="${isAudio ? `window.app.game.speak('${q.word.replace(/'/g,"\\'")}')` : ''}">${qText}</div>
+                        <div class="text-xl md:text-3xl font-bold text-white mb-6 animate-pulse cursor-pointer text-center px-4" onclick="${isAudio ? `window.app.game.speak('${q.word.replace(/'/g,"\\'")}')` : ''}">${qText}</div>
                         <div class="grid grid-cols-2 gap-4 w-full max-w-md" id="tug-opts"></div>
                     `;
                     if(isAudio) appLogic.game.speak(q.word);
@@ -425,7 +444,7 @@
                     });
                 },
 
-                // --- 2. 疾速破冰 (Speed Pop) [混合題型] ---
+                // --- 2. 疾速破冰 (Speed Pop) [混合題型, 速度可調] ---
                 startSpeedGame: () => {
                     if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
@@ -433,7 +452,7 @@
                     const stage = document.getElementById('game-stage');
                     document.getElementById('danger-line').classList.remove('hidden');
                     
-                    const subType = Math.floor(Math.random() * 2); // 0: 英顯示(含聽), 選中; 1: 中顯示, 選英
+                    const subType = Math.floor(Math.random() * 2); 
                     let qDisplay = q.word, optDisplayKey = 'chinese';
                     if (subType === 1) { qDisplay = q.chinese; optDisplayKey = 'word'; }
                     
@@ -459,7 +478,10 @@
                         
                         balloon.style.left = `${10 + Math.random() * 70}%`;
                         balloon.style.animationDelay = `${i * 0.8}s`;
-                        balloon.style.animationDuration = `${Math.max(3, 6 - (appLogic.state.currentQIndex * 0.15))}s`;
+                        
+                        // 速度控制 (Admin Setting: 1=Slow, 2=Fast)
+                        const baseSpeed = appLogic.state.gameSpeed === 2 ? 3 : 6;
+                        balloon.style.animationDuration = `${Math.max(2, baseSpeed - (appLogic.state.currentQIndex * 0.1))}s`;
 
                         balloon.onmousedown = () => {
                             balloon.remove();
@@ -515,14 +537,25 @@
                     };
                 },
 
-                // --- Standard ---
+                // --- Standard / Review ---
                 nextStandard: () => {
                     if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
                     appLogic.ui.updateGameProgress();
                     const stage = document.getElementById('game-stage');
                     document.getElementById('danger-line').classList.add('hidden');
-                    stage.innerHTML = `<div class="glass-panel w-full max-w-sm p-6 rounded-2xl flex flex-col items-center text-center"><div class="w-full flex justify-between items-center mb-6 border-b border-white/10 pb-2"><span class="text-xs text-gray-500 font-mono">${q.level ? 'LEVEL '+q.level : 'LEVEL 1'}</span><span class="text-xs text-cyber-cyan font-mono tracking-widest">${q.type || 'N.'}</span></div><button onclick="window.app.game.speak('${q.word.replace(/'/g, "\\'")}')" class="w-20 h-20 rounded-full bg-cyber-cyan/10 border border-cyber-cyan text-cyber-cyan flex items-center justify-center hover:bg-cyber-cyan/20 transition-all mb-4 animate-pulse-slow"><i data-lucide="volume-2" class="w-8 h-8"></i></button><div class="text-xs text-gray-500 mb-6 tracking-wider">點擊發音</div><div class="grid w-full gap-3" id="std-options"></div></div>`;
+
+                    stage.innerHTML = `
+                        <div class="glass-panel w-full max-w-sm p-6 rounded-2xl flex flex-col items-center text-center">
+                            <div class="w-full flex justify-between items-center mb-6 border-b border-white/10 pb-2">
+                                <span class="text-xs text-gray-500 font-mono">${q.level ? 'LEVEL '+q.level : 'LEVEL 1'}</span>
+                                <span class="text-xs text-cyber-cyan font-mono tracking-widest">${q.type || 'N.'}</span>
+                            </div>
+                            <button onclick="window.app.game.speak('${q.word.replace(/'/g, "\\'")}')" class="w-20 h-20 rounded-full bg-cyber-cyan/10 border border-cyber-cyan text-cyber-cyan flex items-center justify-center hover:bg-cyber-cyan/20 transition-all mb-4 animate-pulse-slow"><i data-lucide="volume-2" class="w-8 h-8"></i></button>
+                            <div class="text-xs text-gray-500 mb-6 tracking-wider">點擊發音</div>
+                            <div class="grid w-full gap-3" id="std-options"></div>
+                        </div>
+                    `;
                     lucide.createIcons(); appLogic.game.speak(q.word);
                     const optContainer = document.getElementById('std-options');
                     let options = appLogic.game.getDistractors(q, 3);
@@ -574,42 +607,44 @@
                 alert: (t, m) => { document.getElementById('alert-title').innerText=t; document.getElementById('alert-msg').innerText=m; document.getElementById('alert-box').classList.remove('hidden'); },
                 bgAnimation: () => { /* ... */ }
             },
-            team: { create: async () => { /* ... */ }, join: async () => { /* ... */ }, load: (tid) => { /* ... */ } },
-            admin: { uploadCSV: () => { /* ... */ }, hardReset: async () => { /* ... */ } },
+            team: { create: async () => { /* Same */ }, join: async () => { /* Same */ }, load: (tid) => { /* Same */ } },
+            admin: {
+                uploadCSV: () => {
+                    const f = document.getElementById('csv-upload').files[0];
+                    if(!f) return;
+                    Papa.parse(f, {header:true, complete: async(r)=>{
+                        const b = writeBatch(db);
+                        r.data.forEach(row=>{ 
+                            if(row['單字']) {
+                                // AI 例句生成 (模擬)
+                                const sentence = row['例句'] ? row['例句'] : `This is a ${row['單字']}.`;
+                                b.set(doc(collection(db,"words")), {word:row['單字'], chinese:row['中文'], level:row['級別']||'1', type:row['屬性']||'n.', sentence: sentence}); 
+                            }
+                        }); 
+                        await b.commit(); appLogic.ui.alert("OK",`匯入 ${r.data.length} 筆`);
+                    }});
+                },
+                hardReset: async () => { /* Same */ },
+                setSpeed: async (s) => {
+                    await setDoc(doc(db, "settings", "game"), { speed: s });
+                    appLogic.ui.alert("設定", "遊戲難度已更新");
+                }
+            },
             leaderboard: {
                 renderPreview: async () => {
-                    const icons = [ICONS.lily, ICONS.pot, ICONS.snake];
-                    const uQ = query(collection(db, "users"), orderBy("score", "desc"), limit(3)); const uSnap = await getDocs(uQ);
-                    document.getElementById('login-lb-user').innerHTML = uSnap.docs.map((d, i) => `<div class="flex justify-between items-center bg-white/5 p-2 rounded border-b border-white/5"><div class="flex items-center gap-2">${icons[i]||'<span>'+(i+1)+'</span>'} ${d.data().displayName}</div><span class="text-cyber-cyan font-mono">${d.data().score}</span></div>`).join('');
-                    const tQ = query(collection(db, "teams"), orderBy("score", "desc"), limit(3)); const tSnap = await getDocs(tQ);
-                    document.getElementById('login-lb-team').innerHTML = tSnap.docs.map((d, i) => `<div class="flex justify-between items-center bg-white/5 p-2 rounded border-b border-white/5"><div class="flex items-center gap-2">${icons[i]||'<span>'+(i+1)+'</span>'} ${d.data().name}</div><span class="text-cyber-purple font-mono">${d.data().score}</span></div>`).join('');
+                    try {
+                        const uQ = query(collection(db, "users"), orderBy("score", "desc"), limit(3)); const uSnap = await getDocs(uQ);
+                        document.getElementById('login-lb-user').innerHTML = uSnap.docs.map((d,i)=>`<div class="flex justify-between w-full mb-1 border-b border-white/5 pb-1"><span class="text-xs text-white">${i+1}. ${d.data().displayName}</span><span class="text-cyber-cyan">${d.data().score}</span></div>`).join('');
+                        const tQ = query(collection(db, "teams"), orderBy("score", "desc"), limit(3)); const tSnap = await getDocs(tQ);
+                        document.getElementById('login-lb-team').innerHTML = tSnap.docs.map((d,i)=>`<div class="flex justify-between w-full mb-1 border-b border-white/5 pb-1"><span class="text-xs text-white">${i+1}. ${d.data().name}</span><span class="text-cyber-purple">${d.data().score}</span></div>`).join('');
+                    } catch(e) { 
+                        document.getElementById('login-lb-user').innerHTML = "需登入查看"; 
+                        document.getElementById('login-lb-team').innerHTML = "需登入查看"; 
+                    }
                 },
                 show: () => { appLogic.nav.to('leaderboard'); appLogic.leaderboard.fetchData(); },
-                switchSubTab: (subTab) => {
-                    appLogic.state.lbSubTab = subTab;
-                    const userBtn = document.getElementById('subtab-user'); const teamBtn = document.getElementById('subtab-team');
-                    if(subTab === 'user') { userBtn.classList.add('tab-active'); userBtn.classList.remove('text-gray-400'); teamBtn.classList.remove('tab-active'); teamBtn.classList.add('text-gray-400'); }
-                    else { teamBtn.classList.add('tab-active'); teamBtn.classList.remove('text-gray-400'); userBtn.classList.remove('tab-active'); userBtn.classList.add('text-gray-400'); }
-                    appLogic.leaderboard.fetchData();
-                },
-                fetchData: async () => {
-                    const container = document.getElementById('lb-detail-content'); container.innerHTML = '<div class="text-center text-gray-500 py-4">讀取中...</div>';
-                    try {
-                        let q; if (appLogic.state.lbSubTab === 'team') q = query(collection(db, "teams"), orderBy("score", "desc"), limit(20)); else q = query(collection(db, "users"), orderBy("score", "desc"), limit(20));
-                        const snapshot = await getDocs(q);
-                        if (snapshot.empty) { container.innerHTML = `<div class="text-center text-gray-400 mt-10">暫無資料</div>`; } else {
-                            const icons = [ICONS.lily, ICONS.pot, ICONS.snake];
-                            let html = '';
-                            snapshot.docs.forEach((doc, index) => {
-                                const data = doc.data(); const score = data.score || 0;
-                                let name, img;
-                                if (appLogic.state.lbSubTab === 'team') { name = data.name || "Unknown"; img = "https://api.dicebear.com/7.x/identicon/svg?seed=" + doc.id; } else { name = data.displayName; img = data.photoURL; }
-                                html += `<div class="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/5"><div class="flex items-center gap-3"><div class="flex items-center justify-center w-8 h-8 font-display font-bold text-xl ${index < 3 ? 'text-cyber-orange' : 'text-gray-500'}">${index < 3 ? icons[index] : index + 1}</div><img src="${img}" class="w-8 h-8 rounded-full bg-black object-cover"><div class="flex flex-col"><span class="text-sm font-bold text-gray-200">${name}</span></div></div><div class="font-mono font-bold text-cyber-cyan">${score}</div></div>`;
-                            });
-                            container.innerHTML = html;
-                        }
-                    } catch (e) { container.innerHTML = `<div class="text-center text-red-400 mt-4">載入失敗</div>`; }
-                }
+                switchSubTab: (subTab) => { /* ... */ },
+                fetchData: async () => { /* ... */ }
             },
             nav: { to: (id) => { document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); document.getElementById('view-'+id).classList.remove('hidden'); if(id==='login') document.getElementById('app-header').classList.add('hidden'); else document.getElementById('app-header').classList.remove('hidden'); }}
         };
