@@ -3,407 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PPSH Vocabulary Battle | 單字星際爭霸</title>
+    <title>屏北高中單字星際爭霸 | PPSH Vocab Galaxy</title>
     
-    <!-- 核心函式庫 -->
+    <!-- 程式庫 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <!-- 字體：科技感英文 + 現代黑體中文 -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- 字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Zen+Maru+Gothic:wght@400;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Tailwind Config -->
+    <!-- Tailwind 設定 -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        cyber: { 
-                            bg: '#0B0F19', // 更深沈的藍黑
-                            dark: '#1E293B',
-                            cyan: '#06B6D4', 
-                            purple: '#8B5CF6', 
-                            orange: '#F97316', 
-                            danger: '#EF4444',
-                            glass: 'rgba(15, 23, 42, 0.7)' 
-                        }
+                        cyber: { bg: '#0F172A', cyan: '#06B6D4', purple: '#8B5CF6', orange: '#FB923C', glass: 'rgba(30, 41, 59, 0.8)' }
                     },
-                    fontFamily: { 
-                        display: ['Orbitron', 'sans-serif'], 
-                        body: ['Noto Sans TC', 'sans-serif'] 
-                    },
-                    animation: { 
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'float': 'float 6s ease-in-out infinite'
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        }
-                    }
+                    fontFamily: { display: ['Orbitron', 'sans-serif'], body: ['Zen Maru Gothic', 'Noto Sans TC', 'sans-serif'] },
+                    animation: { 'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite', 'spin-slow': 'spin 3s linear infinite' }
                 }
             }
         }
     </script>
-
     <style>
-        body { 
-            background-color: #0B0F19; 
-            color: #E2E8F0; 
-            font-family: 'Noto Sans TC', sans-serif; 
-            min-height: 100vh; 
-            overflow-x: hidden; 
-            user-select: none;
-        }
-        
-        /* 版本號浮水印 */
-        .version-tag {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 10px;
-            color: rgba(255,255,255,0.2);
-            z-index: 9999;
-            pointer-events: none;
-        }
-
-        /* 玻璃擬態容器 - 更精緻的邊框 */
-        .glass-panel { 
-            background: rgba(30, 41, 59, 0.4); 
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08); 
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        }
-
-        /* 隱藏捲軸 */
+        body { background-color: #0F172A; color: white; font-family: 'Zen Maru Gothic', sans-serif; min-height: 100vh; overflow-x: hidden; }
+        .glass-panel { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); }
+        .neon-text { text-shadow: 0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(139, 92, 246, 0.5); }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
-
-        /* --- 遊戲特定樣式 --- */
-
-        /* 題型 A: 氣球下落動畫 */
-        @keyframes balloonFall {
-            0% { top: -100px; opacity: 0; transform: scale(0.8); }
-            10% { opacity: 1; transform: scale(1); }
-            100% { top: 90vh; opacity: 1; }
-        }
-        .balloon-item {
-            position: absolute;
-            animation-name: balloonFall;
-            animation-timing-function: linear;
-            cursor: pointer;
-            z-index: 50;
-            transition: transform 0.1s;
-        }
-        .balloon-item:active { transform: scale(0.9); filter: brightness(1.2); }
-
-        /* 題型 B: 3D 翻牌 */
-        .perspective-1000 { perspective: 1000px; }
-        .card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            transform-style: preserve-3d;
-        }
-        .card-flipped .card-inner { transform: rotateY(180deg); }
-        .card-front, .card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-        .card-front {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border: 1px solid rgba(6, 182, 212, 0.3);
-            color: #06B6D4;
-        }
-        .card-back {
-            background: linear-gradient(135deg, #4c1d95 0%, #2e1065 100%);
-            color: white;
-            transform: rotateY(180deg);
-            border: 1px solid #8B5CF6;
-        }
         
-        /* 霓虹狂熱模式背景 */
-        .neon-frenzy-bg {
-            background: linear-gradient(45deg, #ff00cc, #333399, #00ccff);
-            background-size: 400% 400%;
-            animation: gradientBG 5s ease infinite;
-        }
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+        /* 跑馬燈特效 */
+        .marquee-container { overflow: hidden; white-space: nowrap; position: relative; }
+        .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 20s linear infinite; }
+        @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+
+        /* 翻牌遊戲 */
+        .card-flip { perspective: 1000px; }
+        .card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; cursor: pointer; }
+        .card-inner.flipped { transform: rotateY(180deg); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; }
+        .card-front { background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: transparent; }
+        .card-back { background-color: #8B5CF6; color: white; transform: rotateY(180deg); border: 1px solid #A78BFA; }
+
+        /* 氣球 */
+        .balloon { position: absolute; cursor: pointer; user-select: none; transition: transform 0.1s; }
+        .balloon:active { transform: scale(0.95); }
     </style>
 </head>
 <body class="selection:bg-cyber-cyan selection:text-black">
 
-    <div class="version-tag">Ver 2.0.0</div>
     <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
-    
-    <!-- 霓虹狂熱層 (預設透明) -->
-    <div id="frenzy-layer" class="fixed inset-0 pointer-events-none opacity-0 transition-opacity duration-1000 mix-blend-overlay z-0"></div>
 
-    <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col z-10">
+    <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col">
         
-        <!-- HEADER -->
-        <header id="app-header" class="hidden p-4 flex justify-between items-center glass-panel sticky top-0 z-50 rounded-b-2xl mb-4 border-b-2 border-cyber-cyan/30">
-            <div class="flex flex-col leading-none">
-                <span class="text-[10px] text-cyber-cyan tracking-widest">PPSH GALAXY</span>
-                <span class="font-display font-bold text-lg text-white">BATTLE</span>
+        <!-- HEADER (登入後顯示) -->
+        <header id="app-header" class="hidden p-4 flex justify-between items-center glass-panel sticky top-0 z-50 rounded-b-2xl mb-4">
+            <div class="flex items-center gap-2">
+                <i data-lucide="zap" class="text-cyber-orange w-6 h-6"></i>
+                <h1 class="font-display font-bold text-lg tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-cyber-cyan to-cyber-purple">PPSH GALAXY</h1>
             </div>
             <div id="user-status" class="flex items-center gap-2">
-                <div class="text-right">
-                    <div class="text-[10px] text-gray-400">CREDITS</div>
-                    <span id="header-score" class="text-cyber-cyan font-bold font-mono text-lg">0</span>
-                </div>
-                <img id="header-avatar" src="" class="w-10 h-10 rounded-full border-2 border-cyber-purple bg-black object-cover">
+                <span id="header-score" class="text-cyber-cyan font-bold font-mono">0</span>
+                <img id="header-avatar" src="" class="w-8 h-8 rounded-full border border-cyber-purple bg-black object-cover">
             </div>
         </header>
 
-        <!-- VIEW 1: 登入頁面 (Redesigned) -->
+        <!-- VIEW 1: 全新登入頁面 -->
         <section id="view-login" class="flex-1 flex flex-col relative overflow-hidden">
-            <div class="flex-1 flex flex-col items-center justify-center p-8 text-center z-10">
-                <!-- Layer 1: 校名 -->
-                <div class="text-xs text-slate-500 tracking-[0.2em] mb-2 font-light">屏東縣立屏北高級中學</div>
-                
-                <!-- Layer 2: 英文主標 (Main Visual) -->
-                <h1 class="text-3xl font-display font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-purple-500 mb-1 drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-                    PPSH VOCABULARY<br>BATTLE
+            <!-- Hero Section -->
+            <div class="flex-1 flex flex-col items-center justify-center p-6 text-center z-10">
+                <div class="mb-6 relative">
+                    <div class="absolute inset-0 bg-cyber-cyan blur-[50px] opacity-20 rounded-full"></div>
+                    <!-- 校徽或 Logo 佔位 -->
+                    <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-900 to-slate-900 border-2 border-cyber-cyan flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(6,182,212,0.5)]">
+                        <span class="text-3xl">🚀</span>
+                    </div>
+                </div>
+                <h1 class="text-4xl font-display font-black text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan via-white to-cyber-purple neon-text mb-2">
+                    屏北高中<br>單字星際爭霸
                 </h1>
-                
-                <!-- Layer 3: 中文副標 (Secondary) -->
-                <div class="text-base text-slate-400 font-light tracking-[0.5em] border-t border-slate-800 pt-3 mt-3 w-full max-w-[200px] mx-auto">
-                    單字星際爭霸
-                </div>
+                <p class="text-gray-300 text-sm tracking-widest mb-8 border-b border-cyber-cyan pb-2">PPSH VOCABULARY BATTLE</p>
 
-                <!-- 裝飾性元素 -->
-                <div class="my-10 relative w-full h-32 flex items-center justify-center">
-                    <div class="absolute w-40 h-40 bg-cyber-purple/20 rounded-full blur-3xl animate-pulse-slow"></div>
-                    <!-- 排行榜預覽 (簡化版) -->
-                    <div class="glass-panel w-full p-4 rounded-xl relative z-10 transform rotate-1 hover:rotate-0 transition-transform duration-500">
-                        <div class="flex justify-between items-end border-b border-white/10 pb-2 mb-2">
-                            <span class="text-xs text-cyber-cyan font-bold">TOP COMMANDERS</span>
-                            <i data-lucide="bar-chart-2" class="w-4 h-4 text-gray-500"></i>
+                <!-- 互動排行榜預覽 -->
+                <div class="w-full grid grid-cols-2 gap-4 mb-8">
+                    <!-- 個人榜 -->
+                    <div class="glass-panel p-3 rounded-xl flex flex-col items-center">
+                        <h3 class="text-cyber-cyan font-bold text-sm mb-2">最強單字王</h3>
+                        <div id="login-lb-user" class="w-full space-y-2 text-xs">
+                            <div class="text-center text-gray-500 py-2">讀取中...</div>
                         </div>
-                        <div id="login-lb-preview" class="space-y-2 text-xs text-left">
-                            <div class="flex items-center gap-2"><span class="text-lg">🌺</span> <span class="text-gray-300">讀取中...</span></div>
+                    </div>
+                    <!-- 團體榜 -->
+                    <div class="glass-panel p-3 rounded-xl flex flex-col items-center">
+                        <h3 class="text-cyber-purple font-bold text-sm mb-2">最強戰隊</h3>
+                        <div id="login-lb-team" class="w-full space-y-2 text-xs">
+                            <div class="text-center text-gray-500 py-2">讀取中...</div>
                         </div>
                     </div>
                 </div>
 
-                <button onclick="window.app.auth.login()" class="group relative w-full py-4 bg-white/5 border border-white/10 rounded-none skew-x-[-10deg] hover:bg-white/10 transition-all overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                    <div class="skew-x-[10deg] flex items-center justify-center gap-3">
-                        <i data-lucide="log-in" class="w-5 h-5 text-cyber-cyan"></i>
-                        <span class="font-display font-bold tracking-widest text-white">GOOGLE LOGIN</span>
-                    </div>
+                <!-- 登入按鈕 -->
+                <button onclick="window.app.auth.login()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-cyber-purple rounded-xl font-bold text-lg shadow-[0_0_20px_rgba(6,182,212,0.6)] hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                    <i data-lucide="log-in"></i> 使用 Google 帳號登入
                 </button>
-                <p class="text-[10px] text-gray-600 mt-3 font-mono tracking-wide">RESTRICTED: @ppsh.ptc.edu.tw</p>
+                <p class="text-[10px] text-gray-500 mt-2">僅限 @ppsh.ptc.edu.tw 網域使用</p>
             </div>
 
             <!-- 底部跑馬燈 -->
-            <div class="bg-black/80 border-t border-white/5 py-2 absolute bottom-0 w-full z-20 backdrop-blur-sm">
+            <div class="bg-black/50 border-t border-white/10 py-2 absolute bottom-0 w-full z-20">
                 <div class="marquee-container">
-                    <div id="ticker-content" class="marquee-content text-xs text-slate-400 font-mono flex gap-8">
-                        <!-- JS 動態填入 -->
+                    <div id="ticker-content" class="marquee-content text-xs text-cyber-cyan font-mono">
+                        🚀 系統公告：歡迎來到屏北單字宇宙... 🌟 205班 小明 剛剛獲得了 500 分！ 🛡️ 屏北戰隊 連勝 10 場！
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- VIEW 2: Dashboard -->
-        <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6 pb-20">
-            <!-- User Status Card -->
-            <div class="glass-panel p-5 rounded-xl relative overflow-hidden">
-                <div class="absolute -right-4 -top-4 w-24 h-24 bg-cyber-cyan/10 rounded-full blur-xl"></div>
-                <h2 id="dash-name" class="text-xl font-bold text-white relative z-10">學員載入中...</h2>
-                <p id="dash-team" class="text-xs text-gray-400 mt-1 relative z-10">NO TEAM</p>
-                
-                <div class="mt-4 pt-4 border-t border-white/10 flex gap-2">
-                    <button onclick="window.app.team.create()" class="flex-1 py-2 bg-cyber-cyan/10 border border-cyber-cyan/30 rounded text-xs text-cyber-cyan hover:bg-cyber-cyan/20 transition-colors">建立隊伍</button>
-                    <button onclick="window.app.team.join()" class="flex-1 py-2 bg-cyber-purple/10 border border-cyber-purple/30 rounded text-xs text-cyber-purple hover:bg-cyber-purple/20 transition-colors">輸入代碼</button>
+        <!-- VIEW 2: Dashboard (與之前相同，保留功能) -->
+        <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6">
+            <div class="glass-panel rounded-2xl p-5 relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 id="dash-name" class="text-xl font-bold">同學</h2>
+                        <p id="dash-team" class="text-sm text-gray-400 mt-1">尚未加入隊伍</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-display font-bold text-cyber-orange" id="dash-total-score">0</div>
+                        <div class="text-[10px] text-gray-500">CREDITS</div>
+                    </div>
                 </div>
-                <div id="team-info-box" class="hidden mt-3 p-2 bg-black/30 rounded text-xs text-center border border-white/5">
-                    代碼: <span id="team-code-display" class="font-mono text-white font-bold select-all cursor-pointer"></span>
+                <div id="team-action-area" class="mt-4 pt-4 border-t border-gray-700 grid grid-cols-2 gap-3">
+                    <button onclick="window.app.team.create()" class="py-2 bg-white/5 rounded text-sm text-cyber-cyan border border-cyber-cyan/30">建立隊伍</button>
+                    <button onclick="window.app.team.join()" class="py-2 bg-white/5 rounded text-sm text-cyber-purple border border-cyber-purple/30">加入隊伍</button>
+                </div>
+                <div id="team-status-area" class="hidden mt-4 pt-4 border-t border-gray-700">
+                    <div class="text-xs text-gray-400 mb-2">隊伍碼: <span id="team-code-display" class="text-white font-mono font-bold select-all"></span></div>
+                    <div id="team-members-list" class="flex -space-x-2"></div>
                 </div>
             </div>
 
-            <!-- Game Modes -->
-            <div class="space-y-6">
-                <!-- Solo -->
-                <div>
-                    <h3 class="text-[10px] font-display text-gray-500 tracking-[0.2em] mb-3 uppercase">Solo Mission</h3>
-                    <div class="grid gap-3">
-                        <div onclick="window.app.game.setup('practice', 'standard')" class="glass-panel p-4 rounded-xl flex items-center justify-between cursor-pointer hover:bg-white/5 border-l-2 border-cyber-cyan group transition-all">
+            <div class="space-y-4 pb-20">
+                <h3 class="font-display text-cyber-cyan text-sm tracking-widest border-b border-gray-700 pb-2">個人挑戰區 (SOLO)</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div onclick="window.app.game.setup('practice', 'match')" class="glass-panel p-3 rounded-xl hover:bg-white/10 cursor-pointer border-l-2 border-green-400">
+                        <i data-lucide="link" class="mb-2 text-green-400"></i>
+                        <h4 class="font-bold text-sm">配對遊戲</h4>
+                        <p class="text-[10px] text-gray-400">Match</p>
+                    </div>
+                    <div onclick="window.app.game.setup('practice', 'wheel')" class="glass-panel p-3 rounded-xl hover:bg-white/10 cursor-pointer border-l-2 border-yellow-400">
+                        <i data-lucide="aperture" class="mb-2 text-yellow-400"></i>
+                        <h4 class="font-bold text-sm">命運輪盤</h4>
+                        <p class="text-[10px] text-gray-400">Wheel</p>
+                    </div>
+                    <div onclick="window.app.game.setup('practice', 'audio')" class="glass-panel p-3 rounded-xl hover:bg-white/10 cursor-pointer border-l-2 border-blue-400 col-span-2">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="headphones" class="text-blue-400"></i>
                             <div>
-                                <h4 class="font-bold text-gray-200 group-hover:text-cyber-cyan">自主訓練 (Self-Study)</h4>
-                                <p class="text-[10px] text-gray-500 mt-1">聽音/拼字/配對 • 自選題數</p>
+                                <h4 class="font-bold text-sm">聽音辨義 (標準)</h4>
+                                <p class="text-[10px] text-gray-400">Audio Quiz</p>
                             </div>
-                            <i data-lucide="book-open" class="text-gray-600 group-hover:text-cyber-cyan"></i>
                         </div>
                     </div>
                 </div>
 
-                <!-- Team -->
-                <div>
-                    <h3 class="text-[10px] font-display text-gray-500 tracking-[0.2em] mb-3 uppercase">Team Battle</h3>
-                    <div class="grid gap-3">
-                        <!-- Speed Pop -->
-                        <div onclick="window.app.game.setup('ranked', 'speed')" class="glass-panel p-4 rounded-xl flex items-center justify-between cursor-pointer hover:bg-white/5 border-l-2 border-red-500 group relative overflow-hidden">
-                            <div class="relative z-10">
-                                <h4 class="font-bold text-gray-200 group-hover:text-red-400">疾速破冰 (Speed Pop)</h4>
-                                <p class="text-[10px] text-gray-500 mt-1">氣球反應 • 積分衝刺</p>
-                            </div>
-                            <i data-lucide="zap" class="text-gray-600 group-hover:text-red-500 relative z-10"></i>
-                            <div class="absolute inset-0 bg-gradient-to-r from-red-900/0 to-red-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <h3 class="font-display text-cyber-purple text-sm tracking-widest border-b border-gray-700 pb-2">團體競技區 (TEAM)</h3>
+                <div class="grid grid-cols-1 gap-3">
+                    <div onclick="window.app.game.setup('ranked', 'speed')" class="glass-panel p-3 rounded-xl hover:bg-white/10 cursor-pointer border-l-4 border-red-500 flex justify-between items-center group">
+                        <div>
+                            <h4 class="font-bold text-red-400 group-hover:text-red-300">🎈 疾速破冰 (Speed Pop)</h4>
+                            <p class="text-[10px] text-gray-400">氣球掉落 • 反應極限</p>
                         </div>
-
-                        <!-- Memory -->
-                        <div onclick="window.app.game.setup('ranked', 'memory')" class="glass-panel p-4 rounded-xl flex items-center justify-between cursor-pointer hover:bg-white/5 border-l-2 border-cyber-purple group relative overflow-hidden">
-                            <div class="relative z-10">
-                                <h4 class="font-bold text-gray-200 group-hover:text-cyber-purple">記憶配對 (Memory)</h4>
-                                <p class="text-[10px] text-gray-500 mt-1">翻牌合作 • 能量收集</p>
-                            </div>
-                            <i data-lucide="grid" class="text-gray-600 group-hover:text-cyber-purple relative z-10"></i>
-                        </div>
+                        <i data-lucide="zap" class="text-red-500"></i>
                     </div>
+                    <div onclick="window.app.game.setup('ranked', 'memory')" class="glass-panel p-3 rounded-xl hover:bg-white/10 cursor-pointer border-l-4 border-purple-500 flex justify-between items-center group">
+                        <div>
+                            <h4 class="font-bold text-purple-400 group-hover:text-purple-300">🎴 記憶配對 (Memory)</h4>
+                            <p class="text-[10px] text-gray-400">翻牌記憶 • 團隊合作</p>
+                        </div>
+                        <i data-lucide="grid" class="text-purple-500"></i>
+                    </div>
+                </div>
+
+                <div onclick="window.app.leaderboard.show()" class="glass-panel p-3 rounded-xl border border-cyber-cyan/30 text-center cursor-pointer hover:bg-cyber-cyan/10">
+                    <span class="text-sm font-bold text-cyber-cyan"><i data-lucide="bar-chart-2" class="inline w-4 h-4 mr-1"></i> 進入戰情中心</span>
                 </div>
             </div>
 
-            <!-- Admin Button (Hidden) -->
-            <button id="admin-btn" onclick="window.app.nav.to('admin')" class="hidden fixed bottom-4 right-4 p-3 bg-gray-800 rounded-full text-gray-400 hover:text-white shadow-lg border border-gray-700 z-50">
-                <i data-lucide="settings" class="w-4 h-4"></i>
+            <button id="admin-btn" onclick="window.app.nav.to('admin')" class="hidden fixed bottom-4 right-4 bg-gray-800 p-2 rounded-full text-gray-400 hover:text-white shadow-lg border border-gray-600 z-50">
+                <i data-lucide="settings"></i>
             </button>
         </section>
 
-        <!-- VIEW 3: Setup (Config) -->
-        <section id="view-setup" class="hidden flex-1 flex flex-col p-4 gap-6 justify-center">
-            <h2 class="text-2xl font-display font-bold text-center text-white">MISSION CONFIG</h2>
-            <div class="glass-panel p-6 rounded-2xl space-y-6">
-                <!-- Level Select -->
-                <div>
-                    <label class="block text-xs text-gray-400 mb-2 uppercase">Target Sector</label>
-                    <select id="setup-level" class="w-full bg-black/30 border border-gray-600 rounded p-3 text-sm text-white focus:border-cyber-cyan outline-none">
-                        <option value="all">全宇宙 (All Levels)</option>
-                        <option value="1">Level 1</option>
-                        <option value="2">Level 2</option>
-                        <option value="3">Level 3</option>
-                        <option value="4">Level 4</option>
-                        <option value="5">Level 5</option>
-                        <option value="6">Level 6</option>
-                    </select>
-                </div>
-                
-                <!-- Count Slider (Fixed) -->
-                <div id="setup-count-group">
-                    <label class="block text-xs text-gray-400 mb-2 uppercase flex justify-between">
-                        <span>選擇題數</span>
-                        <span id="count-val" class="text-cyber-cyan font-bold">10</span>
-                    </label>
-                    <input type="range" id="setup-count" min="10" max="30" step="5" value="10" class="w-full accent-cyber-cyan h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer" oninput="document.getElementById('count-val').innerText = this.value">
-                    <div class="flex justify-between text-[10px] text-gray-600 mt-1"><span>10</span><span>30</span></div>
-                </div>
-
-                <div class="space-y-3 pt-4">
-                    <button onclick="window.app.game.start()" class="w-full py-3 bg-cyber-cyan text-black font-bold rounded hover:bg-cyan-400 transition-colors shadow-[0_0_15px_rgba(6,182,212,0.4)]">INITIATE</button>
-                    <button onclick="window.app.nav.to('dashboard')" class="w-full py-3 text-gray-500 text-sm hover:text-white">ABORT</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW 4: Game Container -->
-        <section id="view-game" class="hidden flex-1 flex flex-col relative overflow-hidden bg-black/40">
-            <!-- Top HUD -->
-            <div class="absolute top-0 left-0 w-full p-4 z-20 flex justify-between items-start pointer-events-none">
-                <button onclick="window.app.game.quit()" class="pointer-events-auto text-white/50 hover:text-white p-2 bg-black/20 rounded-full backdrop-blur-sm"><i data-lucide="x"></i></button>
-                
+        <!-- VIEW: Game Container -->
+        <section id="view-game" class="hidden flex-1 flex flex-col relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full p-4 z-20 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent">
+                <button onclick="window.app.nav.to('dashboard')" class="text-white bg-white/10 p-2 rounded-full"><i data-lucide="arrow-left"></i></button>
                 <div class="flex flex-col items-center">
-                    <div id="game-mode-label" class="text-[10px] font-display text-cyber-cyan tracking-widest mb-1">MODE</div>
-                    <div class="w-24 h-1.5 bg-gray-800 rounded-full overflow-hidden border border-white/10">
-                        <div id="game-progress" class="h-full bg-gradient-to-r from-cyber-cyan to-blue-500 w-0 transition-all duration-300"></div>
+                    <span id="game-type-label" class="text-[10px] text-cyber-cyan uppercase tracking-widest">MODE</span>
+                    <div class="w-32 h-1 bg-gray-800 rounded-full mt-1 overflow-hidden">
+                        <div id="game-progress" class="h-full bg-cyber-cyan w-0 transition-all duration-300"></div>
                     </div>
                 </div>
-
-                <div class="text-right">
-                    <div class="text-[10px] text-gray-500">SCORE</div>
-                    <div id="in-game-score" class="text-xl font-display font-bold text-cyber-orange">0</div>
-                </div>
+                <div class="text-xl font-bold font-mono text-cyber-orange" id="in-game-score">0</div>
             </div>
-
-            <!-- Game Stage (Dynamic) -->
-            <div id="game-stage" class="flex-1 w-full h-full relative flex flex-col items-center justify-center p-4">
-                <!-- Content injected by JS -->
-            </div>
-
-            <!-- Danger Line (Speed Pop Only) -->
-            <div id="danger-line" class="hidden absolute bottom-0 left-0 w-full h-2 bg-gradient-to-t from-red-600 to-transparent z-10 animate-pulse"></div>
+            <div id="game-stage" class="flex-1 w-full h-full relative flex flex-col items-center justify-center p-4 pt-20"></div>
         </section>
 
-        <!-- VIEW 5: Result -->
-        <section id="view-result" class="hidden flex-1 flex flex-col p-6 items-center justify-center gap-8 relative">
-            <div class="text-center space-y-2 z-10">
-                <h2 class="text-3xl font-display font-bold text-white neon-text">MISSION COMPLETE</h2>
-                <div class="text-sm text-gray-400 tracking-widest">本次戰果報告</div>
-            </div>
-
-            <div class="glass-panel w-full max-w-sm p-8 rounded-2xl text-center space-y-6 z-10 border-t-4 border-cyber-cyan">
-                <div>
-                    <div class="text-xs text-gray-500 uppercase tracking-widest mb-1">Total Score</div>
-                    <div class="text-6xl font-display font-bold text-white drop-shadow-lg" id="res-score">0</div>
-                </div>
-                
-                <div id="res-stats" class="grid grid-cols-2 gap-4 text-xs">
-                    <div class="bg-white/5 p-2 rounded">正確率: <span id="res-accuracy" class="text-cyber-cyan font-bold">100%</span></div>
-                    <div class="bg-white/5 p-2 rounded">連擊: <span id="res-streak" class="text-cyber-orange font-bold">0</span></div>
-                </div>
-
-                <!-- 錯題按鈕 (JS 控制顯示) -->
-                <button id="btn-review-wrong" onclick="window.app.game.startWrongReview()" class="hidden w-full py-2 bg-red-900/30 border border-red-500/50 text-red-300 rounded text-xs hover:bg-red-900/50 flex items-center justify-center gap-2">
-                    <i data-lucide="alert-circle" class="w-3 h-3"></i> 特訓錯題 (<span id="wrong-count">0</span>)
-                </button>
-
-                <div class="grid grid-cols-2 gap-3 pt-4 border-t border-white/10">
-                    <button onclick="window.app.nav.to('dashboard')" class="py-3 bg-gray-700/50 rounded font-bold text-sm hover:bg-gray-700">回首頁</button>
-                    <button onclick="window.app.game.setup(window.app.state.mode, window.app.state.gameType)" class="py-3 bg-cyber-purple text-white rounded font-bold text-sm hover:bg-purple-600 shadow-lg">再玩一次</button>
-                </div>
+        <!-- VIEW: Setup -->
+        <section id="view-setup" class="hidden flex-1 flex flex-col p-4 gap-6 justify-center">
+            <h2 class="text-2xl font-bold text-center">設定挑戰</h2>
+            <div class="glass-panel p-6 rounded-2xl space-y-6">
+                <select id="setup-level" class="w-full bg-slate-800 border border-gray-600 rounded p-3"><option value="all">全宇宙 (All)</option><option value="1">L1</option><option value="2">L2</option><option value="3">L3</option><option value="4">L4</option><option value="5">L5</option><option value="6">L6</option></select>
+                <div id="setup-count-group"><label class="block text-xs text-gray-400">題數: <span id="count-val">10</span></label><input type="range" id="setup-count" min="5" max="50" step="5" value="10" class="w-full"></div>
+                <button onclick="window.app.game.start()" class="w-full py-3 bg-cyber-cyan text-black font-bold rounded">開始</button>
+                <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 text-gray-400 text-sm">取消</button>
             </div>
         </section>
 
-        <!-- VIEW 6: Admin -->
+        <!-- VIEW: Result -->
+        <section id="view-result" class="hidden flex-1 flex flex-col p-6 items-center justify-center gap-6">
+            <h2 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan to-cyber-purple">任務完成</h2>
+            <div class="glass-panel w-full p-6 rounded-2xl text-center space-y-4">
+                <div class="text-6xl font-display font-bold text-cyber-cyan" id="res-score">0</div>
+                <div class="grid grid-cols-2 gap-4 mt-4"><button onclick="window.app.nav.to('dashboard')" class="py-3 bg-white/10 rounded">回首頁</button><button onclick="window.app.game.setup(window.app.state.mode, window.app.state.gameType)" class="py-3 bg-cyber-purple rounded">再玩一次</button></div>
+            </div>
+        </section>
+
+        <!-- VIEW: Leaderboard -->
+        <section id="view-leaderboard" class="hidden flex-1 flex flex-col p-4 gap-4">
+             <div class="flex justify-between items-center"><h2 class="text-xl font-bold">戰情中心</h2><button onclick="window.app.nav.to('dashboard')"><i data-lucide="x"></i></button></div>
+             <div class="glass-panel p-2 rounded-xl flex gap-2"><button id="subtab-user" onclick="window.app.leaderboard.switchSubTab('user')" class="flex-1 py-2 rounded text-xs font-bold tab-active">個人</button><button id="subtab-team" onclick="window.app.leaderboard.switchSubTab('team')" class="flex-1 py-2 rounded text-xs font-bold text-gray-400">團隊</button></div>
+             <div id="lb-detail-content" class="flex-1 overflow-y-auto space-y-2"></div>
+        </section>
+
+        <!-- VIEW: Admin -->
         <section id="view-admin" class="hidden flex-1 flex flex-col p-4 gap-4">
-            <h2 class="text-xl font-bold text-cyber-orange flex gap-2 items-center"><i data-lucide="shield-alert"></i> ADMIN CONSOLE</h2>
+            <h2 class="text-xl font-bold text-cyber-orange">管理員控制台</h2>
             <div class="glass-panel p-4 rounded-xl space-y-4">
-                <input type="file" id="csv-upload" accept=".csv" class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-cyber-purple file:text-white"/>
-                <button onclick="window.app.admin.uploadCSV()" class="w-full py-2 bg-blue-600 rounded text-sm font-bold">Process Upload</button>
-                <button onclick="window.app.admin.hardReset()" class="w-full py-3 bg-red-900 text-red-100 font-bold rounded text-sm border border-red-500">SYSTEM HARD RESET</button>
-                <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 bg-gray-700 rounded text-sm">Exit</button>
+                <input type="file" id="csv-upload" accept=".csv" class="block w-full text-xs text-gray-400 file:bg-cyber-purple file:text-white"/>
+                <button onclick="window.app.admin.uploadCSV()" class="w-full py-2 bg-blue-600 rounded text-sm font-bold">匯入 CSV</button>
+                <button onclick="window.app.admin.hardReset()" class="w-full py-3 bg-red-600 text-white font-bold rounded text-sm mt-2">⚠️ 系統硬重置</button>
+                <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 bg-gray-700 rounded text-sm">離開</button>
             </div>
         </section>
 
     </div>
 
-    <!-- Alert Modal -->
-    <div id="alert-box" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
-        <div class="glass-panel p-6 rounded-xl max-w-xs w-full text-center border border-cyber-cyan/30 shadow-[0_0_50px_rgba(6,182,212,0.2)]">
-            <h3 id="alert-title" class="text-lg font-bold mb-2 text-white">Message</h3>
-            <p id="alert-msg" class="text-gray-300 text-sm mb-6 leading-relaxed"></p>
-            <button onclick="document.getElementById('alert-box').classList.add('hidden')" class="px-6 py-2 bg-cyber-cyan text-black font-bold rounded w-full hover:bg-cyan-400">ACKNOWLEDGED</button>
+    <!-- Alert Box -->
+    <div id="alert-box" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 hidden">
+        <div class="glass-panel p-6 rounded-2xl max-w-xs w-full text-center border border-cyber-cyan/50">
+            <h3 id="alert-title" class="text-xl font-bold mb-2 text-cyber-cyan">訊息</h3>
+            <p id="alert-msg" class="text-gray-300 text-sm mb-4"></p>
+            <button onclick="document.getElementById('alert-box').classList.add('hidden')" class="px-6 py-2 bg-cyber-cyan text-black font-bold rounded w-full">確認</button>
         </div>
     </div>
 
@@ -412,7 +266,6 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
         import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, addDoc, query, where, getDocs, onSnapshot, limit, orderBy, increment, serverTimestamp, writeBatch, arrayUnion, deleteDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-        // Config Placeholder
         const firebaseConfig = {
             apiKey: "AIzaSyCQC4nD1ceknWbYq0DwY461XgPMSpzxzoE",
             authDomain: "ppsh-vocab-battle.firebaseapp.com",
@@ -429,32 +282,29 @@
         const googleProvider = new GoogleAuthProvider();
         lucide.createIcons();
 
-        // Cultural Icons SVG
-        const ICONS = {
-            lily: `<svg viewBox="0 0 100 100" class="w-5 h-5 inline drop-shadow"><path d="M50 20 C60 5 80 20 50 50 C20 20 40 5 50 20 Z" fill="#fff"/><path d="M50 80 C40 95 20 80 50 50 C80 80 60 95 50 80 Z" fill="#fff"/><path d="M20 50 C5 40 20 20 50 50 C20 80 5 60 20 50 Z" fill="#fff"/><path d="M80 50 C95 60 80 80 50 50 C80 20 95 40 80 50 Z" fill="#fff"/><circle cx="50" cy="50" r="6" fill="#DC2626"/></svg>`,
-            pot: `<svg viewBox="0 0 100 100" class="w-5 h-5 inline drop-shadow"><path d="M30 30 Q50 90 70 30 L60 20 L40 20 Z" fill="#5D4037"/><circle cx="50" cy="40" r="8" fill="none" stroke="#222" stroke-dasharray="2"/></svg>`,
-            snake: `<svg viewBox="0 0 100 100" class="w-5 h-5 inline drop-shadow"><path d="M20 50 L35 30 L50 50 L65 30 L80 50 L65 70 L50 50 L35 70 Z" fill="#111" stroke="#fff" stroke-width="3"/></svg>`
+        // ----------------------------------------------------
+        // Cultural Icons (SVG Definitions)
+        // 1. Lily (White petals, red center)
+        // 2. Clay Pot (Dark, ancient style)
+        // 3. Snake (Black and white geometric/triangle pattern)
+        // ----------------------------------------------------
+        const CULTURAL_ICONS = {
+            lily: `<svg viewBox="0 0 100 100" class="w-6 h-6 inline-block drop-shadow-md"><path d="M50 20 C60 5 80 20 50 50 C20 20 40 5 50 20 Z" fill="#fff" /><path d="M50 80 C40 95 20 80 50 50 C80 80 60 95 50 80 Z" fill="#fff" /><path d="M20 50 C5 40 20 20 50 50 C20 80 5 60 20 50 Z" fill="#fff" /><path d="M80 50 C95 60 80 80 50 50 C80 20 95 40 80 50 Z" fill="#fff" /><circle cx="50" cy="50" r="8" fill="#FF4500" /></svg>`,
+            
+            pot: `<svg viewBox="0 0 100 100" class="w-6 h-6 inline-block drop-shadow-md"><path d="M30 30 Q50 90 70 30 L60 20 L40 20 Z" fill="#5D4037" stroke="#3E2723" stroke-width="2"/><circle cx="50" cy="40" r="10" fill="none" stroke="#222" stroke-dasharray="2,2"/></svg>`,
+            
+            snake: `<svg viewBox="0 0 100 100" class="w-6 h-6 inline-block drop-shadow-md"><path d="M20 50 L35 30 L50 50 L65 30 L80 50 L65 70 L50 50 L35 70 Z" fill="#fff" stroke="black" stroke-width="2"/><rect x="10" y="45" width="80" height="10" fill="black" style="mix-blend-mode: overlay;"/></svg>`
         };
 
         const appLogic = {
-            state: { 
-                user: null, team: null, words: [], 
-                quizList: [], wrongList: [], currentQIndex: 0, 
-                score: 0, streak: 0, correctCount: 0,
-                mode: 'practice', gameType: 'standard', 
-                timer: null 
-            },
+            state: { user: null, team: null, words: [], quizList: [], currentQIndex: 0, score: 0, mode: 'practice', gameType: 'audio', lbSubTab: 'user' },
             
             init: () => {
                 appLogic.ui.bgAnimation();
                 appLogic.ui.startTicker();
-                
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
-                        if (!user.email.endsWith("@ppsh.ptc.edu.tw")) { 
-                            appLogic.ui.alert("存取被拒", "僅限 @ppsh.ptc.edu.tw 網域"); 
-                            await signOut(auth); return; 
-                        }
+                        if (!user.email.endsWith("@ppsh.ptc.edu.tw")) { appLogic.ui.alert("存取被拒", "僅限 @ppsh.ptc.edu.tw"); await signOut(auth); return; }
                         if (["fuwen@ppsh.ptc.edu.tw"].includes(user.email)) document.getElementById('admin-btn').classList.remove('hidden');
                         
                         const userRef = doc(db, "users", user.uid);
@@ -474,242 +324,280 @@
                     }
                 });
             },
-            
             auth: { login: () => signInWithPopup(auth, googleProvider).catch(e => appLogic.ui.alert("錯誤", e.message)) },
-
-            // --- 核心遊戲引擎 ---
+            
             game: {
                 setup: async (mode, type) => {
                     appLogic.state.mode = mode;
                     appLogic.state.gameType = type;
                     
-                    // 若是錯題特訓模式，跳過 Setup
-                    if (mode === 'review') {
-                        appLogic.game.start();
-                        return;
-                    }
-
-                    // 確保有單字
                     if (appLogic.state.words.length === 0) {
-                        const q = query(collection(db, "words"), limit(600));
+                        const q = query(collection(db, "words"), limit(500));
                         const snapshot = await getDocs(q);
                         appLogic.state.words = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                        if (appLogic.state.words.length === 0) { appLogic.ui.alert("系統", "無單字資料，請聯絡管理員"); return; }
+                        if (appLogic.state.words.length === 0) { appLogic.ui.alert("提示", "無單字資料"); return; }
                     }
-                    
                     document.getElementById('setup-count-group').style.display = mode === 'ranked' ? 'none' : 'block';
                     appLogic.nav.to('setup');
                 },
 
                 start: () => {
-                    // 初始化變數
-                    appLogic.state.currentQIndex = 0;
-                    appLogic.state.score = 0;
-                    appLogic.state.streak = 0;
-                    appLogic.state.correctCount = 0;
-                    appLogic.state.wrongList = []; // 重置錯題列表 (除非是特訓模式)
+                    const level = document.getElementById('setup-level').value;
+                    const count = appLogic.state.mode === 'ranked' ? 20 : parseInt(document.getElementById('setup-count').value);
                     
-                    if (appLogic.state.mode !== 'review') {
-                        // 正常選題
-                        const level = document.getElementById('setup-level').value;
-                        const countVal = appLogic.state.mode === 'ranked' ? 20 : parseInt(document.getElementById('setup-count').value);
-                        
-                        let pool = appLogic.state.words.filter(w => {
-                            if (level === 'all') return true;
-                            if (level.includes('-')) { const [min, max] = level.split('-').map(Number); return parseInt(w.level) >= min && parseInt(w.level) <= max; }
-                            return w.level === level;
-                        });
-                        if (pool.length < 5) pool = appLogic.state.words; // Fallback
-                        pool.sort(() => Math.random() - 0.5);
-                        appLogic.state.quizList = pool.slice(0, countVal);
-                    } 
-                    // else: review mode uses existing quizList which is already set to wrongList
+                    let pool = appLogic.state.words.filter(w => {
+                        if (level === 'all') return true;
+                        if (level.includes('-')) { const [min, max] = level.split('-').map(Number); return parseInt(w.level) >= min && parseInt(w.level) <= max; }
+                        return w.level === level;
+                    });
+                    if (pool.length < 5) pool = appLogic.state.words;
+                    pool.sort(() => Math.random() - 0.5);
+                    appLogic.state.quizList = pool.slice(0, count);
+                    appLogic.state.currentQIndex = 0; 
+                    appLogic.state.score = 0; 
 
                     appLogic.nav.to('game');
-                    document.getElementById('game-mode-label').innerText = appLogic.state.gameType.toUpperCase();
-                    document.getElementById('in-game-score').innerText = "0";
-                    document.getElementById('danger-line').classList.add('hidden'); // Reset UI
-
-                    // 根據類型啟動
-                    if (appLogic.state.gameType === 'speed') appLogic.game.startSpeedGame();
-                    else if (appLogic.state.gameType === 'memory') appLogic.game.startMemoryGame();
-                    else appLogic.game.nextStandard(); // standard/review uses standard renderer
-                },
-
-                quit: () => {
-                    if(appLogic.state.timer) clearInterval(appLogic.state.timer);
-                    gsap.killTweensOf("*");
-                    appLogic.nav.to('dashboard');
-                },
-
-                // ---------------------------
-                // 題型 A: 疾速破冰 (Speed Pop)
-                // ---------------------------
-                startSpeedGame: () => {
-                    if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
+                    document.getElementById('game-type-label').innerText = appLogic.state.gameType;
                     
+                    if (appLogic.state.gameType === 'match') appLogic.game.startMatchGame();
+                    else if (appLogic.state.gameType === 'wheel') appLogic.game.startWheelGame();
+                    else if (appLogic.state.gameType === 'speed') appLogic.game.startSpeedGame();
+                    else if (appLogic.state.gameType === 'memory') appLogic.game.startMemoryGame();
+                    else appLogic.game.nextStandard(); 
+                },
+
+                // 1. Standard/Audio
+                nextStandard: () => {
+                    if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
                     appLogic.ui.updateGameProgress();
-                    
+                    appLogic.game.renderStandard(q);
+                },
+                renderStandard: (q) => {
                     const stage = document.getElementById('game-stage');
-                    document.getElementById('danger-line').classList.remove('hidden'); // Show danger line
-                    
-                    // 清空舞台並設置中心題目
                     stage.innerHTML = `
-                        <div class="z-0 pointer-events-none flex flex-col items-center animate-pulse-slow">
-                            <div class="text-4xl md:text-6xl font-display font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 drop-shadow-2xl">
-                                ${q.word}
-                            </div>
-                            <div class="text-xs text-cyber-cyan mt-2 tracking-[0.5em] opacity-70">${q.type}</div>
+                        <div id="q-card" class="glass-panel w-full p-6 rounded-2xl flex flex-col items-center justify-center text-center min-h-[300px]">
+                            <button onclick="window.app.game.speak('${q.word.replace(/'/g, "\\'")}')" class="w-24 h-24 rounded-full bg-cyber-cyan/10 border border-cyber-cyan text-cyber-cyan flex items-center justify-center animate-pulse-fast mb-4"><i data-lucide="volume-2" class="w-10 h-10"></i></button>
+                            <div class="grid w-full gap-3 mt-4" id="options-grid"></div>
                         </div>
-                        <div id="balloon-container" class="absolute inset-0 w-full h-full overflow-hidden"></div>
+                    `;
+                    lucide.createIcons();
+                    appLogic.game.speak(q.word);
+                    const optsDiv = document.getElementById('options-grid');
+                    let choices = appLogic.game.getDistractors(q);
+                    choices.forEach(c => {
+                        const btn = document.createElement('button');
+                        btn.className = "w-full py-4 bg-white/5 rounded-xl border border-gray-600 hover:border-cyber-cyan font-bold text-lg";
+                        btn.innerText = c.chinese;
+                        btn.onclick = () => appLogic.game.checkStandard(c.id === q.id);
+                        optsDiv.appendChild(btn);
+                    });
+                },
+                checkStandard: (isCorrect) => {
+                    if (isCorrect) {
+                        appLogic.state.score += 10;
+                        confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+                        setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.nextStandard(); }, 800);
+                    } else {
+                        appLogic.ui.alert("答錯了", "正確答案: " + appLogic.state.quizList[appLogic.state.currentQIndex].chinese);
+                        setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.nextStandard(); }, 1000);
+                    }
+                    document.getElementById('in-game-score').innerText = appLogic.state.score;
+                },
+
+                // 2. Match
+                startMatchGame: () => {
+                    const stage = document.getElementById('game-stage');
+                    const batch = appLogic.state.quizList.slice(0, 5); 
+                    if(batch.length === 0) { appLogic.game.finish(); return; }
+                    
+                    let leftItems = [...batch].sort(() => Math.random() - 0.5);
+                    let rightItems = [...batch].sort(() => Math.random() - 0.5);
+                    let selected = null;
+                    let matchesFound = 0;
+
+                    stage.innerHTML = `<div class="grid grid-cols-2 gap-4 w-full h-full content-center" id="match-grid"></div>`;
+                    const grid = document.getElementById('match-grid');
+
+                    const render = () => {
+                        grid.innerHTML = '';
+                        leftItems.forEach(w => {
+                            if(!w.matched) grid.innerHTML += `<button data-id="${w.id}" data-type="left" class="match-btn p-4 bg-blue-900/30 border border-blue-500 rounded-lg text-sm font-mono">${w.word}</button>`;
+                        });
+                        rightItems.forEach(w => {
+                            if(!w.matched) grid.innerHTML += `<button data-id="${w.id}" data-type="right" class="match-btn p-4 bg-purple-900/30 border border-purple-500 rounded-lg text-sm">${w.chinese}</button>`;
+                        });
+                        
+                        document.querySelectorAll('.match-btn').forEach(btn => {
+                            btn.onclick = (e) => {
+                                const id = e.target.getAttribute('data-id');
+                                const type = e.target.getAttribute('data-type');
+                                
+                                if (!selected) {
+                                    selected = { id, type, el: e.target };
+                                    e.target.classList.add('bg-white/20');
+                                } else {
+                                    if (selected.type === type) {
+                                        selected.el.classList.remove('bg-white/20');
+                                        selected = { id, type, el: e.target };
+                                        e.target.classList.add('bg-white/20');
+                                    } else {
+                                        if (selected.id === id) {
+                                            appLogic.state.score += 20;
+                                            document.getElementById('in-game-score').innerText = appLogic.state.score;
+                                            leftItems.find(i=>i.id===id).matched = true;
+                                            rightItems.find(i=>i.id===id).matched = true;
+                                            matchesFound++;
+                                            render();
+                                            if(matchesFound === batch.length) {
+                                                appLogic.game.finish(); 
+                                            }
+                                        } else {
+                                            selected.el.classList.remove('bg-white/20');
+                                            e.target.classList.add('bg-red-500');
+                                            setTimeout(()=>e.target.classList.remove('bg-red-500'), 500);
+                                            selected = null;
+                                        }
+                                    }
+                                }
+                            };
+                        });
+                    };
+                    render();
+                },
+
+                // 3. Wheel
+                startWheelGame: () => {
+                    const q = appLogic.state.quizList[appLogic.state.currentQIndex];
+                    const stage = document.getElementById('game-stage');
+                    
+                    stage.innerHTML = `
+                        <div class="relative w-64 h-64 mb-8">
+                             <div id="wheel" class="w-full h-full rounded-full border-4 border-cyber-cyan flex items-center justify-center bg-black relative shadow-[0_0_30px_#06B6D4]">
+                                 <span class="text-4xl">❓</span>
+                             </div>
+                             <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 text-cyber-orange text-4xl">▼</div>
+                        </div>
+                        <button id="spin-btn" class="px-8 py-3 bg-cyber-purple rounded-full font-bold text-lg animate-pulse">SPIN</button>
+                        <div id="wheel-q" class="hidden glass-panel p-4 rounded-xl w-full text-center"></div>
                     `;
 
-                    // 準備選項 (1 正確 + 2 干擾)
-                    let options = appLogic.game.getDistractors(q, 2);
-                    // 混淆位置
-                    options.sort(() => Math.random() - 0.5);
+                    document.getElementById('spin-btn').onclick = () => {
+                        const wheel = document.getElementById('wheel');
+                        const deg = 720 + Math.random() * 360;
+                        wheel.style.transition = "transform 3s cubic-bezier(0.1, 0, 0.2, 1)";
+                        wheel.style.transform = `rotate(${deg}deg)`;
+                        document.getElementById('spin-btn').classList.add('hidden');
+                        
+                        setTimeout(() => {
+                            wheel.innerHTML = `<span class="text-xl font-bold font-mono text-cyber-cyan">${q.word}</span>`;
+                            const qDiv = document.getElementById('wheel-q');
+                            qDiv.classList.remove('hidden');
+                            qDiv.innerHTML = `<h3 class="mb-4 text-gray-400">請選擇正確意思：</h3>`;
+                            
+                            let choices = appLogic.game.getDistractors(q);
+                            choices.forEach(c => {
+                                qDiv.innerHTML += `<button onclick="window.app.game.checkStandard('${c.id===q.id}')" class="block w-full py-3 mb-2 bg-white/5 border border-gray-600 rounded hover:bg-white/10">${c.chinese}</button>`;
+                            });
+                        }, 3000);
+                    };
+                },
 
-                    const container = document.getElementById('balloon-container');
-                    let activeBalloons = 0;
-
-                    options.forEach((opt, i) => {
+                // 4. Speed Pop
+                startSpeedGame: () => {
+                    if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
+                    const q = appLogic.state.quizList[appLogic.state.currentQIndex];
+                    const stage = document.getElementById('game-stage');
+                    
+                    stage.innerHTML = `
+                        <div class="absolute top-20 text-3xl font-bold font-mono text-white z-0">${q.word}</div>
+                        <div id="balloon-area" class="w-full h-full relative overflow-hidden"></div>
+                    `;
+                    
+                    let choices = appLogic.game.getDistractors(q);
+                    const area = document.getElementById('balloon-area');
+                    
+                    choices.forEach((c, i) => {
                         const balloon = document.createElement('div');
-                        balloon.className = "balloon-item absolute p-4 w-24 h-24 rounded-full flex items-center justify-center text-center text-sm font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] border border-white/20 backdrop-blur-md";
+                        balloon.className = "balloon absolute p-4 rounded-full bg-gradient-to-br from-red-500 to-pink-600 text-white font-bold text-sm flex items-center justify-center w-24 h-24 shadow-lg border border-white/20";
+                        balloon.innerText = c.chinese;
+                        balloon.style.left = `${10 + i * 25}%`;
+                        balloon.style.top = `-100px`;
                         
-                        // 樣式區分
-                        if (i === 0) balloon.classList.add('bg-cyber-purple/80', 'text-white');
-                        else if (i === 1) balloon.classList.add('bg-blue-600/80', 'text-white');
-                        else balloon.classList.add('bg-cyber-cyan/80', 'text-black');
-
-                        balloon.innerText = opt.chinese;
-                        
-                        // 隨機 X 軸位置 (10% ~ 80%)
-                        const leftPos = 10 + Math.random() * 70;
-                        balloon.style.left = `${leftPos}%`;
-                        
-                        // 隨機延遲落下
-                        const delay = i * 0.8; 
-                        balloon.style.animationDelay = `${delay}s`;
-                        
-                        // 隨速度調整 (隨題數增加變快)
-                        const speed = Math.max(3, 6 - (appLogic.state.currentQIndex * 0.1));
-                        balloon.style.animationDuration = `${speed}s`;
-
-                        // 點擊事件
-                        balloon.onmousedown = () => {
-                            balloon.remove();
-                            if (opt.id === q.id) {
-                                // Correct
-                                appLogic.game.handleAnswer(true);
-                                container.innerHTML = ''; // Clear all
-                                setTimeout(() => {
-                                    appLogic.state.currentQIndex++;
-                                    appLogic.game.startSpeedGame();
-                                }, 500);
-                            } else {
-                                // Wrong: Break combo, penalize
-                                appLogic.game.handleAnswer(false);
-                            }
-                        };
-
-                        // 監聽動畫結束 (觸底)
-                        balloon.addEventListener('animationend', () => {
-                            balloon.remove();
-                            if (opt.id === q.id) {
-                                // 正確答案掉落 = 失敗
-                                appLogic.game.handleAnswer(false); // 視為答錯
-                                appLogic.ui.alert("MISS!", `答案是：${q.chinese}`);
-                                setTimeout(() => {
-                                    appLogic.state.currentQIndex++;
-                                    appLogic.game.startSpeedGame();
-                                }, 1000);
+                        gsap.to(balloon, {
+                            y: window.innerHeight - 200,
+                            duration: 4 + Math.random() * 2,
+                            ease: "none",
+                            onComplete: () => {
+                                balloon.remove();
+                                if(c.id === q.id) { 
+                                    appLogic.ui.alert("漏掉了!", q.chinese);
+                                    setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 1000);
+                                }
                             }
                         });
 
-                        container.appendChild(balloon);
+                        balloon.onclick = () => {
+                            if (c.id === q.id) {
+                                appLogic.state.score += 20;
+                                document.getElementById('in-game-score').innerText = appLogic.state.score;
+                                confetti({ particleCount: 30, origin: { x: (10 + i * 25)/100, y: 0.5 } });
+                                gsap.killTweensOf(".balloon");
+                                setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 500);
+                            } else {
+                                balloon.classList.add('scale-0'); 
+                                appLogic.state.score = Math.max(0, appLogic.state.score - 5);
+                            }
+                        };
+                        area.appendChild(balloon);
                     });
                 },
 
-                // ---------------------------
-                // 題型 B: 記憶配對 (Memory)
-                // ---------------------------
+                // 5. Memory
                 startMemoryGame: () => {
                     const stage = document.getElementById('game-stage');
-                    document.getElementById('danger-line').classList.add('hidden');
-                    
-                    // 一次取 8 題 (16 張卡)
-                    const batchSize = 8;
-                    // 如果剩餘題目不足，就取剩下的
-                    const remaining = appLogic.state.quizList.length - appLogic.state.currentQIndex;
-                    if (remaining <= 0) { appLogic.game.finish(); return; }
-                    
-                    const count = Math.min(batchSize, remaining);
-                    const currentBatch = appLogic.state.quizList.slice(appLogic.state.currentQIndex, appLogic.state.currentQIndex + count);
-                    
+                    const batch = appLogic.state.quizList.slice(0, 6);
                     let cards = [];
-                    currentBatch.forEach(w => {
-                        cards.push({ id: w.id, content: w.word, type: 'en' });
-                        cards.push({ id: w.id, content: w.chinese, type: 'zh' });
+                    batch.forEach(w => {
+                        cards.push({ id: w.id, content: w.word, type: 'word' });
+                        cards.push({ id: w.id, content: w.chinese, type: 'meaning' });
                     });
                     cards.sort(() => Math.random() - 0.5);
 
-                    // 渲染 Grid
-                    stage.innerHTML = `
-                        <div class="mb-4 text-cyber-cyan font-display tracking-widest text-xs">
-                            ENERGY COLLECTED: <span id="mem-matched">0</span>/${count}
-                        </div>
-                        <div class="grid grid-cols-4 gap-3 w-full max-w-md aspect-square perspective-1000" id="memory-grid">
-                            <!-- Cards injected here -->
-                        </div>
-                    `;
+                    stage.innerHTML = `<div class="grid grid-cols-3 gap-2 w-full max-w-sm" id="memory-grid"></div>`;
                     const grid = document.getElementById('memory-grid');
                     
-                    let flippedCards = [];
-                    let matchedPairs = 0;
-                    let locked = false;
+                    let flipped = [];
+                    let matchedCount = 0;
 
-                    cards.forEach(c => {
+                    cards.forEach((c, i) => {
                         const el = document.createElement('div');
-                        el.className = "w-full h-full cursor-pointer group";
+                        el.className = "card-flip h-24 cursor-pointer";
                         el.innerHTML = `
-                            <div class="card-inner w-full h-full duration-500">
-                                <div class="card-front"></div>
-                                <div class="card-back text-xs md:text-sm p-1">${c.content}</div>
+                            <div class="card-inner w-full h-full">
+                                <div class="card-front text-2xl">?</div>
+                                <div class="card-back text-sm font-bold p-1">${c.content}</div>
                             </div>
                         `;
-                        
                         el.onclick = () => {
-                            if (locked || el.classList.contains('card-flipped') || el.classList.contains('matched')) return;
-                            
-                            el.classList.add('card-flipped');
-                            flippedCards.push({ id: c.id, el: el });
-
-                            if (flippedCards.length === 2) {
-                                locked = true;
-                                // Check Match
-                                if (flippedCards[0].id === flippedCards[1].id) {
-                                    // Match!
-                                    appLogic.game.handleAnswer(true); // Add score/streak
-                                    flippedCards.forEach(card => card.el.classList.add('matched', 'opacity-50', 'pointer-events-none'));
-                                    flippedCards = [];
-                                    locked = false;
-                                    matchedPairs++;
-                                    document.getElementById('mem-matched').innerText = matchedPairs;
-                                    
-                                    if (matchedPairs === count) {
-                                        appLogic.ui.alert("SYSTEM", "ENERGY FULL!");
-                                        appLogic.state.currentQIndex += count;
-                                        setTimeout(appLogic.game.finish, 1000); // 簡單起見，Memory 玩一輪就結算
+                            if (flipped.length < 2 && !el.firstChild.classList.contains('flipped') && !el.classList.contains('matched')) {
+                                el.firstChild.classList.add('flipped');
+                                flipped.push({ id: c.id, el: el });
+                                
+                                if (flipped.length === 2) {
+                                    if (flipped[0].id === flipped[1].id) {
+                                        flipped.forEach(f => f.el.classList.add('matched', 'opacity-50'));
+                                        appLogic.state.score += 30;
+                                        document.getElementById('in-game-score').innerText = appLogic.state.score;
+                                        flipped = [];
+                                        matchedCount++;
+                                        if (matchedCount === batch.length) appLogic.game.finish();
+                                    } else {
+                                        setTimeout(() => {
+                                            flipped.forEach(f => f.el.firstChild.classList.remove('flipped'));
+                                            flipped = [];
+                                        }, 1000);
                                     }
-                                } else {
-                                    // Mismatch
-                                    appLogic.game.handleAnswer(false); // Reset streak
-                                    setTimeout(() => {
-                                        flippedCards.forEach(card => card.el.classList.remove('card-flipped'));
-                                        flippedCards = [];
-                                        locked = false;
-                                    }, 800);
                                 }
                             }
                         };
@@ -717,232 +605,58 @@
                     });
                 },
 
-                // ---------------------------
-                // 標準模式 (Standard / Review)
-                // ---------------------------
-                nextStandard: () => {
-                    // Review mode 使用 quizList (已在 setup 替換成 wrongList)
-                    if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
-                    
-                    const q = appLogic.state.quizList[appLogic.state.currentQIndex];
-                    appLogic.ui.updateGameProgress();
-                    
-                    const stage = document.getElementById('game-stage');
-                    document.getElementById('danger-line').classList.add('hidden');
-
-                    stage.innerHTML = `
-                        <div class="glass-panel w-full max-w-sm p-6 rounded-2xl flex flex-col items-center text-center">
-                            <div class="w-full flex justify-between items-center mb-6 border-b border-white/10 pb-2">
-                                <span class="text-xs text-gray-500">${q.level ? 'L'+q.level : 'L1'}</span>
-                                <span class="text-xs text-gray-500">${q.type}</span>
-                            </div>
-                            
-                            <button onclick="window.app.game.speak('${q.word.replace(/'/g, "\\'")}')" class="w-20 h-20 rounded-full bg-cyber-cyan/10 border border-cyber-cyan text-cyber-cyan flex items-center justify-center hover:bg-cyber-cyan/20 transition-all mb-4">
-                                <i data-lucide="volume-2" class="w-8 h-8"></i>
-                            </button>
-                            
-                            <div class="text-xs text-gray-500 mb-6">點擊發音</div>
-
-                            <div class="grid w-full gap-3" id="std-options"></div>
-                        </div>
-                    `;
-                    lucide.createIcons();
-                    appLogic.game.speak(q.word);
-
-                    const optContainer = document.getElementById('std-options');
-                    // Get 3 distractors
-                    let options = appLogic.game.getDistractors(q, 3);
-                    options.forEach(opt => {
-                        const btn = document.createElement('button');
-                        btn.className = "w-full py-4 bg-white/5 border border-white/10 rounded-xl hover:border-cyber-cyan hover:bg-white/10 transition-all font-bold text-gray-200 text-lg relative overflow-hidden";
-                        btn.innerText = opt.chinese;
-                        btn.onclick = () => {
-                            if (opt.id === q.id) {
-                                // Correct
-                                btn.classList.add('bg-green-500/20', 'border-green-500');
-                                appLogic.game.handleAnswer(true);
-                                setTimeout(() => {
-                                    appLogic.state.currentQIndex++;
-                                    appLogic.game.nextStandard();
-                                }, 600);
-                            } else {
-                                // Wrong
-                                btn.classList.add('bg-red-500/20', 'border-red-500');
-                                appLogic.game.handleAnswer(false); // Will record wrong word
-                                // Show correct one
-                                appLogic.ui.alert("WRONG", `正確答案: ${q.chinese}`);
-                                setTimeout(() => {
-                                    appLogic.state.currentQIndex++;
-                                    appLogic.game.nextStandard();
-                                }, 1500);
-                            }
-                        };
-                        optContainer.appendChild(btn);
-                    });
-                },
-
-                // 通用邏輯：處理答題結果
-                handleAnswer: (isCorrect) => {
-                    const currentQ = appLogic.state.quizList[appLogic.state.currentQIndex];
-                    
-                    if (isCorrect) {
-                        appLogic.state.score += 10 + (appLogic.state.streak * 2);
-                        appLogic.state.streak++;
-                        appLogic.state.correctCount++;
-                        
-                        // GSAP Neon Frenzy check (5 Combo)
-                        if (appLogic.state.streak === 5) {
-                            appLogic.ui.triggerNeonFrenzy();
-                        }
-                        
-                        document.getElementById('in-game-score').innerText = appLogic.state.score;
-                        // Particle effect
-                        confetti({
-                            particleCount: 30,
-                            spread: 50,
-                            origin: { y: 0.7 },
-                            colors: ['#06B6D4', '#8B5CF6']
-                        });
-                    } else {
-                        appLogic.state.streak = 0;
-                        // Record wrong answer if not already recorded
-                        if (currentQ && !appLogic.state.wrongList.find(w => w.id === currentQ.id)) {
-                            appLogic.state.wrongList.push(currentQ);
-                        }
-                        // Shake screen
-                        gsap.to("#app-container", { x: [-5, 5, -5, 5, 0], duration: 0.3 });
-                    }
-                },
-
-                getDistractors: (correct, count) => {
-                    let choices = [correct];
-                    let pool = appLogic.state.words;
-                    let safety = 0;
-                    while (choices.length < count + 1 && safety < 50) {
-                        let rnd = pool[Math.floor(Math.random() * pool.length)];
+                getDistractors: (correct) => {
+                    let choices = [correct], attempts = 0;
+                    while (choices.length < 4 && attempts < 50) {
+                        let rnd = appLogic.state.words[Math.floor(Math.random() * appLogic.state.words.length)];
                         if (!choices.find(c => c.id === rnd.id)) choices.push(rnd);
-                        safety++;
+                        attempts++;
                     }
                     return choices.sort(() => Math.random() - 0.5);
                 },
-
-                speak: (txt) => {
-                    window.speechSynthesis.cancel();
-                    const u = new SpeechSynthesisUtterance(txt);
-                    u.lang = 'en-US'; 
-                    window.speechSynthesis.speak(u);
-                },
-
+                speak: (txt) => { const u = new SpeechSynthesisUtterance(txt); u.lang = 'en-US'; window.speechSynthesis.speak(u); },
                 finish: async () => {
-                    // Update Stats UI
+                    appLogic.state.score += 100;
                     document.getElementById('res-score').innerText = appLogic.state.score;
-                    const accuracy = Math.round((appLogic.state.correctCount / appLogic.state.quizList.length) * 100) || 0;
-                    document.getElementById('res-accuracy').innerText = accuracy + "%";
-                    document.getElementById('res-streak').innerText = appLogic.state.streak; // Final streak
-                    
-                    // Show "Review Wrong" button if needed
-                    const reviewBtn = document.getElementById('btn-review-wrong');
-                    if (appLogic.state.wrongList.length > 0) {
-                        reviewBtn.classList.remove('hidden');
-                        document.getElementById('wrong-count').innerText = appLogic.state.wrongList.length;
-                    } else {
-                        reviewBtn.classList.add('hidden');
-                    }
-
-                    // Save Data (if ranked)
                     if (appLogic.state.mode === 'ranked') {
-                        try {
-                            const userRef = doc(db, "users", appLogic.state.user.uid);
-                            await updateDoc(userRef, { 
-                                score: increment(appLogic.state.score), 
-                                weeklyScore: increment(appLogic.state.score),
-                                lastPlayed: serverTimestamp() 
-                            });
-                            if (appLogic.state.user.teamId) {
-                                await updateDoc(doc(db, "teams", appLogic.state.user.teamId), { 
-                                    score: increment(appLogic.state.score) 
-                                });
-                            }
-                            appLogic.state.user.score += appLogic.state.score;
-                            appLogic.ui.updateHeader();
-                        } catch(e) { console.error("Save error", e); }
+                        const userRef = doc(db, "users", appLogic.state.user.uid);
+                        await updateDoc(userRef, { score: increment(appLogic.state.score), weeklyScore: increment(appLogic.state.score), lastPlayed: serverTimestamp() });
+                        if (appLogic.state.user.teamId) await updateDoc(doc(db, "teams", appLogic.state.user.teamId), { score: increment(appLogic.state.score) });
+                        appLogic.state.user.score += appLogic.state.score;
+                        appLogic.ui.updateHeader();
                     }
-                    
                     appLogic.nav.to('result');
-                },
-
-                startWrongReview: () => {
-                    // 特訓模式邏輯
-                    appLogic.state.quizList = [...appLogic.state.wrongList]; // 複製錯題
-                    appLogic.state.mode = 'review';
-                    appLogic.state.gameType = 'standard'; // 複習強制用標準模式
-                    appLogic.game.start();
                 }
             },
 
-            // --- UI/UX ---
-            ui: {
-                startTicker: () => {
-                    const msgs = [
-                        "SYSTEM: 歡迎進入屏北單字星際爭霸 v2.0",
-                        "RANKING: 105班 勇士隊 剛剛佔領了週榜第一！",
-                        "TIP: 連續答對 5 題可觸發 [霓虹狂熱] 加分狀態！",
-                        "UPDATE: 新增 [疾速破冰] 與 [記憶配對] 模式"
-                    ];
-                    const t = document.getElementById('ticker-content');
-                    if(t) t.innerHTML = msgs.map(m => `<span>${m}</span>`).join('<span class="text-cyber-purple px-4">///</span>');
-                },
-                updateGameProgress: () => {
-                     document.getElementById('game-progress').style.width = `${(appLogic.state.currentQIndex / appLogic.state.quizList.length) * 100}%`;
-                },
-                updateHeader: () => {
-                    document.getElementById('header-avatar').src = appLogic.state.user.photoURL;
-                    document.getElementById('header-score').innerText = appLogic.state.user.score;
-                    document.getElementById('app-header').classList.remove('hidden');
-                    document.getElementById('dash-name').innerText = appLogic.state.user.displayName;
-                },
-                alert: (t, m) => { 
-                    document.getElementById('alert-title').innerText=t; 
-                    document.getElementById('alert-msg').innerText=m; 
-                    document.getElementById('alert-box').classList.remove('hidden'); 
-                },
-                triggerNeonFrenzy: () => {
-                    const layer = document.getElementById('frenzy-layer');
-                    layer.classList.add('neon-frenzy-bg', 'opacity-100');
-                    setTimeout(() => {
-                        layer.classList.remove('opacity-100');
-                        setTimeout(() => layer.classList.remove('neon-frenzy-bg'), 1000);
-                    }, 2000); // Effect lasts 2s
-                },
-                bgAnimation: () => { /* Simplified particle loop */ }
-            },
-
-            // --- Team & Admin (Minimal Implementation for size) ---
             team: {
-                create: async () => { /* Standard logic */ 
-                    const name = prompt("隊名:"); if(!name) return;
-                    const code = Math.random().toString(36).substring(2,8).toUpperCase();
-                    const ref = await addDoc(collection(db,"teams"), {code, name, leader: appLogic.state.user.uid, members:[appLogic.state.user.uid], score:0});
-                    await updateDoc(doc(db,"users",appLogic.state.user.uid), {teamId: ref.id});
-                    appLogic.state.user.teamId = ref.id; appLogic.team.load(ref.id);
+                create: async () => {
+                     const name = prompt("隊名:", "勇士隊"); if(!name) return;
+                     const code = Math.random().toString(36).substring(2,8).toUpperCase();
+                     const ref = await addDoc(collection(db,"teams"), {code, name, leader: appLogic.state.user.uid, members:[appLogic.state.user.uid], score:0});
+                     await updateDoc(doc(db,"users",appLogic.state.user.uid), {teamId: ref.id});
+                     appLogic.state.user.teamId = ref.id; appLogic.team.load(ref.id);
+                     appLogic.ui.alert("成功", code);
                 },
-                join: async () => { /* Standard logic */ 
-                    const code = prompt("代碼:"); if(!code) return;
-                    const q = query(collection(db,"teams"), where("code","==",code));
-                    const snap = await getDocs(q); if(snap.empty) { appLogic.ui.alert("Err","無效代碼"); return; }
-                    const t = snap.docs[0];
-                    await updateDoc(doc(db,"teams",t.id), {members: arrayUnion(appLogic.state.user.uid)});
-                    await updateDoc(doc(db,"users",appLogic.state.user.uid), {teamId: t.id});
-                    appLogic.state.user.teamId = t.id; appLogic.team.load(t.id);
+                join: async () => {
+                     const code = prompt("邀請碼:"); if(!code) return;
+                     const q = query(collection(db,"teams"), where("code","==",code));
+                     const snap = await getDocs(q); if(snap.empty) return;
+                     const t = snap.docs[0];
+                     await updateDoc(doc(db,"teams",t.id), {members: arrayUnion(appLogic.state.user.uid)});
+                     await updateDoc(doc(db,"users",appLogic.state.user.uid), {teamId: t.id});
+                     appLogic.state.user.teamId = t.id; appLogic.team.load(t.id);
+                     appLogic.ui.alert("成功", "已加入");
                 },
                 load: (tid) => {
                     onSnapshot(doc(db,"teams",tid), async(d)=>{
                         if(!d.exists()) return;
                         appLogic.state.team = {id:d.id, ...d.data()};
-                        document.getElementById('dash-team').innerText = d.data().name;
-                        document.getElementById('dash-team').classList.add('text-cyber-cyan');
+                        const mems = [];
+                        for(const u of d.data().members) { const s = await getDoc(doc(db,"users",u)); if(s.exists()) mems.push(s.data()); }
+                        const list = document.getElementById('team-members-list');
+                        if(list) list.innerHTML = mems.map(m=>`<img src="${m.photoURL}" class="w-8 h-8 rounded-full border border-black">`).join('');
                         document.getElementById('team-code-display').innerText = d.data().code;
-                        document.getElementById('team-info-box').classList.remove('hidden');
                     });
                 }
             },
@@ -952,35 +666,99 @@
                     if(!f) return;
                     Papa.parse(f, {header:true, complete: async(r)=>{
                         const b = writeBatch(db);
-                        r.data.forEach(row=>{ if(row['單字']) b.set(doc(collection(db,"words")), {word:row['單字'], chinese:row['中文'], level:row['級別']||'1', type:row['屬性']||'n.'}); });
-                        await b.commit(); appLogic.ui.alert("OK",`匯入 ${r.data.length} 筆`);
+                        r.data.forEach(row=>{ if(row['單字']) b.set(doc(collection(db,"words")), {word:row['單字'], chinese:row['中文'], level:row['級別']||'1'}); });
+                        await b.commit(); appLogic.ui.alert("成功","匯入完成");
                     }});
                 },
                 hardReset: async () => {
-                    if(prompt("TYPE RESET")!=="RESET") return;
-                    // Mock reset logic
-                    appLogic.ui.alert("System", "Data cleared.");
+                    if(prompt("確認清除? 輸入 RESET")!=="RESET") return;
+                    const u = await getDocs(collection(db,"users")); const ub = writeBatch(db); u.forEach(d=>ub.delete(d.ref)); await ub.commit();
+                    const t = await getDocs(collection(db,"teams")); const tb = writeBatch(db); t.forEach(d=>tb.delete(d.ref)); await tb.commit();
+                    location.reload();
                 }
             },
             leaderboard: {
                 renderPreview: async () => {
-                    const icons = [ICONS.lily, ICONS.pot, ICONS.snake];
+                    const getRankIcon = (i) => {
+                        if(i===0) return CULTURAL_ICONS.lily;  // Rank 1: Lily
+                        if(i===1) return CULTURAL_ICONS.pot;   // Rank 2: Pot
+                        if(i===2) return CULTURAL_ICONS.snake; // Rank 3: Snake
+                        return `<span class="font-bold text-gray-500">No.${i+1}</span>`;
+                    };
+
+                    // User Top 3
                     const uQ = query(collection(db, "users"), orderBy("score", "desc"), limit(3));
                     const uSnap = await getDocs(uQ);
-                    document.getElementById('login-lb-preview').innerHTML = uSnap.docs.map((d, i) => 
-                        `<div class="flex justify-between items-center bg-white/5 p-2 rounded border-b border-white/5">
-                            <div class="flex items-center gap-2">${icons[i]||'<span>'+(i+1)+'</span>'} ${d.data().displayName}</div>
-                            <span class="text-cyber-cyan font-mono">${d.data().score}</span>
+                    const uDiv = document.getElementById('login-lb-user');
+                    uDiv.innerHTML = uSnap.docs.map((d, i) => 
+                        `<div class="flex justify-between items-center bg-white/5 p-2 rounded-lg border border-white/5">
+                            <div class="flex items-center gap-2">
+                                ${getRankIcon(i)} 
+                                <span class="truncate max-w-[80px]">${d.data().displayName}</span>
+                            </div> 
+                            <span class="text-cyber-cyan font-mono font-bold">${d.data().score}</span>
                         </div>`
                     ).join('');
+
+                    // Team Top 3
+                    const tQ = query(collection(db, "teams"), orderBy("score", "desc"), limit(3));
+                    const tSnap = await getDocs(tQ);
+                    const tDiv = document.getElementById('login-lb-team');
+                    tDiv.innerHTML = tSnap.docs.map((d, i) => 
+                        `<div class="flex justify-between items-center bg-white/5 p-2 rounded-lg border border-white/5">
+                            <div class="flex items-center gap-2">
+                                ${getRankIcon(i)} 
+                                <span class="truncate max-w-[80px]">${d.data().name}</span>
+                            </div> 
+                            <span class="text-cyber-purple font-mono font-bold">${d.data().score}</span>
+                        </div>`
+                    ).join('');
+                },
+                show: () => { /* Leaderboard View Logic */ },
+                switchSubTab: () => { /* Switch Logic */ }
+            },
+
+            ui: {
+                startTicker: () => {
+                    const msgs = [
+                        "🏆 105班 閃電戰隊 剛剛完成了 L4 測驗，熱力值 +150！",
+                        "🔥 208班 小陳 達成 50 連擊！",
+                        "🛡️ 301班 屏北勇士 佔領了排行榜第一名！",
+                        "🌟 新的單字包 L6 已經上線，快來挑戰！"
+                    ];
+                    setInterval(() => {
+                        const t = document.getElementById('ticker-content');
+                        if(t) t.innerText = msgs[Math.floor(Math.random() * msgs.length)];
+                    }, 5000);
+                },
+                updateGameProgress: () => {
+                     document.getElementById('game-progress').style.width = `${(appLogic.state.currentQIndex / appLogic.state.quizList.length) * 100}%`;
+                },
+                updateHeader: () => {
+                    document.getElementById('header-avatar').src = appLogic.state.user.photoURL;
+                    document.getElementById('header-score').innerText = appLogic.state.user.score;
+                    document.getElementById('app-header').classList.remove('hidden');
+                },
+                alert: (t, m) => { document.getElementById('alert-title').innerText=t; document.getElementById('alert-msg').innerText=m; document.getElementById('alert-box').classList.remove('hidden'); },
+                bgAnimation: () => {
+                    const canvas = document.getElementById('bgCanvas');
+                    const ctx = canvas.getContext('2d');
+                    let w, h, p = [];
+                    const resize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
+                    window.addEventListener('resize', resize); resize();
+                    for(let i=0;i<50;i++) p.push({x:Math.random()*w, y:Math.random()*h, vx:(Math.random()-.5)*.5, vy:(Math.random()-.5)*.5, s:Math.random()*2, c:Math.random()>.5?'#06B6D4':'#8B5CF6'});
+                    const anim = () => {
+                        ctx.clearRect(0,0,w,h);
+                        p.forEach(pt => {
+                            pt.x+=pt.vx; pt.y+=pt.vy; if(pt.x<0||pt.x>w)pt.vx*=-1; if(pt.y<0||pt.y>h)pt.vy*=-1;
+                            ctx.fillStyle=pt.c; ctx.beginPath(); ctx.arc(pt.x,pt.y,pt.s,0,Math.PI*2); ctx.fill();
+                        });
+                        requestAnimationFrame(anim);
+                    };
+                    anim();
                 }
             },
-            nav: { to: (id) => { 
-                document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); 
-                document.getElementById('view-'+id).classList.remove('hidden'); 
-                if(id==='login') document.getElementById('app-header').classList.add('hidden'); 
-                else document.getElementById('app-header').classList.remove('hidden'); 
-            }}
+            nav: { to: (id) => { document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); document.getElementById('view-'+id).classList.remove('hidden'); if(id==='login') document.getElementById('app-header').classList.add('hidden'); else document.getElementById('app-header').classList.remove('hidden'); } }
         };
 
         window.app = appLogic;
