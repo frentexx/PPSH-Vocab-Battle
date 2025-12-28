@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPSH 星際單字爭霸戰 | Vocab Galaxy</title>
+    
+    <!-- 1. 介面與工具函式庫 (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- 字體設定 -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind 設定 (賽博龐克主題) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: { 
+                            bg: '#0F172A', 
+                            cyan: '#06B6D4', 
+                            purple: '#8B5CF6', 
+                            orange: '#FB923C', 
+                            glass: 'rgba(30, 41, 59, 0.7)' 
+                        }
+                    },
+                    fontFamily: { 
+                        display: ['Orbitron', 'sans-serif'], 
+                        body: ['Zen Maru Gothic', 'sans-serif'] 
+                    },
+                    animation: { 
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite' 
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { 
+            background-color: #0F172A; 
+            color: white; 
+            font-family: 'Zen Maru Gothic', sans-serif; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+        }
+        /* 玻璃擬態 */
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        button:active { transform: scale(0.98); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="selection:bg-cyber-cyan selection:text-black">
+
+    <!-- 背景特效 Canvas -->
+    <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
+
+    <!-- APP 主容器 -->
+    <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col">
+        
+        <!-- HEADER -->
+        <header class="p-4 flex justify-between items-center glass-panel sticky top-0 z-50 rounded-b-2xl mb-4">
+            <div class="flex items-center gap-2">
+                <i data-lucide="zap" class="text-cyber-orange w-6 h-6"></i>
+                <h1 class="font-display font-bold text-lg tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-cyber-cyan to-cyber-purple">PPSH GALAXY</h1>
+            </div>
+            <div id="user-status" class="hidden flex items-center gap-2">
+                <span id="header-score" class="text-cyber-cyan font-bold font-mono">0</span>
+                <img id="header-avatar" src="" class="w-8 h-8 rounded-full border border-cyber-purple bg-black object-cover">
+            </div>
+        </header>
+
+        <!-- VIEW 1: 登入畫面 -->
+        <section id="view-login" class="flex-1 flex flex-col p-4 gap-6 justify-center">
+            <div class="text-center space-y-2">
+                <h2 class="text-3xl font-display font-bold text-white">READY PLAYER ONE</h2>
+                <p class="text-gray-400 text-sm">Access Restricted: @ppsh.ptc.edu.tw</p>
+            </div>
+            
+            <!-- 排行榜預覽 -->
+            <div class="glass-panel rounded-2xl p-4 min-h-[200px]">
+                <h3 class="font-bold text-cyber-cyan mb-2 flex items-center gap-2">
+                    <i data-lucide="trophy" class="w-4 h-4"></i> TOP COMMANDERS
+                </h3>
+                <div id="lb-preview-content" class="space-y-2 text-sm">
+                    <div class="text-center text-gray-500 py-4 flex flex-col items-center">
+                        <div class="animate-spin h-5 w-5 border-2 border-cyber-cyan rounded-full border-t-transparent mb-2"></div>
+                        Connecting to PPSH Database...
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="window.app.auth.login()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-cyber-purple rounded-xl font-bold font-display tracking-widest hover:brightness-110 transition-all shadow-[0_0_20px_rgba(139,92,246,0.5)]">
+                <div class="flex items-center justify-center gap-2">
+                    <i data-lucide="log-in"></i> GOOGLE LOGIN
+                </div>
+            </button>
+        </section>
+
+        <!-- VIEW 2: 儀表板 -->
+        <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6">
+            <div class="glass-panel rounded-2xl p-5 relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 id="dash-name" class="text-xl font-bold truncate max-w-[150px]">Student</h2>
+                        <p id="dash-team" class="text-sm text-gray-400 mt-1">NO TEAM</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-display font-bold text-cyber-orange" id="dash-total-score">0</div>
+                        <div class="text-[10px] text-gray-500 tracking-widest">CREDITS</div>
+                    </div>
+                </div>
+                
+                <div id="team-action-area" class="mt-4 pt-4 border-t border-gray-700 grid grid-cols-2 gap-3">
+                    <button onclick="window.app.team.create()" class="py-2 bg-white/5 rounded text-sm text-cyber-cyan border border-cyber-cyan/30 hover:bg-white/10">建立隊伍</button>
+                    <button onclick="window.app.team.join()" class="py-2 bg-white/5 rounded text-sm text-cyber-purple border border-cyber-purple/30 hover:bg-white/10">加入隊伍</button>
+                </div>
+                
+                <div id="team-status-area" class="hidden mt-4 pt-4 border-t border-gray-700">
+                    <div class="text-xs text-gray-400 mb-2 flex justify-between">
+                        <span>TEAM CODE: <span id="team-code-display" class="text-white font-mono font-bold select-all cursor-pointer"></span></span>
+                    </div>
+                    <div id="team-members-list" class="flex -space-x-2"></div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div onclick="window.app.game.setup('practice')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-cyan cursor-pointer hover:bg-white/5 transition-colors group">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold group-hover:text-cyber-cyan">自主訓練 (Self-Study)</h4>
+                            <p class="text-xs text-gray-400 mt-1">自選題數 • 顯示中文 • 無壓力</p>
+                        </div>
+                        <i data-lucide="book-open" class="text-gray-600 group-hover:text-cyber-cyan"></i>
+                    </div>
+                </div>
+                <div onclick="window.app.game.setup('ranked')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-orange cursor-pointer hover:bg-white/5 transition-colors group">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold group-hover:text-cyber-orange">星際競賽 (Ranked)</h4>
+                            <p class="text-xs text-gray-400 mt-1">20題積分賽 • 混合題型 • 團隊加成</p>
+                        </div>
+                        <i data-lucide="swords" class="text-gray-600 group-hover:text-cyber-orange"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="window.app.nav.to('admin')" class="mt-auto mx-auto text-gray-600 text-xs hover:text-white pb-2">ADMIN CONSOLE</button>
+        </section>
+
+        <!-- VIEW 3: 設定 -->
+        <section id="view-setup" class="hidden flex-1 flex flex-col p-4 gap-6 justify-center">
+            <h2 class="text-2xl font-display font-bold text-center">MISSION CONFIG</h2>
+            <div class="glass-panel p-6 rounded-2xl space-y-6">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-2 uppercase tracking-wider">Target Sector</label>
+                    <select id="setup-level" class="w-full bg-slate-800 border border-gray-600 rounded-lg p-3 outline-none focus:border-cyber-cyan text-white">
+                        <option value="all">全宇宙 (All Levels)</option>
+                        <option value="1">Level 1</option>
+                        <option value="2">Level 2</option>
+                        <option value="3">Level 3</option>
+                        <option value="4">Level 4</option>
+                        <option value="5">Level 5</option>
+                        <option value="6">Level 6</option>
+                        <option value="1-3">Level 1-3 Mix</option>
+                        <option value="4-6">Level 4-6 Mix</option>
+                    </select>
+                </div>
+                
+                <div id="setup-count-group">
+                    <label class="block text-xs text-gray-400 mb-2 uppercase tracking-wider">Mission Length: <span id="count-val" class="text-cyber-cyan font-bold">10</span></label>
+                    <input type="range" id="setup-count" min="5" max="50" step="5" value="10" class="w-full accent-cyber-cyan" oninput="document.getElementById('count-val').innerText = this.value">
+                </div>
+
+                <div class="space-y-3">
+                    <button onclick="window.app.game.start()" class="w-full py-3 bg-cyber-cyan text-black font-bold rounded-lg shadow-[0_0_15px_#06B6D4] hover:bg-cyan-400 transition-colors">LAUNCH MISSION</button>
+                    <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 text-gray-400 text-sm hover:text-white">ABORT</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: 遊戲中 -->
+        <section id="view-game" class="hidden flex-1 flex flex-col p-4 relative">
+            <div class="w-full h-1 bg-gray-800 rounded-full mb-6">
+                <div id="game-progress" class="h-full bg-gradient-to-r from-cyber-cyan to-cyber-purple w-0 transition-all duration-300 rounded-full"></div>
+            </div>
+            <div id="question-card" class="glass-panel flex-1 rounded-2xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[400px]">
+                <div id="q-type-badge" class="absolute top-4 left-4 px-2 py-1 rounded border border-white/20 text-[10px] text-gray-400 uppercase tracking-widest">TYPE</div>
+                <div id="q-content" class="w-full flex-1 flex flex-col justify-center items-center gap-6 z-10"></div>
+                <div id="q-options" class="w-full grid gap-3 mt-6 z-10"></div>
+            </div>
+        </section>
+
+        <!-- VIEW 5: 結算 -->
+        <section id="view-result" class="hidden flex-1 flex flex-col p-6 items-center justify-center gap-6">
+            <h2 class="text-3xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan to-cyber-purple">MISSION COMPLETE</h2>
+            <div class="glass-panel w-full p-6 rounded-2xl text-center space-y-4">
+                <div class="text-sm text-gray-400">TOTAL SCORE GAINED</div>
+                <div class="text-6xl font-display font-bold text-cyber-cyan" id="res-score">0</div>
+                <div id="res-bonus-tag" class="hidden text-xs text-green-400 border border-green-900 bg-green-900/20 px-2 py-1 rounded inline-block">TEAM BONUS ACTIVE</div>
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <button onclick="window.app.nav.to('dashboard')" class="py-3 bg-white/10 rounded-lg font-bold hover:bg-white/20 text-sm">HOME BASE</button>
+                    <button onclick="window.app.game.setup('ranked')" class="py-3 bg-cyber-purple text-white rounded-lg font-bold hover:bg-violet-600 text-sm">REPLAY</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 6: 管理後台 -->
+        <section id="view-admin" class="hidden flex-1 flex flex-col p-4 gap-4">
+            <h2 class="text-xl font-bold font-display text-cyber-orange">ADMIN CONSOLE</h2>
+            <div class="glass-panel p-4 rounded-xl space-y-4">
+                <h3 class="font-bold text-sm text-gray-300">Data Upload</h3>
+                <div class="border border-dashed border-gray-600 rounded-lg p-4 text-center">
+                    <input type="file" id="csv-upload" accept=".csv" class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-cyber-purple file:text-white hover:file:bg-violet-600"/>
+                    <p class="text-[10px] text-gray-500 mt-2">Required Columns: 級別, 單字, 屬性, 中文, 例句(選填)</p>
+                </div>
+                <button onclick="window.app.admin.uploadCSV()" class="w-full py-2 bg-blue-600 rounded text-sm font-bold hover:bg-blue-500">PROCESS CSV UPLOAD</button>
+                <hr class="border-gray-700">
+                <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 bg-gray-700 rounded text-sm hover:bg-gray-600">EXIT CONSOLE</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Alert Box -->
+    <div id="alert-box" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
+        <div class="glass-panel p-6 rounded-2xl max-w-xs w-full text-center border border-cyber-cyan/50">
+            <h3 id="alert-title" class="text-xl font-bold mb-2 text-cyber-cyan">System Message</h3>
+            <p id="alert-msg" class="text-gray-300 text-sm mb-4">Content</p>
+            <button onclick="document.getElementById('alert-box').classList.add('hidden')" class="px-6 py-2 bg-cyber-cyan text-black font-bold rounded-lg hover:bg-cyan-400 w-full">ACKNOWLEDGED</button>
+        </div>
+    </div>
+
+    <!-- Firebase Modular SDK Script -->
+    <script type="module">
+        // 1. 引入 Firebase 模組
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js";
+        import { 
+            getAuth, 
+            signInWithPopup, 
+            GoogleAuthProvider, 
+            signOut, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            doc, 
+            getDoc, 
+            setDoc, 
+            updateDoc, 
+            addDoc,
+            query,
+            where,
+            getDocs,
+            onSnapshot,
+            limit,
+            orderBy,
+            increment,
+            serverTimestamp,
+            writeBatch,
+            arrayUnion
+        } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+        // 2. Firebase 設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyCQC4nD1ceknWbYq0DwY461XgPMSpzxzoE",
+            authDomain: "ppsh-vocab-battle.firebaseapp.com",
+            projectId: "ppsh-vocab-battle",
+            storageBucket: "ppsh-vocab-battle.firebasestorage.app",
+            messagingSenderId: "687928286974",
+            appId: "1:687928286974:web:b79bd4476f63ce9d9bcfaf",
+            measurementId: "G-675CNBRSZS"
+        };
+
+        // 3. 初始化 Firebase
+        const fbApp = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(fbApp);
+        const auth = getAuth(fbApp);
+        const db = getFirestore(fbApp);
+        const googleProvider = new GoogleAuthProvider();
+
+        // 4. 初始化 Icons
+        lucide.createIcons();
+
+        // 5. 核心應用邏輯
+        const appLogic = {
+            state: {
+                user: null,
+                team: null,
+                words: [],
+                quizList: [],
+                currentQIndex: 0,
+                score: 0,
+                streak: 0,
+                mode: 'practice'
+            },
+
+            init: () => {
+                appLogic.ui.bgAnimation();
+                
+                // 監聽登入狀態 (Modular SDK)
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        // 網域檢查
+                        if (!user.email.endsWith("@ppsh.ptc.edu.tw")) {
+                            appLogic.ui.alert("Access Denied", "Only @ppsh.ptc.edu.tw emails allowed.");
+                            await signOut(auth);
+                            return;
+                        }
+
+                        // 讀取用戶資料
+                        const userRef = doc(db, "users", user.uid);
+                        const userSnap = await getDoc(userRef);
+
+                        if (!userSnap.exists()) {
+                            await setDoc(userRef, {
+                                email: user.email,
+                                displayName: user.displayName,
+                                photoURL: user.photoURL,
+                                score: 0,
+                                teamId: null,
+                                lastPlayed: serverTimestamp()
+                            });
+                            appLogic.state.user = { uid: user.uid, score: 0, teamId: null, ...user };
+                        } else {
+                            appLogic.state.user = { uid: user.uid, ...userSnap.data() };
+                        }
+
+                        if (appLogic.state.user.teamId) {
+                            appLogic.team.load(appLogic.state.user.teamId);
+                        }
+
+                        appLogic.ui.updateHeader();
+                        appLogic.nav.to('dashboard');
+                    } else {
+                        appLogic.nav.to('login');
+                        appLogic.ui.loadPublicLeaderboard();
+                    }
+                });
+            },
+
+            auth: {
+                login: async () => {
+                    try {
+                        await signInWithPopup(auth, googleProvider);
+                    } catch (error) {
+                        appLogic.ui.alert("Login Error", error.message);
+                    }
+                },
+                logout: () => signOut(auth)
+            },
+
+            team: {
+                create: async () => {
+                    if (appLogic.state.user.teamId) {
+                        appLogic.ui.alert("Error", "You are already in a team.");
+                        return;
+                    }
+                    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+                    
+                    try {
+                        const teamRef = await addDoc(collection(db, "teams"), {
+                            code: code,
+                            leader: appLogic.state.user.uid,
+                            members: [appLogic.state.user.uid],
+                            createdAt: serverTimestamp()
+                        });
+
+                        await updateDoc(doc(db, "users", appLogic.state.user.uid), { teamId: teamRef.id });
+                        
+                        appLogic.state.user.teamId = teamRef.id;
+                        appLogic.team.load(teamRef.id);
+                        appLogic.ui.alert("Team Created", `Code: ${code}`);
+                    } catch (e) {
+                        console.error(e);
+                        appLogic.ui.alert("Error", "Create failed.");
+                    }
+                },
+
+                join: async () => {
+                    if (appLogic.state.user.teamId) {
+                        appLogic.ui.alert("Error", "Leave current team first.");
+                        return;
+                    }
+                    const code = prompt("Enter 6-digit Team Code:");
+                    if (!code) return;
+
+                    try {
+                        const q = query(collection(db, "teams"), where("code", "==", code.toUpperCase()));
+                        const querySnapshot = await getDocs(q);
+
+                        if (querySnapshot.empty) {
+                            appLogic.ui.alert("Error", "Invalid Team Code");
+                            return;
+                        }
+
+                        const teamDoc = querySnapshot.docs[0];
+                        const teamData = teamDoc.data();
+
+                        if (teamData.members.length >= 3) {
+                            appLogic.ui.alert("Error", "Team is full (Max 3)");
+                            return;
+                        }
+
+                        await updateDoc(doc(db, "teams", teamDoc.id), {
+                            members: arrayUnion(appLogic.state.user.uid)
+                        });
+                        
+                        await updateDoc(doc(db, "users", appLogic.state.user.uid), { teamId: teamDoc.id });
+
+                        appLogic.state.user.teamId = teamDoc.id;
+                        appLogic.team.load(teamDoc.id);
+                        appLogic.ui.alert("Success", "Joined Squad!");
+                    } catch (e) {
+                        appLogic.ui.alert("Error", e.message);
+                    }
+                },
+
+                load: (teamId) => {
+                    onSnapshot(doc(db, "teams", teamId), async (docSnap) => {
+                        if (!docSnap.exists()) return;
+                        const data = docSnap.data();
+                        appLogic.state.team = { id: docSnap.id, ...data };
+
+                        // 獲取成員詳細資料
+                        const memberDetails = [];
+                        for (const uid of data.members) {
+                            const uSnap = await getDoc(doc(db, "users", uid));
+                            if (uSnap.exists()) memberDetails.push(uSnap.data());
+                            else memberDetails.push({ photoURL: '', displayName: 'Unknown' });
+                        }
+                        appLogic.state.team.membersDetails = memberDetails;
+                        appLogic.ui.updateTeamUI();
+                    });
+                }
+            },
+
+            game: {
+                setup: async (mode) => {
+                    appLogic.state.mode = mode;
+                    
+                    if (appLogic.state.words.length === 0) {
+                        const q = query(collection(db, "words"), limit(500));
+                        const snapshot = await getDocs(q);
+                        appLogic.state.words = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                        
+                        if (appLogic.state.words.length === 0) {
+                            appLogic.ui.alert("DB Empty", "Please upload CSV.");
+                            return;
+                        }
+                    }
+                    
+                    document.getElementById('setup-count-group').style.display = mode === 'ranked' ? 'none' : 'block';
+                    appLogic.nav.to('setup');
+                },
+
+                start: () => {
+                    const level = document.getElementById('setup-level').value;
+                    const count = appLogic.state.mode === 'ranked' ? 20 : parseInt(document.getElementById('setup-count').value);
+                    
+                    let pool = appLogic.state.words.filter(w => {
+                        if (level === 'all') return true;
+                        if (level.includes('-')) {
+                            const [min, max] = level.split('-').map(Number);
+                            return parseInt(w.level) >= min && parseInt(w.level) <= max;
+                        }
+                        return w.level === level;
+                    });
+
+                    if (pool.length < 5) pool = appLogic.state.words;
+
+                    pool.sort(() => Math.random() - 0.5);
+                    appLogic.state.quizList = pool.slice(0, count);
+                    
+                    appLogic.state.currentQIndex = 0;
+                    appLogic.state.score = 0;
+                    appLogic.state.streak = 0;
+                    
+                    appLogic.nav.to('game');
+                    appLogic.game.next();
+                },
+
+                next: () => {
+                    if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) {
+                        appLogic.game.finish();
+                        return;
+                    }
+                    const q = appLogic.state.quizList[appLogic.state.currentQIndex];
+                    const progress = (appLogic.state.currentQIndex / appLogic.state.quizList.length) * 100;
+                    document.getElementById('game-progress').style.width = `${progress}%`;
+                    
+                    const type = Math.floor(Math.random() * 2); // 0: Audio, 1: Text
+                    appLogic.game.render(q, type);
+                },
+
+                render: (q, type) => {
+                    const content = document.getElementById('q-content');
+                    const options = document.getElementById('q-options');
+                    const badge = document.getElementById('q-type-badge');
+                    
+                    content.innerHTML = ''; options.innerHTML = '';
+                    gsap.fromTo("#question-card", {opacity:0, y: 10}, {opacity:1, y:0, duration: 0.3});
+
+                    if (type === 0) { // Audio
+                        badge.innerText = "AUDIO FEED";
+                        content.innerHTML = `
+                            <button onclick="window.app.game.speak('${q.word.replace(/'/g, "\\'")}')" class="w-24 h-24 rounded-full bg-cyber-cyan/10 border border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan/20 flex items-center justify-center animate-pulse-fast transition-colors">
+                                <i data-lucide="volume-2" class="w-10 h-10"></i>
+                            </button>
+                            <p class="text-xs text-gray-500 mt-2">Tap to listen</p>
+                        `;
+                        lucide.createIcons();
+                        appLogic.game.speak(q.word);
+
+                        let choices = appLogic.game.getDistractors(q);
+                        choices.forEach(c => {
+                            options.innerHTML += `<button onclick="window.app.game.check('${c.id === q.id}')" class="w-full py-4 bg-white/5 rounded-xl border border-gray-600 hover:border-cyber-cyan hover:bg-white/10 transition-all font-bold text-lg">${c.chinese}</button>`;
+                        });
+                    } else { // Text
+                        badge.innerText = "DECRYPT";
+                        const sentence = q.sentence ? q.sentence.replace(new RegExp(q.word, 'gi'), '_______') : `This is a _______ .`;
+                        content.innerHTML = `
+                            <div class="text-3xl font-bold text-white mb-2">${q.chinese}</div>
+                            <div class="p-3 bg-black/30 rounded-lg text-cyber-cyan font-mono text-sm">"${sentence}"</div>
+                        `;
+                        let choices = appLogic.game.getDistractors(q);
+                        choices.forEach(c => {
+                            options.innerHTML += `<button onclick="window.app.game.check('${c.id === q.id}')" class="w-full py-4 bg-white/5 rounded-xl border border-gray-600 hover:border-cyber-purple hover:bg-white/10 transition-all font-mono text-lg">${c.word}</button>`;
+                        });
+                    }
+                },
+
+                getDistractors: (correct) => {
+                    let choices = [correct];
+                    let attempts = 0;
+                    while (choices.length < 4 && attempts < 50) {
+                        let rnd = appLogic.state.words[Math.floor(Math.random() * appLogic.state.words.length)];
+                        if (!choices.find(c => c.id === rnd.id)) choices.push(rnd);
+                        attempts++;
+                    }
+                    return choices.sort(() => Math.random() - 0.5);
+                },
+
+                check: (isCorrectStr) => {
+                    const isCorrect = isCorrectStr === 'true';
+                    const card = document.getElementById('question-card');
+                    
+                    if (isCorrect) {
+                        appLogic.state.score += 10 + (appLogic.state.streak * 2);
+                        appLogic.state.streak++;
+                        card.style.borderColor = "#06B6D4";
+                        card.style.boxShadow = "0 0 20px rgba(6, 182, 212, 0.5)";
+                        confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#06B6D4', '#8B5CF6'] });
+                    } else {
+                        appLogic.state.streak = 0;
+                        card.style.borderColor = "#EF4444";
+                        gsap.to(card, {x: [-5, 5, -5, 5, 0], duration: 0.3});
+                        const q = appLogic.state.quizList[appLogic.state.currentQIndex];
+                        appLogic.ui.alert("Incorrect", `Answer: ${q.word}\n${q.chinese}`);
+                    }
+
+                    setTimeout(() => {
+                        card.style.borderColor = "rgba(255,255,255,0.1)";
+                        card.style.boxShadow = "none";
+                        appLogic.state.currentQIndex++;
+                        appLogic.game.next();
+                    }, 1000);
+                },
+
+                speak: (txt) => {
+                    window.speechSynthesis.cancel();
+                    const u = new SpeechSynthesisUtterance(txt);
+                    u.lang = 'en-US'; 
+                    u.rate = 0.8;
+                    window.speechSynthesis.speak(u);
+                },
+
+                finish: async () => {
+                    appLogic.state.score += 100;
+                    let isBonus = false;
+                    
+                    if (appLogic.state.team && appLogic.state.team.members.length >= 2) {
+                        appLogic.state.score = Math.floor(appLogic.state.score * 1.5);
+                        isBonus = true;
+                    }
+
+                    document.getElementById('res-score').innerText = appLogic.state.score;
+                    document.getElementById('res-bonus-tag').classList.toggle('hidden', !isBonus);
+
+                    if (appLogic.state.mode === 'ranked') {
+                        const userRef = doc(db, "users", appLogic.state.user.uid);
+                        await updateDoc(userRef, {
+                            score: increment(appLogic.state.score),
+                            lastPlayed: serverTimestamp()
+                        });
+                        appLogic.state.user.score += appLogic.state.score;
+                        appLogic.ui.updateHeader();
+                    }
+                    appLogic.nav.to('result');
+                }
+            },
+
+            admin: {
+                uploadCSV: () => {
+                    const file = document.getElementById('csv-upload').files[0];
+                    if (!file) { appLogic.ui.alert("Error", "Select CSV first."); return; }
+                    
+                    Papa.parse(file, {
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: async (results) => {
+                            const batch = writeBatch(db);
+                            let count = 0;
+                            
+                            results.data.forEach(row => {
+                                if (row['單字'] && row['中文']) {
+                                    const ref = doc(collection(db, "words"));
+                                    batch.set(ref, {
+                                        word: row['單字'].trim(),
+                                        chinese: row['中文'].trim(),
+                                        level: row['級別'] ? row['級別'].trim() : '1',
+                                        type: row['屬性'] ? row['屬性'].trim() : 'n.',
+                                        sentence: row['例句'] ? row['例句'].trim() : `This is a ${row['單字'].trim()}.`
+                                    });
+                                    count++;
+                                }
+                            });
+                            
+                            if (count > 0) {
+                                await batch.commit();
+                                appLogic.ui.alert("Done", `Uploaded ${count} words.`);
+                                appLogic.state.words = []; // Clear cache
+                            }
+                        }
+                    });
+                }
+            },
+
+            ui: {
+                loadPublicLeaderboard: async () => {
+                    try {
+                        const q = query(collection(db, "users"), orderBy("score", "desc"), limit(5));
+                        const snapshot = await getDocs(q);
+                        const html = snapshot.docs.map((d, i) => `
+                            <div class="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-display font-bold text-cyber-orange w-6">#${i+1}</span>
+                                    <span class="text-sm font-bold text-gray-300">${d.data().displayName}</span>
+                                </div>
+                                <span class="text-cyber-cyan font-mono">${d.data().score}</span>
+                            </div>
+                        `).join('');
+                        document.getElementById('lb-preview-content').innerHTML = html || '<div class="text-center text-gray-500 py-4">No Data</div>';
+                    } catch (e) {
+                        console.error(e);
+                    }
+                },
+                updateHeader: () => {
+                    document.getElementById('header-avatar').src = appLogic.state.user.photoURL;
+                    document.getElementById('dash-name').innerText = appLogic.state.user.displayName;
+                    document.getElementById('dash-total-score').innerText = appLogic.state.user.score;
+                    document.getElementById('header-score').innerText = appLogic.state.user.score;
+                },
+                updateTeamUI: () => {
+                    document.getElementById('team-action-area').classList.add('hidden');
+                    document.getElementById('team-status-area').classList.remove('hidden');
+                    document.getElementById('dash-team').innerText = "SQUAD ACTIVE";
+                    document.getElementById('dash-team').classList.add('text-cyber-cyan');
+                    document.getElementById('team-code-display').innerText = appLogic.state.team.code;
+                    const html = appLogic.state.team.membersDetails.map(m => 
+                        `<img src="${m.photoURL}" class="w-8 h-8 rounded-full border border-black bg-gray-800" title="${m.displayName}">`
+                    ).join('');
+                    document.getElementById('team-members-list').innerHTML = html;
+                },
+                alert: (title, msg) => {
+                    document.getElementById('alert-title').innerText = title;
+                    document.getElementById('alert-msg').innerText = msg;
+                    document.getElementById('alert-box').classList.remove('hidden');
+                },
+                bgAnimation: () => {
+                    const canvas = document.getElementById('bgCanvas');
+                    const ctx = canvas.getContext('2d');
+                    let width, height, particles = [];
+                    function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+                    window.addEventListener('resize', resize); resize();
+                    class Particle {
+                        constructor() { this.reset(); }
+                        reset() { this.x = Math.random()*width; this.y = Math.random()*height; this.vx = (Math.random()-0.5)*0.5; this.vy = (Math.random()-0.5)*0.5; this.size = Math.random()*2; this.color = Math.random()>0.5?'#06B6D4':'#8B5CF6'; }
+                        update() { this.x+=this.vx; this.y+=this.vy; if(this.x<0||this.x>width)this.vx*=-1; if(this.y<0||this.y>height)this.vy*=-1; }
+                        draw() { ctx.fillStyle=this.color; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fill(); }
+                    }
+                    for(let i=0;i<50;i++) particles.push(new Particle());
+                    function animate() { ctx.clearRect(0,0,width,height); particles.forEach(p=>{p.update();p.draw();}); requestAnimationFrame(animate); }
+                    animate();
+                }
+            },
+
+            nav: {
+                to: (id) => {
+                    document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+                    document.getElementById('view-'+id).classList.remove('hidden');
+                    if (id !== 'login') document.getElementById('user-status').classList.remove('hidden');
+                }
+            }
+        };
+
+        // 6. 將 App 綁定到 window 以供 HTML onclick 使用
+        window.app = appLogic;
+        
+        // 啟動 App
+        window.addEventListener('DOMContentLoaded', appLogic.init);
+    </script>
+</body>
+</html>
