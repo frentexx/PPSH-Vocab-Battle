@@ -32,14 +32,8 @@
                             danger: '#EF4444'
                         }
                     },
-                    fontFamily: { 
-                        display: ['Orbitron', 'sans-serif'], 
-                        body: ['Noto Sans TC', 'sans-serif'] 
-                    },
-                    animation: { 
-                        'radar-spin': 'spin 4s linear infinite',
-                        'pulse-glow': 'pulseGlow 2s ease-in-out infinite'
-                    }
+                    fontFamily: { display: ['Orbitron', 'sans-serif'], body: ['Noto Sans TC', 'sans-serif'] },
+                    animation: { 'pulse-glow': 'pulseGlow 2s ease-in-out infinite' }
                 }
             }
         }
@@ -51,30 +45,24 @@
         .glass-panel { background: rgba(19, 27, 46, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* 拔河光束 */
+        /* Game FX */
         .tug-beam-container { width: 90%; height: 20px; background: rgba(0,0,0,0.5); border-radius: 10px; position: relative; margin: 20px auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); }
         .tug-beam { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #8B5CF6, #06B6D4, #8B5CF6); transform: translateY(-50%); box-shadow: 0 0 15px #06B6D4; }
         .tug-node { width: 40px; height: 40px; background: #fff; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 30px #fff, 0 0 60px #06B6D4; z-index: 10; transition: left 0.3s ease-out; }
-        
-        /* 氣球 */
         @keyframes balloonFall { 0% { top: -120px; opacity: 0; transform: scale(0.8); } 10% { opacity: 1; transform: scale(1); } 100% { top: 100vh; opacity: 1; } }
         .balloon-item { position: absolute; animation-name: balloonFall; animation-timing-function: linear; cursor: pointer; z-index: 50; transition: transform 0.1s; will-change: top; }
-        
-        /* 翻牌 */
         .perspective-1000 { perspective: 1000px; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
         .card-flipped .card-inner { transform: rotateY(180deg); }
         .card-front, .card-back { position: absolute; inset: 0; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; }
         .card-front { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); }
         .card-back { background: #4c1d95; transform: rotateY(180deg); border: 1px solid #8B5CF6; }
-
-        /* 分頁按鈕 */
         .tab-active { background-color: rgba(6, 182, 212, 0.2); border-color: #06B6D4; color: #fff; }
     </style>
 </head>
 <body class="selection:bg-cyber-cyan selection:text-black">
 
-    <div class="version-tag">Ver 3.3.0</div>
+    <div class="version-tag">Ver 3.4.0</div>
     <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
 
     <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col z-10">
@@ -94,7 +82,7 @@
             </div>
         </header>
 
-        <!-- VIEW 1: 首頁 -->
+        <!-- VIEW 1: Login -->
         <section id="view-login" class="flex-1 flex flex-col relative overflow-hidden justify-center px-6">
             <div class="flex flex-col items-center mb-10">
                 <div class="w-32 h-32 rounded-full border-2 border-cyber-cyan flex items-center justify-center bg-cyber-cyan/10 relative shadow-[0_0_30px_#06B6D4] mb-6">
@@ -125,7 +113,6 @@
 
         <!-- VIEW 2: Dashboard -->
         <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6 pb-20">
-            <!-- User Status -->
             <div class="glass-panel p-5 rounded-xl relative overflow-hidden">
                 <div class="absolute -right-6 -top-6 w-32 h-32 bg-cyber-cyan/5 rounded-full blur-2xl"></div>
                 <h2 id="dash-name" class="text-xl font-bold text-white relative z-10">載入中...</h2>
@@ -139,7 +126,7 @@
                 </div>
             </div>
 
-            <!-- 1. 個人挑戰區 -->
+            <!-- SOLO -->
             <div>
                 <h3 class="text-base font-bold text-cyber-cyan mb-4 tracking-wider font-display">個人挑戰區 (SOLO)</h3>
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -154,7 +141,6 @@
                         <p class="text-xs text-gray-400">Wheel</p>
                     </div>
                 </div>
-                <!-- 聽音 + 短句 -->
                 <div class="grid gap-3">
                     <div onclick="window.app.game.setup('practice', 'standard')" class="glass-panel p-4 rounded-xl border border-cyber-cyan/50 cursor-pointer hover:bg-cyber-cyan/10 transition-colors flex items-center gap-4">
                         <i data-lucide="headphones" class="w-8 h-8 text-cyber-cyan"></i>
@@ -173,7 +159,7 @@
                 </div>
             </div>
 
-            <!-- 2. 團體競技區 -->
+            <!-- TEAM -->
             <div>
                 <h3 class="text-base font-bold text-cyber-purple mb-4 tracking-wider font-display mt-4">團體競技區 (TEAM)</h3>
                 <div class="space-y-3">
@@ -184,7 +170,6 @@
                         </div>
                         <i data-lucide="move-horizontal" class="text-cyber-purple"></i>
                     </div>
-
                     <div onclick="window.app.game.setup('ranked', 'speed')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-danger cursor-pointer hover:bg-white/5 flex justify-between items-center group">
                         <div>
                             <h4 class="font-bold text-cyber-danger group-hover:text-white transition-colors">🎈 疾速破冰 (Speed Pop)</h4>
@@ -193,8 +178,6 @@
                         <i data-lucide="zap" class="text-cyber-danger"></i>
                     </div>
                 </div>
-                
-                <!-- 戰情中心 -->
                 <div onclick="window.app.leaderboard.show()" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-green cursor-pointer hover:bg-white/5 flex justify-between items-center group mt-3">
                     <div>
                         <h4 class="font-bold text-cyber-green group-hover:text-white transition-colors">📊 戰情中心 (Leaderboard)</h4>
@@ -204,6 +187,12 @@
                 </div>
             </div>
 
+            <!-- Admin Login Button -->
+            <button onclick="window.app.admin.promptLogin()" class="mt-8 mx-auto flex items-center gap-2 text-xs text-gray-600 hover:text-white transition-colors">
+                <i data-lucide="lock" class="w-3 h-3"></i> Admin Access
+            </button>
+            
+            <!-- Hidden Actual Admin Button -->
             <button id="admin-btn" onclick="window.app.nav.to('admin')" class="hidden fixed bottom-4 right-4 p-3 bg-gray-800 rounded-full text-gray-400 hover:text-white shadow-lg border border-gray-700 z-50">
                 <i data-lucide="settings" class="w-4 h-4"></i>
             </button>
@@ -225,15 +214,10 @@
                         <option value="6">Level 6</option>
                     </select>
                 </div>
-                
                 <div id="setup-count-group">
-                    <label class="block text-xs text-gray-400 mb-4 uppercase flex justify-between">
-                        <span>選擇題數</span>
-                        <span id="count-val" class="text-cyber-cyan font-bold font-mono text-lg">10</span>
-                    </label>
+                    <label class="block text-xs text-gray-400 mb-4 uppercase flex justify-between"><span>選擇題數</span><span id="count-val" class="text-cyber-cyan font-bold font-mono text-lg">10</span></label>
                     <input type="range" id="setup-count" min="10" max="30" step="5" value="10" class="w-full accent-cyber-cyan h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" oninput="document.getElementById('count-val').innerText = this.value">
                 </div>
-
                 <div class="space-y-3 pt-4">
                     <button onclick="window.app.game.start()" class="w-full py-4 bg-cyber-cyan text-black font-bold font-display tracking-widest rounded hover:bg-cyan-400 transition-colors shadow-[0_0_20px_rgba(6,182,212,0.3)]">INITIATE</button>
                     <button onclick="window.app.nav.to('dashboard')" class="w-full py-3 text-gray-500 text-xs tracking-widest hover:text-white">ABORT</button>
@@ -251,12 +235,8 @@
                         <div id="game-progress" class="h-full bg-gradient-to-r from-cyber-cyan to-blue-500 w-0 transition-all duration-300"></div>
                     </div>
                 </div>
-                <div class="text-right">
-                    <div class="text-[10px] text-gray-500">SCORE</div>
-                    <div id="in-game-score" class="text-2xl font-display font-bold text-cyber-orange drop-shadow-md">0</div>
-                </div>
+                <div class="text-right"><div class="text-[10px] text-gray-500">SCORE</div><div id="in-game-score" class="text-2xl font-display font-bold text-cyber-orange drop-shadow-md">0</div></div>
             </div>
-
             <div id="game-stage" class="flex-1 w-full h-full relative flex flex-col items-center justify-center p-4 z-10"></div>
             <div id="danger-line" class="hidden absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-red-600/50 to-transparent z-20 animate-pulse pointer-events-none border-b-2 border-red-500"></div>
         </section>
@@ -271,7 +251,7 @@
                 <div><div class="text-xs text-gray-500 uppercase tracking-widest mb-1">Total Score</div><div class="text-6xl font-display font-bold text-white drop-shadow-lg" id="res-score">0</div></div>
                 <div id="res-stats" class="grid grid-cols-2 gap-4 text-xs"><div class="bg-white/5 p-3 rounded border border-white/5">正確率 <br> <span id="res-accuracy" class="text-cyber-cyan font-bold text-lg">100%</span></div><div class="bg-white/5 p-3 rounded border border-white/5">連擊 <br> <span id="res-streak" class="text-cyber-orange font-bold text-lg">0</span></div></div>
                 <button id="btn-review-wrong" onclick="window.app.game.startWrongReview()" class="hidden w-full py-3 bg-red-900/20 border border-red-500/30 text-red-400 font-bold rounded flex items-center justify-center gap-2"><i data-lucide="flame" class="w-4 h-4"></i> 特訓錯題 (<span id="wrong-count">0</span>)</button>
-                <div class="grid grid-cols-2 gap-3 pt-4 border-t border-white/10"><button onclick="window.app.nav.to('dashboard')" class="py-3 bg-gray-700/50 rounded font-bold text-sm hover:bg-gray-700">回首頁</button><button onclick="window.app.game.setup(window.app.state.mode, window.app.state.gameType)" class="py-3 bg-cyber-purple text-white rounded font-bold text-sm hover:bg-purple-600 shadow-lg">再玩一次</button></div>
+                <div class="grid grid-cols-2 gap-3 pt-4 border-t border-white/10"><button onclick="window.app.nav.to('dashboard')" class="py-3 bg-gray-700/50 rounded font-bold text-sm hover:bg-gray-700 transition-colors">回首頁</button><button onclick="window.app.game.setup(window.app.state.mode, window.app.state.gameType)" class="py-3 bg-cyber-purple text-white rounded font-bold text-sm hover:bg-purple-600 shadow-lg transition-colors">再玩一次</button></div>
             </div>
         </section>
 
@@ -290,8 +270,13 @@
                 <button onclick="window.app.admin.uploadCSV()" class="w-full py-2 bg-blue-600 rounded text-sm font-bold">Process Upload</button>
                 <hr class="border-gray-700">
                 <div class="space-y-2"><h3 class="text-xs text-cyber-cyan font-bold">GAME SETTINGS</h3><div class="grid grid-cols-2 gap-2"><button onclick="window.app.admin.setSpeed(1)" class="py-2 bg-white/5 border border-white/10 rounded text-xs">慢速 (Easy)</button><button onclick="window.app.admin.setSpeed(2)" class="py-2 bg-white/5 border border-white/10 rounded text-xs">快速 (Hard)</button></div></div>
-                <hr class="border-gray-700">
-                <button onclick="window.app.admin.hardReset()" class="w-full py-3 bg-red-900/50 text-red-200 font-bold rounded text-sm border border-red-500">SYSTEM HARD RESET</button>
+                
+                <!-- Super Admin Only -->
+                <div id="super-admin-zone" class="hidden space-y-2 pt-2 border-t border-red-900/50">
+                    <h3 class="text-xs text-red-500 font-bold">DANGER ZONE</h3>
+                    <button onclick="window.app.admin.hardReset()" class="w-full py-3 bg-red-900/50 text-red-200 font-bold rounded text-sm border border-red-500">SYSTEM HARD RESET</button>
+                </div>
+
                 <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 bg-gray-700 rounded text-sm">Exit</button>
             </div>
         </section>
@@ -327,7 +312,6 @@
         const googleProvider = new GoogleAuthProvider();
         lucide.createIcons();
 
-        // Icons
         const ICONS = {
             lily: `<svg viewBox="0 0 100 100" class="w-5 h-5 inline drop-shadow"><path d="M50 20 C60 5 80 20 50 50 C20 20 40 5 50 20 Z" fill="#fff"/><path d="M50 80 C40 95 20 80 50 50 C80 80 60 95 50 80 Z" fill="#fff"/><path d="M20 50 C5 40 20 20 50 50 C20 80 5 60 20 50 Z" fill="#fff"/><path d="M80 50 C95 60 80 80 50 50 C80 20 95 40 80 50 Z" fill="#fff"/><circle cx="50" cy="50" r="6" fill="#DC2626"/></svg>`,
             pot: `<svg viewBox="0 0 100 100" class="w-5 h-5 inline drop-shadow"><path d="M30 30 Q50 90 70 30 L60 20 L40 20 Z" fill="#5D4037"/><circle cx="50" cy="40" r="8" fill="none" stroke="#222" stroke-dasharray="2"/></svg>`,
@@ -341,7 +325,6 @@
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         if (!user.email.endsWith("@ppsh.ptc.edu.tw")) { appLogic.ui.alert("存取被拒", "僅限 @ppsh.ptc.edu.tw 網域"); await signOut(auth); return; }
-                        if (["fuwen@ppsh.ptc.edu.tw"].includes(user.email)) document.getElementById('admin-btn').classList.remove('hidden');
                         const userRef = doc(db, "users", user.uid); const userSnap = await getDoc(userRef);
                         if (!userSnap.exists()) await setDoc(userRef, { email: user.email, displayName: user.displayName, photoURL: user.photoURL, score: 0, weeklyScore: 0, teamId: null, lastPlayed: serverTimestamp() });
                         appLogic.state.user = { uid: user.uid, ...userSnap.data() || { score:0 } };
@@ -354,6 +337,49 @@
                 });
             },
             auth: { login: () => signInWithPopup(auth, googleProvider).catch(e => appLogic.ui.alert("錯誤", e.message)) },
+
+            admin: {
+                promptLogin: () => {
+                    const pwd = prompt("請輸入管理員密碼：");
+                    if (pwd === "admin123") {
+                        document.getElementById('admin-btn').classList.remove('hidden');
+                        appLogic.ui.alert("系統", "管理權限已解鎖");
+                        // Check if super admin
+                        if (appLogic.state.user && appLogic.state.user.email === 'fuwen@ppsh.ptc.edu.tw') {
+                            document.getElementById('super-admin-zone').classList.remove('hidden');
+                        }
+                        window.app.nav.to('admin');
+                    } else {
+                        appLogic.ui.alert("錯誤", "密碼錯誤");
+                    }
+                },
+                uploadCSV: () => {
+                    const f = document.getElementById('csv-upload').files[0];
+                    if(!f) return;
+                    Papa.parse(f, {header:true, complete: async(r)=>{
+                        const b = writeBatch(db);
+                        r.data.forEach(row=>{ 
+                            if(row['單字']) {
+                                const sentence = row['例句'] ? row['例句'] : `This is a ${row['單字']}.`;
+                                b.set(doc(collection(db,"words")), {word:row['單字'], chinese:row['中文'], level:row['級別']||'1', type:row['屬性']||'n.', sentence: sentence}); 
+                            }
+                        }); 
+                        await b.commit(); appLogic.ui.alert("OK",`匯入 ${r.data.length} 筆`);
+                    }});
+                },
+                hardReset: async () => {
+                    if(appLogic.state.user.email !== 'fuwen@ppsh.ptc.edu.tw') { appLogic.ui.alert("權限不足", "只有超級管理員可執行此操作"); return; }
+                    if(prompt("TYPE RESET")!=="RESET") return;
+                    const u = await getDocs(collection(db,"users")); const ub = writeBatch(db); u.forEach(d=>ub.delete(d.ref)); await ub.commit();
+                    const t = await getDocs(collection(db,"teams")); const tb = writeBatch(db); t.forEach(d=>tb.delete(d.ref)); await tb.commit();
+                    location.reload();
+                },
+                setSpeed: async (s) => {
+                    await setDoc(doc(db, "settings", "game"), { speed: s });
+                    appLogic.state.gameSpeed = s;
+                    appLogic.ui.alert("設定", "遊戲難度已更新");
+                }
+            },
 
             game: {
                 setup: async (mode, type) => {
@@ -394,7 +420,6 @@
                 },
                 quit: () => { gsap.killTweensOf("*"); appLogic.nav.to('dashboard'); },
 
-                // 1. Tug
                 startTugGame: () => {
                     const stage = document.getElementById('game-stage');
                     stage.innerHTML = `<div class="w-full flex justify-between items-center mb-4 px-4"><span class="text-cyber-cyan font-bold">TEAM</span><span class="text-red-500 font-bold">SYSTEM</span></div><div class="tug-beam-container"><div class="tug-beam"></div><div class="tug-zone" style="left: 50%"></div><div id="tug-node" class="tug-node" style="left: 50%"></div></div><div id="tug-q-area" class="w-full flex flex-col items-center mt-8"></div>`;
@@ -425,7 +450,6 @@
                     });
                 },
 
-                // 2. Speed Pop [Mixed]
                 startSpeedGame: () => {
                     if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
@@ -454,7 +478,6 @@
                     });
                 },
 
-                // 3. Match
                 startMatchGame: () => {
                     const stage = document.getElementById('game-stage');
                     const batch = appLogic.state.quizList.slice(0, 5); 
@@ -470,20 +493,16 @@
                     }; render();
                 },
 
-                // 4. Wheel
                 startWheelGame: () => {
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
                     const stage = document.getElementById('game-stage');
                     stage.innerHTML = `<div class="relative w-64 h-64 mb-8"><div id="wheel" class="w-full h-full rounded-full border-4 border-cyber-yellow flex items-center justify-center bg-black shadow-[0_0_30px_#FACC15]"><span class="text-4xl">❓</span></div></div><button id="spin-btn" class="px-8 py-3 bg-cyber-yellow text-black rounded-full font-bold animate-pulse">SPIN</button><div id="wheel-q" class="hidden glass-panel p-4 rounded-xl w-full text-center mt-4"></div>`;
                     document.getElementById('spin-btn').onclick = () => {
                         const wheel = document.getElementById('wheel');
-                        wheel.style.transition = "transform 1.5s cubic-bezier(0.1,0,0.2,1)"; // Faster
-                        wheel.style.transform = `rotate(${720+Math.random()*360}deg)`;
+                        wheel.style.transition = "transform 1.5s cubic-bezier(0.1,0,0.2,1)"; wheel.style.transform = `rotate(${720+Math.random()*360}deg)`;
                         document.getElementById('spin-btn').classList.add('hidden');
                         setTimeout(()=>{
-                            // Reset rotation for text readability but keep visual constant
-                            wheel.style.transition = "none";
-                            wheel.style.transform = "rotate(0deg)";
+                            wheel.style.transition = "none"; wheel.style.transform = "rotate(0deg)";
                             wheel.innerHTML = `<span class="text-xl font-bold text-cyber-yellow">${q.word}</span>`;
                             const qDiv = document.getElementById('wheel-q'); qDiv.classList.remove('hidden'); qDiv.innerHTML='';
                             let opts = appLogic.game.getDistractors(q,3);
@@ -492,7 +511,6 @@
                     };
                 },
 
-                // 5. Fill
                 startFillGame: () => {
                     if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
@@ -500,26 +518,18 @@
                     const stage = document.getElementById('game-stage');
                     const sentence = q.sentence || `This is a ${q.word}.`;
                     const blanked = sentence.replace(new RegExp(q.word, 'gi'), '_____');
-                    
-                    stage.innerHTML = `
-                        <div class="glass-panel w-full max-w-sm p-6 rounded-2xl flex flex-col items-center text-center">
-                            <div class="text-xl text-white mb-6 font-serif leading-relaxed">"${blanked}"</div>
-                            <div class="text-xs text-gray-500 mb-6 tracking-wider">${q.chinese}</div>
-                            <div class="grid w-full gap-3" id="fill-options"></div>
-                        </div>
-                    `;
+                    stage.innerHTML = `<div class="glass-panel w-full max-w-sm p-6 rounded-2xl flex flex-col items-center text-center"><div class="text-xl text-white mb-6 font-serif leading-relaxed">"${blanked}"</div><div class="text-xs text-gray-500 mb-6 tracking-wider">${q.chinese}</div><div class="grid w-full gap-3" id="fill-options"></div></div>`;
                     const optContainer = document.getElementById('fill-options');
                     let options = appLogic.game.getDistractors(q, 3);
                     options.forEach(opt => {
                         const btn = document.createElement('button');
                         btn.className = "w-full py-4 bg-white/5 border border-white/10 rounded-xl hover:border-cyber-orange hover:bg-white/10 transition-all font-bold text-cyber-orange text-lg font-mono";
-                        btn.innerText = opt.word; // Show English
+                        btn.innerText = opt.word; 
                         btn.onclick = () => { if (opt.id === q.id) { appLogic.game.handleAnswer(true); setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startFillGame(); }, 600); } else { appLogic.game.handleAnswer(false); appLogic.ui.alert("WRONG", `正確答案: ${q.word}`); setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startFillGame(); }, 1500); } };
                         optContainer.appendChild(btn);
                     });
                 },
 
-                // Standard
                 nextStandard: () => {
                     if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
@@ -579,28 +589,7 @@
                 bgAnimation: () => { /* ... */ }
             },
             team: { create: async () => { /* Same */ }, join: async () => { /* Same */ }, load: (tid) => { /* Same */ } },
-            admin: {
-                uploadCSV: () => {
-                    const f = document.getElementById('csv-upload').files[0];
-                    if(!f) return;
-                    Papa.parse(f, {header:true, complete: async(r)=>{
-                        const b = writeBatch(db);
-                        r.data.forEach(row=>{ 
-                            if(row['單字']) {
-                                // AI 例句生成 (模擬)
-                                const sentence = row['例句'] ? row['例句'] : `This is a ${row['單字']}.`;
-                                b.set(doc(collection(db,"words")), {word:row['單字'], chinese:row['中文'], level:row['級別']||'1', type:row['屬性']||'n.', sentence: sentence}); 
-                            }
-                        }); 
-                        await b.commit(); appLogic.ui.alert("OK",`匯入 ${r.data.length} 筆`);
-                    }});
-                },
-                hardReset: async () => { /* Same */ },
-                setSpeed: async (s) => {
-                    await setDoc(doc(db, "settings", "game"), { speed: s });
-                    appLogic.ui.alert("設定", "遊戲難度已更新");
-                }
-            },
+            
             leaderboard: {
                 renderPreview: async () => {
                     try {
@@ -608,10 +597,7 @@
                         document.getElementById('login-lb-user').innerHTML = uSnap.docs.map((d,i)=>`<div class="flex justify-between w-full mb-1 border-b border-white/5 pb-1"><span class="text-xs text-white">${i+1}. ${d.data().displayName}</span><span class="text-cyber-cyan">${d.data().score}</span></div>`).join('');
                         const tQ = query(collection(db, "teams"), orderBy("score", "desc"), limit(3)); const tSnap = await getDocs(tQ);
                         document.getElementById('login-lb-team').innerHTML = tSnap.docs.map((d,i)=>`<div class="flex justify-between w-full mb-1 border-b border-white/5 pb-1"><span class="text-xs text-white">${i+1}. ${d.data().name}</span><span class="text-cyber-purple">${d.data().score}</span></div>`).join('');
-                    } catch(e) { 
-                        document.getElementById('login-lb-user').innerHTML = "需登入查看"; 
-                        document.getElementById('login-lb-team').innerHTML = "需登入查看"; 
-                    }
+                    } catch(e) { document.getElementById('login-lb-user').innerHTML = "需登入查看"; document.getElementById('login-lb-team').innerHTML = "需登入查看"; }
                 },
                 show: () => { appLogic.nav.to('leaderboard'); appLogic.leaderboard.fetchData(); },
                 switchSubTab: (subTab) => {
