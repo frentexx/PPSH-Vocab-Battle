@@ -68,7 +68,7 @@
 </head>
 <body class="selection:bg-cyber-cyan selection:text-black">
 
-    <div class="version-tag">Ver 3.5.0</div>
+    <div class="version-tag">Ver 3.7.0</div>
     <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
 
     <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col z-10">
@@ -88,7 +88,7 @@
             </div>
         </header>
 
-        <!-- VIEW 1: 首頁 (公開排行榜) -->
+        <!-- VIEW 1: Login -->
         <section id="view-login" class="flex-1 flex flex-col relative overflow-hidden justify-center px-6">
             <div class="flex flex-col items-center mb-10">
                 <div class="w-32 h-32 rounded-full border-2 border-cyber-cyan flex items-center justify-center bg-cyber-cyan/10 relative shadow-[0_0_30px_#06B6D4] mb-6">
@@ -101,23 +101,16 @@
                     <span class="block text-xs text-gray-400 tracking-[0.2em] font-display">PPSH VOCABULARY BATTLE</span>
                 </h1>
             </div>
-            
-            <!-- 雙欄排行榜預覽 -->
             <div class="grid grid-cols-2 gap-4 mb-10">
-                <div class="glass-panel p-4 rounded-xl flex flex-col items-center justify-start min-h-[140px] bg-cyber-card/80 border border-white/5">
-                    <h3 class="text-cyber-cyan font-bold text-sm mb-3 border-b border-white/10 pb-1 w-full text-center">最強單字王</h3>
-                    <div id="login-lb-user" class="text-xs text-gray-400 w-full space-y-2">
-                        <div class="flex justify-center items-center h-full"><span class="animate-spin text-cyber-cyan">⟳</span></div>
-                    </div>
+                <div class="glass-panel p-4 rounded-xl flex flex-col items-center justify-center min-h-[120px] bg-cyber-card/80 border border-white/5">
+                    <h3 class="text-cyber-cyan font-bold text-sm mb-2">最強單字王</h3>
+                    <div id="login-lb-user" class="text-xs text-gray-400">讀取中...</div>
                 </div>
-                <div class="glass-panel p-4 rounded-xl flex flex-col items-center justify-start min-h-[140px] bg-cyber-card/80 border border-white/5">
-                    <h3 class="text-cyber-purple font-bold text-sm mb-3 border-b border-white/10 pb-1 w-full text-center">最強戰隊</h3>
-                    <div id="login-lb-team" class="text-xs text-gray-400 w-full space-y-2">
-                        <div class="flex justify-center items-center h-full"><span class="animate-spin text-cyber-purple">⟳</span></div>
-                    </div>
+                <div class="glass-panel p-4 rounded-xl flex flex-col items-center justify-center min-h-[120px] bg-cyber-card/80 border border-white/5">
+                    <h3 class="text-cyber-purple font-bold text-sm mb-2">最強戰隊</h3>
+                    <div id="login-lb-team" class="text-xs text-gray-400">讀取中...</div>
                 </div>
             </div>
-
             <button onclick="window.app.auth.login()" class="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyber-purple text-white font-bold text-lg shadow-[0_0_25px_rgba(139,92,246,0.4)] hover:scale-[1.02] transition-transform flex items-center justify-center gap-2">
                 <i data-lucide="log-in" class="w-5 h-5"></i> 使用 Google 帳號登入
             </button>
@@ -126,7 +119,6 @@
 
         <!-- VIEW 2: Dashboard -->
         <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6 pb-20">
-            <!-- User Status -->
             <div class="glass-panel p-5 rounded-xl relative overflow-hidden">
                 <div class="absolute -right-6 -top-6 w-32 h-32 bg-cyber-cyan/5 rounded-full blur-2xl"></div>
                 <h2 id="dash-name" class="text-xl font-bold text-white relative z-10">載入中...</h2>
@@ -209,7 +201,7 @@
             </button>
         </section>
 
-        <!-- VIEW 3, 4, 5, 6, 7 (省略重複，功能同 v3.4.3) -->
+        <!-- VIEW 3: Setup -->
         <section id="view-setup" class="hidden flex-1 flex flex-col p-4 gap-6 justify-center">
             <h2 class="text-2xl font-display font-bold text-center text-white tracking-widest">MISSION CONFIG</h2>
             <div class="glass-panel p-6 rounded-2xl space-y-8">
@@ -236,6 +228,7 @@
             </div>
         </section>
 
+        <!-- VIEW 4: Game -->
         <section id="view-game" class="hidden flex-1 flex flex-col relative overflow-hidden bg-black/60">
             <div class="absolute top-0 left-0 w-full p-4 z-30 flex justify-between items-start pointer-events-none">
                 <button onclick="window.app.game.quit()" class="pointer-events-auto text-white/50 hover:text-white p-2 bg-black/30 rounded-full backdrop-blur-sm border border-white/10"><i data-lucide="x"></i></button>
@@ -251,6 +244,7 @@
             <div id="danger-line" class="hidden absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-red-600/50 to-transparent z-20 animate-pulse pointer-events-none border-b-2 border-red-500"></div>
         </section>
 
+        <!-- VIEW 5: Result -->
         <section id="view-result" class="hidden flex-1 flex flex-col p-6 items-center justify-center gap-8 relative">
             <div class="text-center space-y-2 z-10">
                 <h2 class="text-3xl font-display font-bold text-white neon-text">MISSION COMPLETE</h2>
@@ -264,6 +258,7 @@
             </div>
         </section>
 
+        <!-- VIEW 6: Leaderboard -->
         <section id="view-leaderboard" class="hidden fixed inset-0 z-50 bg-cyber-bg flex flex-col p-4 animate-fade-in">
              <div class="flex justify-between items-center mb-4">
                  <h2 class="text-xl font-bold font-display text-cyber-green flex items-center gap-2"><i data-lucide="bar-chart-2"></i> INTELLIGENCE</h2>
@@ -276,11 +271,28 @@
              <div class="glass-panel flex-1 rounded-2xl overflow-hidden relative"><div id="lb-detail-content" class="h-full overflow-y-auto p-4 space-y-2"></div></div>
         </section>
 
+        <!-- VIEW 7: Admin (Updated) -->
         <section id="view-admin" class="hidden flex-1 flex flex-col p-4 gap-4">
             <h2 class="text-xl font-bold text-cyber-orange flex gap-2 items-center"><i data-lucide="shield-alert"></i> ADMIN CONSOLE</h2>
             <div class="glass-panel p-4 rounded-xl space-y-4">
+                <button onclick="window.app.admin.downloadTemplate()" class="w-full py-2 bg-white/5 border border-white/20 rounded text-sm text-gray-300 hover:bg-white/10 mb-2">📥 下載 CSV 範例檔</button>
                 <div class="border border-dashed border-gray-600 p-4 rounded text-center"><input type="file" id="csv-upload" accept=".csv" class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-cyber-purple file:text-white"/></div>
                 <button onclick="window.app.admin.uploadCSV()" class="w-full py-2 bg-blue-600 rounded text-sm font-bold">Process Upload</button>
+                <hr class="border-gray-700">
+                
+                <!-- 新增：單字庫管理 -->
+                <div class="space-y-2">
+                    <h3 class="text-xs text-cyber-cyan font-bold">VOCABULARY MANAGEMENT</h3>
+                    <div id="vocab-stats" class="text-xs text-gray-400 mb-2">統計中...</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="del-level" class="bg-black/30 border border-gray-600 rounded px-2 py-1 text-xs text-white">
+                            <option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option>
+                            <option value="4">Level 4</option><option value="5">Level 5</option><option value="6">Level 6</option>
+                        </select>
+                        <button onclick="window.app.admin.deleteLevel()" class="py-1 bg-red-900/50 border border-red-500 text-red-200 rounded text-xs hover:bg-red-800">🗑️ 刪除該級別</button>
+                    </div>
+                </div>
+                
                 <hr class="border-gray-700">
                 <div class="space-y-2"><h3 class="text-xs text-cyber-cyan font-bold">GAME SETTINGS</h3><div class="grid grid-cols-2 gap-2"><button onclick="window.app.admin.setSpeed(1)" class="py-2 bg-white/5 border border-white/10 rounded text-xs">慢速 (Easy)</button><button onclick="window.app.admin.setSpeed(2)" class="py-2 bg-white/5 border border-white/10 rounded text-xs">快速 (Hard)</button></div></div>
                 <div id="super-admin-zone" class="hidden space-y-2 pt-2 border-t border-red-900/50"><h3 class="text-xs text-red-500 font-bold">DANGER ZONE</h3><button onclick="window.app.admin.hardReset()" class="w-full py-3 bg-red-900/50 text-red-200 font-bold rounded text-sm border border-red-500">SYSTEM HARD RESET</button></div>
@@ -333,9 +345,7 @@
                     if (user) {
                         const valid = user.email.endsWith("@ppsh.ptc.edu.tw") || user.email.endsWith("@gmail.com");
                         if (!valid) { appLogic.ui.alert("存取被拒", "僅限 @ppsh.ptc.edu.tw 或 Gmail 帳號"); await signOut(auth); return; }
-                        
                         if (["fuwen@ppsh.ptc.edu.tw"].includes(user.email)) document.getElementById('admin-btn').classList.remove('hidden');
-                        
                         const userRef = doc(db, "users", user.uid); const userSnap = await getDoc(userRef);
                         if (!userSnap.exists()) await setDoc(userRef, { email: user.email, displayName: user.displayName, photoURL: user.photoURL, score: 0, weeklyScore: 0, teamId: null, lastPlayed: serverTimestamp() });
                         appLogic.state.user = { uid: user.uid, ...userSnap.data() || { score:0 } };
@@ -355,27 +365,50 @@
                     if (pwd === "admin123") {
                         document.getElementById('admin-btn').classList.remove('hidden');
                         appLogic.ui.alert("系統", "管理權限已解鎖");
-                        if (appLogic.state.user && appLogic.state.user.email === 'fuwen@ppsh.ptc.edu.tw') {
-                            document.getElementById('super-admin-zone').classList.remove('hidden');
-                        }
+                        if (appLogic.state.user && appLogic.state.user.email === 'fuwen@ppsh.ptc.edu.tw') document.getElementById('super-admin-zone').classList.remove('hidden');
                         window.app.nav.to('admin');
-                    } else {
-                        appLogic.ui.alert("錯誤", "密碼錯誤");
-                    }
+                        appLogic.admin.updateStats(); // 載入統計
+                    } else { appLogic.ui.alert("錯誤", "密碼錯誤"); }
+                },
+                downloadTemplate: () => {
+                    const csvContent = "級別,單字,中文,屬性,例句\n3,cupboard,櫥櫃,n.,We keep the mop in a cupboard under the stairs.\n2,thirsty,口渴的,adj.,I am very thirsty after running.\n1,office,辦公室,n.,My father works in a big office in Taipei.\n4,abandon,拋棄,v.,Do not abandon your dreams.";
+                    const blob = new Blob(["\ufeff"+csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "vocabulary_template.csv"; link.click();
                 },
                 uploadCSV: () => {
                     const f = document.getElementById('csv-upload').files[0];
                     if(!f) return;
-                    Papa.parse(f, {header:true, complete: async(r)=>{
-                        const b = writeBatch(db);
+                    Papa.parse(f, {header:true, skipEmptyLines: true, complete: async(r)=>{
+                        const b = writeBatch(db); let count = 0;
                         r.data.forEach(row=>{ 
                             if(row['單字']) {
-                                const sentence = row['例句'] ? row['例句'] : `This is a ${row['單字']}.`;
-                                b.set(doc(collection(db,"words")), {word:row['單字'], chinese:row['中文'], level:row['級別']||'1', type:row['屬性']||'n.', sentence: sentence}); 
+                                const sentence = row['例句'] ? row['例句'].trim() : `This is a ${row['單字']}.`;
+                                b.set(doc(collection(db,"words")), {word:row['單字'].trim(), chinese:row['中文'].trim(), level:row['級別']||'1', type:row['屬性']||'n.', sentence: sentence}); 
+                                count++;
                             }
                         }); 
-                        await b.commit(); appLogic.ui.alert("OK",`匯入 ${r.data.length} 筆`);
+                        await b.commit(); appLogic.ui.alert("OK",`匯入 ${count} 筆單字`);
+                        appLogic.admin.updateStats();
                     }});
+                },
+                updateStats: async () => {
+                    const snap = await getDocs(collection(db, "words"));
+                    const counts = {};
+                    snap.forEach(d => { const l = d.data().level; counts[l] = (counts[l] || 0) + 1; });
+                    let text = `目前總單字量: ${snap.size}\n`;
+                    for(let k in counts) text += `L${k}: ${counts[k]}字 | `;
+                    document.getElementById('vocab-stats').innerText = text;
+                },
+                deleteLevel: async () => {
+                    const lvl = document.getElementById('del-level').value;
+                    if(!confirm(`確定要刪除所有 Level ${lvl} 的單字嗎？此操作無法復原！`)) return;
+                    const q = query(collection(db, "words"), where("level", "==", lvl));
+                    const snap = await getDocs(q);
+                    const b = writeBatch(db);
+                    snap.forEach(d => b.delete(d.ref));
+                    await b.commit();
+                    appLogic.ui.alert("完成", `已刪除 ${snap.size} 個單字`);
+                    appLogic.admin.updateStats();
                 },
                 hardReset: async () => {
                     if(appLogic.state.user.email !== 'fuwen@ppsh.ptc.edu.tw') { appLogic.ui.alert("權限不足", "只有超級管理員可執行此操作"); return; }
@@ -384,11 +417,7 @@
                     const t = await getDocs(collection(db,"teams")); const tb = writeBatch(db); t.forEach(d=>tb.delete(d.ref)); await tb.commit();
                     location.reload();
                 },
-                setSpeed: async (s) => {
-                    await setDoc(doc(db, "settings", "game"), { speed: s });
-                    appLogic.state.gameSpeed = s;
-                    appLogic.ui.alert("設定", "遊戲難度已更新");
-                }
+                setSpeed: async (s) => { await setDoc(doc(db, "settings", "game"), { speed: s }); appLogic.state.gameSpeed = s; appLogic.ui.alert("設定", "遊戲難度已更新"); }
             },
 
             game: {
@@ -599,47 +628,45 @@
                 bgAnimation: () => { /* ... */ }
             },
             team: { create: async () => { /* Same */ }, join: async () => { /* Same */ }, load: (tid) => { /* Same */ } },
-            admin: {
-                uploadCSV: () => {
-                    const f = document.getElementById('csv-upload').files[0];
-                    if(!f) return;
-                    Papa.parse(f, {header:true, complete: async(r)=>{
-                        const b = writeBatch(db);
-                        r.data.forEach(row=>{ 
-                            if(row['單字']) {
-                                // AI 例句生成 (模擬)
-                                const sentence = row['例句'] ? row['例句'] : `This is a ${row['單字']}.`;
-                                b.set(doc(collection(db,"words")), {word:row['單字'], chinese:row['中文'], level:row['級別']||'1', type:row['屬性']||'n.', sentence: sentence}); 
-                            }
-                        }); 
-                        await b.commit(); appLogic.ui.alert("OK",`匯入 ${r.data.length} 筆`);
-                    }});
-                },
-                hardReset: async () => { /* Same */ },
-                setSpeed: async (s) => {
-                    await setDoc(doc(db, "settings", "game"), { speed: s });
-                    appLogic.state.gameSpeed = s;
-                    appLogic.ui.alert("設定", "遊戲難度已更新");
-                },
-                promptLogin: () => { /* Same */ }
-            },
+            
             leaderboard: {
                 renderPreview: async () => {
-                    // ★★★ 新增：首頁公開排行榜讀取 ★★★
                     try {
                         const uQ = query(collection(db, "users"), orderBy("score", "desc"), limit(3)); const uSnap = await getDocs(uQ);
                         document.getElementById('login-lb-user').innerHTML = uSnap.docs.map((d,i)=>`<div class="flex justify-between w-full mb-1 border-b border-white/5 pb-1"><span class="text-xs text-white">${i+1}. ${d.data().displayName}</span><span class="text-cyber-cyan">${d.data().score}</span></div>`).join('');
                         const tQ = query(collection(db, "teams"), orderBy("score", "desc"), limit(3)); const tSnap = await getDocs(tQ);
                         document.getElementById('login-lb-team').innerHTML = tSnap.docs.map((d,i)=>`<div class="flex justify-between w-full mb-1 border-b border-white/5 pb-1"><span class="text-xs text-white">${i+1}. ${d.data().name}</span><span class="text-cyber-purple">${d.data().score}</span></div>`).join('');
                     } catch(e) { 
-                        // 若讀取失敗 (通常是 Rules 問題)，顯示提示
-                        document.getElementById('login-lb-user').innerHTML = "暫無資料"; 
-                        document.getElementById('login-lb-team').innerHTML = "暫無資料"; 
+                        document.getElementById('login-lb-user').innerHTML = "需登入查看"; 
+                        document.getElementById('login-lb-team').innerHTML = "需登入查看"; 
                     }
                 },
                 show: () => { appLogic.nav.to('leaderboard'); appLogic.leaderboard.fetchData(); },
-                switchSubTab: (subTab) => { /* Same */ },
-                fetchData: async () => { /* Same */ }
+                switchSubTab: (subTab) => {
+                    appLogic.state.lbSubTab = subTab;
+                    const userBtn = document.getElementById('subtab-user'); const teamBtn = document.getElementById('subtab-team');
+                    if(subTab === 'user') { userBtn.classList.add('tab-active'); userBtn.classList.remove('text-gray-400'); teamBtn.classList.remove('tab-active'); teamBtn.classList.add('text-gray-400'); }
+                    else { teamBtn.classList.add('tab-active'); teamBtn.classList.remove('text-gray-400'); userBtn.classList.remove('tab-active'); userBtn.classList.add('text-gray-400'); }
+                    appLogic.leaderboard.fetchData();
+                },
+                fetchData: async () => {
+                    const container = document.getElementById('lb-detail-content'); container.innerHTML = '<div class="text-center text-gray-500 py-4">讀取中...</div>';
+                    try {
+                        let q; if (appLogic.state.lbSubTab === 'team') q = query(collection(db, "teams"), orderBy("score", "desc"), limit(20)); else q = query(collection(db, "users"), orderBy("score", "desc"), limit(20));
+                        const snapshot = await getDocs(q);
+                        if (snapshot.empty) { container.innerHTML = `<div class="text-center text-gray-400 mt-10">暫無資料</div>`; } else {
+                            const icons = [ICONS.lily, ICONS.pot, ICONS.snake];
+                            let html = '';
+                            snapshot.docs.forEach((doc, index) => {
+                                const data = doc.data(); const score = data.score || 0;
+                                let name, img;
+                                if (appLogic.state.lbSubTab === 'team') { name = data.name || "Unknown"; img = "https://api.dicebear.com/7.x/identicon/svg?seed=" + doc.id; } else { name = data.displayName; img = data.photoURL; }
+                                html += `<div class="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/5"><div class="flex items-center gap-3"><div class="flex items-center justify-center w-8 h-8 font-display font-bold text-xl ${index < 3 ? 'text-cyber-orange' : 'text-gray-500'}">${index < 3 ? icons[index] : index + 1}</div><img src="${img}" class="w-8 h-8 rounded-full bg-black object-cover"><div class="flex flex-col"><span class="text-sm font-bold text-gray-200">${name}</span></div></div><div class="font-mono font-bold text-cyber-cyan">${score}</div></div>`;
+                            });
+                            container.innerHTML = html;
+                        }
+                    } catch (e) { container.innerHTML = `<div class="text-center text-red-400 mt-4">載入失敗</div>`; }
+                }
             },
             nav: { to: (id) => { document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); document.getElementById('view-'+id).classList.remove('hidden'); if(id==='login') document.getElementById('app-header').classList.add('hidden'); else document.getElementById('app-header').classList.remove('hidden'); }}
         };
