@@ -68,7 +68,7 @@
 </head>
 <body class="selection:bg-cyber-cyan selection:text-black">
 
-    <div class="version-tag">Ver 3.8.0</div>
+    <div class="version-tag">Ver 3.8.1</div>
     <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
 
     <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col z-10">
@@ -201,14 +201,14 @@
             </button>
         </section>
 
-        <!-- VIEW 3: Setup (Modified) -->
+        <!-- VIEW 3: Setup -->
         <section id="view-setup" class="hidden flex-1 flex flex-col p-4 gap-6 justify-center">
             <h2 class="text-2xl font-display font-bold text-center text-white tracking-widest">MISSION CONFIG</h2>
             <div class="glass-panel p-6 rounded-2xl space-y-8">
                 <div>
                     <label class="block text-xs text-gray-400 mb-2 uppercase">Target Sector</label>
                     <select id="setup-level" class="w-full bg-black/30 border border-gray-600 rounded p-3 text-sm text-white focus:border-cyber-cyan outline-none">
-                        <!-- JS Dynamic Insert -->
+                        <!-- JS Dynamic -->
                         <option value="all">全宇宙 (All Levels)</option>
                     </select>
                 </div>
@@ -223,7 +223,7 @@
             </div>
         </section>
 
-        <!-- VIEW 4: Game Container -->
+        <!-- VIEW 4: Game -->
         <section id="view-game" class="hidden flex-1 flex flex-col relative overflow-hidden bg-black/60">
             <div class="absolute top-0 left-0 w-full p-4 z-30 flex justify-between items-start pointer-events-none">
                 <button onclick="window.app.game.quit()" class="pointer-events-auto text-white/50 hover:text-white p-2 bg-black/30 rounded-full backdrop-blur-sm border border-white/10"><i data-lucide="x"></i></button>
@@ -356,7 +356,7 @@
                         appLogic.ui.alert("系統", "管理權限已解鎖");
                         if (appLogic.state.user && appLogic.state.user.email === 'fuwen@ppsh.ptc.edu.tw') document.getElementById('super-admin-zone').classList.remove('hidden');
                         window.app.nav.to('admin');
-                        appLogic.admin.updateStats(); // 載入統計
+                        appLogic.admin.updateStats(); // Load stats
                     } else { appLogic.ui.alert("錯誤", "密碼錯誤"); }
                 },
                 downloadTemplate: () => {
@@ -372,7 +372,13 @@
                         r.data.forEach(row=>{ 
                             if(row['單字']) {
                                 const sentence = row['例句'] ? row['例句'].trim() : `This is a ${row['單字']}.`;
-                                b.set(doc(collection(db,"words")), {word:row['單字'].trim(), chinese:row['中文'].trim(), level:row['級別']||'1', type:row['屬性']||'n.', sentence: sentence}); 
+                                b.set(doc(collection(db,"words")), {
+                                    word:row['單字'].trim(), 
+                                    chinese:row['中文'].trim(), 
+                                    level:row['級別']||'1', 
+                                    type:row['屬性']||'n.', 
+                                    sentence: sentence
+                                }); 
                                 count++;
                             }
                         }); 
@@ -419,25 +425,30 @@
                     appLogic.state.mode = mode; appLogic.state.gameType = type;
                     if (mode === 'review') { appLogic.game.start(); return; }
                     
-                    // ★★★ 動態級別偵測 ★★★
-                    const q = query(collection(db, "words"), limit(1000));
+                    // ★★★ Modified: Remove limit to scan all levels ★★★
+                    // Use limit(2000) or dynamic pagination in production if data huge
+                    const q = query(collection(db, "words")); 
                     const snapshot = await getDocs(q);
                     if (snapshot.empty) { appLogic.ui.alert("系統", "無單字資料"); return; }
                     
                     appLogic.state.words = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                     
-                    // 統計級別
+                    // Generate Level Options
                     const levels = new Set();
                     appLogic.state.words.forEach(w => levels.add(w.level));
+                    
+                    // Smart Sort: Numbers first, then Strings
                     const sortedLevels = Array.from(levels).sort((a,b) => {
                         const na = Number(a), nb = Number(b);
-                        if(!isNaN(na) && !isNaN(nb)) return na - nb;
+                        const isNumA = !isNaN(na), isNumB = !isNaN(nb);
+                        if(isNumA && isNumB) return na - nb;
+                        if(isNumA) return -1;
+                        if(isNumB) return 1;
                         return String(a).localeCompare(String(b));
                     });
 
                     const sel = document.getElementById('setup-level');
                     sel.innerHTML = '<option value="all">全宇宙 (All Levels)</option>';
-                    // 預設混合選項 (若有 1-6)
                     if(levels.has('1') && levels.has('3')) sel.innerHTML += '<option value="1-3">Level 1-3 混合</option>';
                     if(levels.has('4') && levels.has('6')) sel.innerHTML += '<option value="4-6">Level 4-6 混合</option>';
                     
@@ -457,8 +468,9 @@
                         const countVal = appLogic.state.mode === 'ranked' ? 20 : parseInt(document.getElementById('setup-count').value);
                         let pool = appLogic.state.words.filter(w => {
                             if (level === 'all') return true;
-                            if (level.includes('-')) { const [min, max] = level.split('-').map(Number); return parseInt(w.level) >= min && parseInt(w.level) <= max; }
-                            return w.level === level;
+                            if (level === '1-3') return ['1','2','3'].includes(String(w.level));
+                            if (level === '4-6') return ['4','5','6'].includes(String(w.level));
+                            return String(w.level) === String(level);
                         });
                         if (pool.length < 5) pool = appLogic.state.words;
                         pool.sort(() => Math.random() - 0.5);
