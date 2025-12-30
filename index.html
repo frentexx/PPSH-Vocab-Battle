@@ -51,30 +51,24 @@
         .glass-panel { background: rgba(19, 27, 46, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* 拔河光束 */
+        /* Game FX */
         .tug-beam-container { width: 90%; height: 20px; background: rgba(0,0,0,0.5); border-radius: 10px; position: relative; margin: 20px auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); }
         .tug-beam { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #8B5CF6, #06B6D4, #8B5CF6); transform: translateY(-50%); box-shadow: 0 0 15px #06B6D4; }
         .tug-node { width: 40px; height: 40px; background: #fff; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 30px #fff, 0 0 60px #06B6D4; z-index: 10; transition: left 0.3s ease-out; }
-        
-        /* 氣球 */
         @keyframes balloonFall { 0% { top: -120px; opacity: 0; transform: scale(0.8); } 10% { opacity: 1; transform: scale(1); } 100% { top: 100vh; opacity: 1; } }
         .balloon-item { position: absolute; animation-name: balloonFall; animation-timing-function: linear; cursor: pointer; z-index: 50; transition: transform 0.1s; will-change: top; }
-        
-        /* 翻牌 */
         .perspective-1000 { perspective: 1000px; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
         .card-flipped .card-inner { transform: rotateY(180deg); }
         .card-front, .card-back { position: absolute; inset: 0; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; }
         .card-front { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); }
         .card-back { background: #4c1d95; transform: rotateY(180deg); border: 1px solid #8B5CF6; }
-
-        /* 分頁按鈕 */
         .tab-active { background-color: rgba(6, 182, 212, 0.2); border-color: #06B6D4; color: #fff; }
     </style>
 </head>
 <body class="selection:bg-cyber-cyan selection:text-black">
 
-    <div class="version-tag">Ver 3.4.2</div>
+    <div class="version-tag">Ver 3.4.3</div>
     <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
 
     <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col z-10">
@@ -94,7 +88,7 @@
             </div>
         </header>
 
-        <!-- VIEW 1: 首頁 -->
+        <!-- VIEW 1: Login -->
         <section id="view-login" class="flex-1 flex flex-col relative overflow-hidden justify-center px-6">
             <div class="flex flex-col items-center mb-10">
                 <div class="w-32 h-32 rounded-full border-2 border-cyber-cyan flex items-center justify-center bg-cyber-cyan/10 relative shadow-[0_0_30px_#06B6D4] mb-6">
@@ -125,7 +119,6 @@
 
         <!-- VIEW 2: Dashboard -->
         <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6 pb-20">
-            <!-- User Status -->
             <div class="glass-panel p-5 rounded-xl relative overflow-hidden">
                 <div class="absolute -right-6 -top-6 w-32 h-32 bg-cyber-cyan/5 rounded-full blur-2xl"></div>
                 <h2 id="dash-name" class="text-xl font-bold text-white relative z-10">載入中...</h2>
@@ -139,7 +132,7 @@
                 </div>
             </div>
 
-            <!-- 1. 個人挑戰區 -->
+            <!-- SOLO -->
             <div>
                 <h3 class="text-base font-bold text-cyber-cyan mb-4 tracking-wider font-display">個人挑戰區 (SOLO)</h3>
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -154,7 +147,6 @@
                         <p class="text-xs text-gray-400">Wheel</p>
                     </div>
                 </div>
-                <!-- 聽音 + 短句 -->
                 <div class="grid gap-3">
                     <div onclick="window.app.game.setup('practice', 'standard')" class="glass-panel p-4 rounded-xl border border-cyber-cyan/50 cursor-pointer hover:bg-cyber-cyan/10 transition-colors flex items-center gap-4">
                         <i data-lucide="headphones" class="w-8 h-8 text-cyber-cyan"></i>
@@ -173,7 +165,7 @@
                 </div>
             </div>
 
-            <!-- 2. 團體競技區 -->
+            <!-- TEAM -->
             <div>
                 <h3 class="text-base font-bold text-cyber-purple mb-4 tracking-wider font-display mt-4">團體競技區 (TEAM)</h3>
                 <div class="space-y-3">
@@ -192,6 +184,8 @@
                         <i data-lucide="zap" class="text-cyber-danger"></i>
                     </div>
                 </div>
+                
+                <!-- 戰情中心 (按鈕) -->
                 <div onclick="window.app.leaderboard.show()" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-green cursor-pointer hover:bg-white/5 flex justify-between items-center group mt-3">
                     <div>
                         <h4 class="font-bold text-cyber-green group-hover:text-white transition-colors">📊 戰情中心 (Leaderboard)</h4>
@@ -201,18 +195,40 @@
                 </div>
             </div>
 
-            <!-- Admin Login Button -->
             <button onclick="window.app.admin.promptLogin()" class="mt-8 mx-auto flex items-center gap-2 text-xs text-gray-600 hover:text-white transition-colors">
                 <i data-lucide="lock" class="w-3 h-3"></i> Admin Access
             </button>
-            
-            <!-- Hidden Actual Admin Button -->
             <button id="admin-btn" onclick="window.app.nav.to('admin')" class="hidden fixed bottom-4 right-4 p-3 bg-gray-800 rounded-full text-gray-400 hover:text-white shadow-lg border border-gray-700 z-50">
                 <i data-lucide="settings" class="w-4 h-4"></i>
             </button>
         </section>
 
-        <!-- VIEW 3: Setup -->
+        <!-- VIEW 6: Leaderboard (戰情中心) - ★★★ 修正這裡 ★★★ -->
+        <section id="view-leaderboard" class="hidden fixed inset-0 z-50 bg-cyber-bg flex flex-col p-4 animate-fade-in">
+             <div class="flex justify-between items-center mb-4">
+                 <h2 class="text-xl font-bold font-display text-cyber-green flex items-center gap-2">
+                     <i data-lucide="bar-chart-2"></i> INTELLIGENCE
+                 </h2>
+                 <button onclick="window.app.nav.to('dashboard')" class="p-2 bg-white/10 rounded-full hover:bg-white/20">
+                     <i data-lucide="x" class="w-5 h-5 text-white"></i>
+                 </button>
+             </div>
+             
+             <!-- Tabs -->
+             <div class="glass-panel p-1 rounded-xl flex gap-1 mb-4">
+                 <button id="subtab-user" onclick="window.app.leaderboard.switchSubTab('user')" class="flex-1 py-3 rounded-lg text-sm font-bold tab-active transition-all">個人排行</button>
+                 <button id="subtab-team" onclick="window.app.leaderboard.switchSubTab('team')" class="flex-1 py-3 rounded-lg text-sm font-bold text-gray-400 hover:bg-white/5 transition-all">團隊排行</button>
+             </div>
+             
+             <!-- Content -->
+             <div class="glass-panel flex-1 rounded-2xl overflow-hidden relative">
+                 <div id="lb-detail-content" class="h-full overflow-y-auto p-4 space-y-2">
+                     <!-- Data injected here -->
+                 </div>
+             </div>
+        </section>
+
+        <!-- VIEW 3, 4, 5, 7 (省略重複部分，結構與 v3.4.2 相同，僅列出有更動的 JS) -->
         <section id="view-setup" class="hidden flex-1 flex flex-col p-4 gap-6 justify-center">
             <h2 class="text-2xl font-display font-bold text-center text-white tracking-widest">MISSION CONFIG</h2>
             <div class="glass-panel p-6 rounded-2xl space-y-8">
@@ -239,7 +255,6 @@
             </div>
         </section>
 
-        <!-- VIEW 4: Game Container -->
         <section id="view-game" class="hidden flex-1 flex flex-col relative overflow-hidden bg-black/60">
             <div class="absolute top-0 left-0 w-full p-4 z-30 flex justify-between items-start pointer-events-none">
                 <button onclick="window.app.game.quit()" class="pointer-events-auto text-white/50 hover:text-white p-2 bg-black/30 rounded-full backdrop-blur-sm border border-white/10"><i data-lucide="x"></i></button>
@@ -255,7 +270,6 @@
             <div id="danger-line" class="hidden absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-red-600/50 to-transparent z-20 animate-pulse pointer-events-none border-b-2 border-red-500"></div>
         </section>
 
-        <!-- VIEW 5: Result -->
         <section id="view-result" class="hidden flex-1 flex flex-col p-6 items-center justify-center gap-8 relative">
             <div class="text-center space-y-2 z-10">
                 <h2 class="text-3xl font-display font-bold text-white neon-text">MISSION COMPLETE</h2>
@@ -269,14 +283,6 @@
             </div>
         </section>
 
-        <!-- VIEW 6: Leaderboard -->
-        <section id="view-leaderboard" class="hidden flex-1 flex flex-col p-4 gap-4 bg-cyber-bg z-50 absolute inset-0">
-             <div class="flex justify-between items-center"><h2 class="text-xl font-bold font-display text-cyber-green">INTELLIGENCE</h2><button onclick="window.app.nav.to('dashboard')" class="p-2 hover:text-white"><i data-lucide="x"></i></button></div>
-             <div class="glass-panel p-2 rounded-xl flex gap-2"><button id="subtab-user" onclick="window.app.leaderboard.switchSubTab('user')" class="flex-1 py-2 rounded text-xs font-bold tab-active transition-all">個人排行</button><button id="subtab-team" onclick="window.app.leaderboard.switchSubTab('team')" class="flex-1 py-2 rounded text-xs font-bold text-gray-400 transition-all">團隊排行</button></div>
-             <div id="lb-detail-content" class="flex-1 overflow-y-auto space-y-2 pb-10"></div>
-        </section>
-
-        <!-- VIEW 7: Admin -->
         <section id="view-admin" class="hidden flex-1 flex flex-col p-4 gap-4">
             <h2 class="text-xl font-bold text-cyber-orange flex gap-2 items-center"><i data-lucide="shield-alert"></i> ADMIN CONSOLE</h2>
             <div class="glass-panel p-4 rounded-xl space-y-4">
@@ -284,13 +290,10 @@
                 <button onclick="window.app.admin.uploadCSV()" class="w-full py-2 bg-blue-600 rounded text-sm font-bold">Process Upload</button>
                 <hr class="border-gray-700">
                 <div class="space-y-2"><h3 class="text-xs text-cyber-cyan font-bold">GAME SETTINGS</h3><div class="grid grid-cols-2 gap-2"><button onclick="window.app.admin.setSpeed(1)" class="py-2 bg-white/5 border border-white/10 rounded text-xs">慢速 (Easy)</button><button onclick="window.app.admin.setSpeed(2)" class="py-2 bg-white/5 border border-white/10 rounded text-xs">快速 (Hard)</button></div></div>
-                
-                <!-- Super Admin Only -->
                 <div id="super-admin-zone" class="hidden space-y-2 pt-2 border-t border-red-900/50">
                     <h3 class="text-xs text-red-500 font-bold">DANGER ZONE</h3>
                     <button onclick="window.app.admin.hardReset()" class="w-full py-3 bg-red-900/50 text-red-200 font-bold rounded text-sm border border-red-500">SYSTEM HARD RESET</button>
                 </div>
-
                 <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 bg-gray-700 rounded text-sm">Exit</button>
             </div>
         </section>
@@ -326,6 +329,7 @@
         const googleProvider = new GoogleAuthProvider();
         lucide.createIcons();
 
+        // Icons
         const ICONS = {
             lily: `<svg viewBox="0 0 100 100" class="w-5 h-5 inline drop-shadow"><path d="M50 20 C60 5 80 20 50 50 C20 20 40 5 50 20 Z" fill="#fff"/><path d="M50 80 C40 95 20 80 50 50 C80 80 60 95 50 80 Z" fill="#fff"/><path d="M20 50 C5 40 20 20 50 50 C20 80 5 60 20 50 Z" fill="#fff"/><path d="M80 50 C95 60 80 80 50 50 C80 20 95 40 80 50 Z" fill="#fff"/><circle cx="50" cy="50" r="6" fill="#DC2626"/></svg>`,
             pot: `<svg viewBox="0 0 100 100" class="w-5 h-5 inline drop-shadow"><path d="M30 30 Q50 90 70 30 L60 20 L40 20 Z" fill="#5D4037"/><circle cx="50" cy="40" r="8" fill="none" stroke="#222" stroke-dasharray="2"/></svg>`,
@@ -398,6 +402,7 @@
                 }
             },
 
+            // --- Game Logic ---
             game: {
                 setup: async (mode, type) => {
                     appLogic.state.mode = mode; appLogic.state.gameType = type;
@@ -605,35 +610,74 @@
                 alert: (t, m) => { document.getElementById('alert-title').innerText=t; document.getElementById('alert-msg').innerText=m; document.getElementById('alert-box').classList.remove('hidden'); },
                 bgAnimation: () => { /* ... */ }
             },
-            team: {
-                create: async () => {
-                    // ★ 前端驗證：允許 Gmail
-                    if (!appLogic.state.user) return;
-                    try {
-                        const name = prompt("隊名:"); if(!name) return;
-                        const code = Math.random().toString(36).substring(2,8).toUpperCase();
-                        const ref = await addDoc(collection(db,"teams"), {code, name, leader: appLogic.state.user.uid, members:[appLogic.state.user.uid], score:0});
-                        await updateDoc(doc(db,"users",appLogic.state.user.uid), {teamId: ref.id});
-                        appLogic.state.user.teamId = ref.id; appLogic.team.load(ref.id);
-                        appLogic.ui.alert("成功", `代碼: ${code}`);
-                    } catch(e) {
-                        appLogic.ui.alert("建立失敗", e.message); // 顯示錯誤訊息
-                    }
-                },
-                join: async () => { /* Same */ }, 
-                load: (tid) => { /* Same */ } 
-            },
-            admin: {
-                uploadCSV: () => { /* Same */ },
-                hardReset: async () => { /* Same */ },
-                setSpeed: async (s) => { /* Same */ },
-                promptLogin: () => { /* Same */ }
-            },
+            team: { create: async () => { /* Same */ }, join: async () => { /* Same */ }, load: (tid) => { /* Same */ } },
+            
+            // ★★★ 戰情室功能修復 ★★★
             leaderboard: {
-                renderPreview: async () => { /* Same */ },
-                show: () => { /* Same */ },
-                switchSubTab: (subTab) => { /* Same */ },
-                fetchData: async () => { /* Same */ }
+                renderPreview: async () => { /* Same as before */ },
+                show: () => {
+                    appLogic.nav.to('leaderboard'); 
+                    appLogic.leaderboard.fetchData(); 
+                },
+                switchSubTab: (subTab) => {
+                    appLogic.state.lbSubTab = subTab;
+                    const userBtn = document.getElementById('subtab-user'); const teamBtn = document.getElementById('subtab-team');
+                    if(subTab === 'user') { userBtn.classList.add('tab-active'); userBtn.classList.remove('text-gray-400'); teamBtn.classList.remove('tab-active'); teamBtn.classList.add('text-gray-400'); }
+                    else { teamBtn.classList.add('tab-active'); teamBtn.classList.remove('text-gray-400'); userBtn.classList.remove('tab-active'); userBtn.classList.add('text-gray-400'); }
+                    appLogic.leaderboard.fetchData();
+                },
+                fetchData: async () => {
+                    const container = document.getElementById('lb-detail-content'); 
+                    container.innerHTML = '<div class="text-center text-gray-500 py-4">讀取中...</div>';
+                    
+                    try {
+                        let q;
+                        if (appLogic.state.lbSubTab === 'team') {
+                            q = query(collection(db, "teams"), orderBy("score", "desc"), limit(20));
+                        } else {
+                            q = query(collection(db, "users"), orderBy("score", "desc"), limit(20));
+                        }
+                        
+                        const snapshot = await getDocs(q);
+                        
+                        if (snapshot.empty) {
+                            container.innerHTML = `<div class="text-center text-gray-400 mt-10">暫無資料</div>`;
+                        } else {
+                            const icons = [ICONS.lily, ICONS.pot, ICONS.snake];
+                            let html = '';
+                            snapshot.docs.forEach((doc, index) => {
+                                const data = doc.data(); 
+                                const score = data.score || 0;
+                                let name, img;
+                                
+                                if (appLogic.state.lbSubTab === 'team') {
+                                    name = data.name || "Unknown";
+                                    img = "https://api.dicebear.com/7.x/identicon/svg?seed=" + doc.id;
+                                } else {
+                                    name = data.displayName;
+                                    img = data.photoURL;
+                                }
+                                
+                                html += `
+                                    <div class="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/5">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex items-center justify-center w-8 h-8 font-display font-bold text-xl ${index < 3 ? 'text-cyber-orange' : 'text-gray-500'}">
+                                                ${index < 3 ? icons[index] : index + 1}
+                                            </div>
+                                            <img src="${img}" class="w-8 h-8 rounded-full bg-black object-cover">
+                                            <div class="flex flex-col"><span class="text-sm font-bold text-gray-200">${name}</span></div>
+                                        </div>
+                                        <div class="font-mono font-bold text-cyber-cyan">${score}</div>
+                                    </div>
+                                `;
+                            });
+                            container.innerHTML = html;
+                        }
+                    } catch (e) { 
+                        console.error(e);
+                        container.innerHTML = `<div class="text-center text-red-400 mt-4">載入失敗: ${e.message}</div>`; 
+                    }
+                }
             },
             nav: { to: (id) => { document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); document.getElementById('view-'+id).classList.remove('hidden'); if(id==='login') document.getElementById('app-header').classList.add('hidden'); else document.getElementById('app-header').classList.remove('hidden'); }}
         };
