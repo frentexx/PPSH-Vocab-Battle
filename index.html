@@ -68,7 +68,7 @@
 </head>
 <body class="selection:bg-cyber-cyan selection:text-black">
 
-    <div class="version-tag">Ver 4.0.0</div>
+    <div class="version-tag">Ver 4.1.0</div>
     <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
 
     <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col z-10">
@@ -119,16 +119,21 @@
 
         <!-- VIEW 2: Dashboard -->
         <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6 pb-20">
+            <!-- User Status Card -->
             <div class="glass-panel p-5 rounded-xl relative overflow-hidden">
                 <div class="absolute -right-6 -top-6 w-32 h-32 bg-cyber-cyan/5 rounded-full blur-2xl"></div>
                 <h2 id="dash-name" class="text-xl font-bold text-white relative z-10">載入中...</h2>
                 <p id="dash-team" class="text-xs text-gray-400 mt-1 relative z-10 font-mono">NO TEAM</p>
+                
                 <div class="mt-4 pt-4 border-t border-white/10 flex gap-2">
-                    <button onclick="window.app.team.create()" class="flex-1 py-2 bg-cyber-cyan/10 border border-cyber-cyan/30 rounded text-xs text-cyber-cyan">建立隊伍</button>
-                    <button onclick="window.app.team.join()" class="flex-1 py-2 bg-cyber-purple/10 border border-cyber-purple/30 rounded text-xs text-cyber-purple">輸入代碼</button>
+                    <button onclick="window.app.team.create()" class="flex-1 py-2 bg-cyber-cyan/10 border border-cyber-cyan/30 rounded text-xs text-cyber-cyan hover:bg-cyber-cyan/20 transition-colors">建立隊伍</button>
+                    <button onclick="window.app.team.join()" class="flex-1 py-2 bg-cyber-purple/10 border border-cyber-purple/30 rounded text-xs text-cyber-purple hover:bg-cyber-purple/20 transition-colors">輸入代碼</button>
                 </div>
-                <div id="team-info-box" class="hidden mt-3 p-2 bg-black/30 rounded text-xs text-center border border-white/5">
-                    代碼: <span id="team-code-display" class="font-mono text-white font-bold select-all cursor-pointer"></span>
+                <!-- ★★★ 更新：隊伍代碼顯示區 ★★★ -->
+                <div id="team-info-box" class="hidden mt-3 p-3 bg-black/40 rounded-lg border border-cyber-cyan/30 flex justify-between items-center">
+                    <span class="text-xs text-gray-400">隊伍代碼：</span>
+                    <span id="team-code-display" class="font-mono text-cyber-cyan font-bold text-lg select-all cursor-pointer tracking-widest"></span>
+                    <i data-lucide="copy" class="w-4 h-4 text-gray-500 cursor-pointer hover:text-white" onclick="navigator.clipboard.writeText(document.getElementById('team-code-display').innerText); window.app.ui.alert('複製成功', '代碼已複製到剪貼簿')"></i>
                 </div>
             </div>
 
@@ -208,7 +213,6 @@
                 <div>
                     <label class="block text-xs text-gray-400 mb-2 uppercase">Target Sector</label>
                     <select id="setup-level" class="w-full bg-black/30 border border-gray-600 rounded p-3 text-sm text-white focus:border-cyber-cyan outline-none">
-                        <!-- JS Dynamic -->
                         <option value="all">全宇宙 (All Levels)</option>
                     </select>
                 </div>
@@ -228,8 +232,7 @@
             <div class="absolute top-0 left-0 w-full p-4 z-30 flex justify-between items-start pointer-events-none">
                 <button onclick="window.app.game.quit()" class="pointer-events-auto text-white/50 hover:text-white p-2 bg-black/30 rounded-full backdrop-blur-sm border border-white/10"><i data-lucide="x"></i></button>
                 <div class="flex flex-col items-center">
-                    <!-- ★★★ 更新：顯示題號 ★★★ -->
-                    <div id="game-mode-label" class="text-[10px] font-display text-cyber-cyan tracking-widest mb-1 shadow-black drop-shadow-md">MODE • Q 1/10</div>
+                    <div id="game-mode-label" class="text-[10px] font-display text-cyber-cyan tracking-widest mb-1 shadow-black drop-shadow-md">MODE</div>
                     <div class="w-32 h-1.5 bg-gray-800 rounded-full overflow-hidden border border-white/10">
                         <div id="game-progress" class="h-full bg-gradient-to-r from-cyber-cyan to-blue-500 w-0 transition-all duration-300"></div>
                     </div>
@@ -512,54 +515,59 @@
                     });
                 },
 
-                // 修正：同步波次落下，速度與密度增加
+                // ★★★ 疾速破冰 (Speed Pop) 錯誤回饋修正 ★★★
                 startSpeedGame: () => {
                     if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
                     appLogic.ui.updateGameProgress();
                     const stage = document.getElementById('game-stage');
                     document.getElementById('danger-line').classList.remove('hidden');
-                    
                     const subType = Math.floor(Math.random() * 2); 
                     let qDisplay = q.word, optDisplayKey = 'chinese';
                     if (subType === 1) { qDisplay = q.chinese; optDisplayKey = 'word'; }
-                    
                     stage.innerHTML = `<div class="z-0 pointer-events-none flex flex-col items-center animate-pulse-slow"><div class="text-4xl md:text-6xl font-display font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 drop-shadow-2xl text-center">${qDisplay}</div><div class="text-xs text-cyber-cyan mt-2 tracking-[0.5em] opacity-70">${subType===0?'EN→CH':'CH→EN'}</div></div><div id="balloon-container" class="absolute inset-0 w-full h-full overflow-hidden"></div>`;
                     if(subType === 0) appLogic.game.speak(q.word);
-
-                    let options = appLogic.game.getDistractors(q, 2); 
-                    options.sort(() => Math.random() - 0.5);
+                    let options = appLogic.game.getDistractors(q, 2); options.sort(() => Math.random() - 0.5);
                     const container = document.getElementById('balloon-container');
-
-                    // ★★★ 同步落下設計 ★★★
+                    
                     options.forEach((opt, i) => {
                         const balloon = document.createElement('div');
                         balloon.className = "balloon-item absolute p-4 w-24 h-24 rounded-full flex items-center justify-center text-center text-sm font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] border border-white/20 backdrop-blur-md break-all";
                         if (i === 0) balloon.classList.add('bg-cyber-purple/80', 'text-white'); else if (i === 1) balloon.classList.add('bg-blue-600/80', 'text-white'); else balloon.classList.add('bg-cyber-cyan/80', 'text-black');
                         balloon.innerText = opt[optDisplayKey];
+                        balloon.style.left = `${10 + Math.random() * 70}%`;
+                        balloon.style.animationDelay = `${i * 0.8}s`;
+                        const baseSpeed = appLogic.state.gameSpeed === 2 ? 3 : 6;
+                        balloon.style.animationDuration = `${Math.max(2, baseSpeed - (appLogic.state.currentQIndex * 0.1))}s`;
                         
-                        // 位置與延遲
-                        balloon.style.left = `${10 + (i * 30)}%`; // 分散位置
-                        balloon.style.animationDelay = `0.5s`; // 幾乎同時開始
+                        balloon.onmousedown = () => { 
+                            balloon.remove(); 
+                            if (opt.id === q.id) { 
+                                appLogic.game.handleAnswer(true); container.innerHTML = ''; setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 300); 
+                            } else { 
+                                appLogic.game.handleAnswer(false);
+                                appLogic.game.speak(q.word); // 播放聲音
+                                appLogic.ui.alert("WRONG", `${q.word}\n${q.chinese}`); // 顯示正確答案
+                            } 
+                        };
                         
-                        const baseSpeed = appLogic.state.gameSpeed === 2 ? 2.5 : 5;
-                        balloon.style.animationDuration = `${Math.max(1.5, baseSpeed - (appLogic.state.currentQIndex * 0.1))}s`;
-
-                        balloon.onmousedown = () => { balloon.remove(); if (opt.id === q.id) { appLogic.game.handleAnswer(true); container.innerHTML = ''; setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 300); } else { appLogic.game.handleAnswer(false); } };
-                        balloon.addEventListener('animationend', () => { balloon.remove(); if (opt.id === q.id) { appLogic.game.handleAnswer(false); appLogic.ui.alert("MISS!", `答案：${q[optDisplayKey]}`); setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 1000); } });
+                        balloon.addEventListener('animationend', () => { 
+                            balloon.remove(); 
+                            if (opt.id === q.id) { 
+                                appLogic.game.handleAnswer(false); 
+                                appLogic.game.speak(q.word); // 播放聲音
+                                appLogic.ui.alert("MISS!", `${q.word}\n${q.chinese}`); // 顯示正確答案
+                                setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 1000); 
+                            } 
+                        });
                         container.appendChild(balloon);
                     });
                 },
 
-                // 修正：配對遊戲正確率計算
                 startMatchGame: () => {
                     const stage = document.getElementById('game-stage');
                     const batch = appLogic.state.quizList.slice(0, 5); 
                     if(batch.length === 0) { appLogic.game.finish(); return; }
-                    
-                    // 重置正確計數，因為配對邏輯不同
-                    appLogic.state.correctCount = 0; 
-                    
                     let left = [...batch].sort(()=>Math.random()-0.5), right = [...batch].sort(()=>Math.random()-0.5);
                     let sel = null, matched = 0;
                     stage.innerHTML = `<div class="grid grid-cols-2 gap-4 w-full h-full content-center" id="match-grid"></div>`;
@@ -567,26 +575,12 @@
                         const g = document.getElementById('match-grid'); g.innerHTML='';
                         left.forEach(w=>{ if(!w.done) g.innerHTML+=`<button data-id="${w.id}" data-side="L" class="p-4 bg-cyber-green/20 border border-cyber-green/50 rounded text-sm">${w.word}</button>`});
                         right.forEach(w=>{ if(!w.done) g.innerHTML+=`<button data-id="${w.id}" data-side="R" class="p-4 bg-cyber-purple/20 border border-cyber-purple/50 rounded text-sm">${w.chinese}</button>`});
-                        g.querySelectorAll('button').forEach(b=>{ b.onclick=()=>{ if(!sel) { sel={id:b.dataset.id, el:b}; b.classList.add('bg-white/20'); } else { if(sel.id===b.dataset.id && sel.el!==b) { 
-                            // Match Correct
-                            appLogic.state.score += 10; 
-                            appLogic.state.correctCount++; // +1 for correct pair
-                            document.getElementById('in-game-score').innerText = appLogic.state.score;
-                            left.find(i=>i.id==sel.id).done=true; right.find(i=>i.id==sel.id).done=true; matched++; 
-                            if(matched===batch.length) appLogic.game.finish(); else render(); sel=null; 
-                        } else { 
-                            sel.el.classList.remove('bg-white/20'); sel=null; 
-                            appLogic.state.streak = 0; // Break streak
-                        } } } });
+                        g.querySelectorAll('button').forEach(b=>{ b.onclick=()=>{ if(!sel) { sel={id:b.dataset.id, el:b}; b.classList.add('bg-white/20'); } else { if(sel.id===b.dataset.id && sel.el!==b) { appLogic.game.handleAnswer(true); left.find(i=>i.id==sel.id).done=true; right.find(i=>i.id==sel.id).done=true; matched++; if(matched===batch.length) appLogic.game.finish(); else render(); sel=null; } else { sel.el.classList.remove('bg-white/20'); sel=null; appLogic.game.handleAnswer(false); } } } });
                     }; render();
                 },
 
-                // 修正：輪盤最後一題 BUG
                 startWheelGame: () => {
-                    if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
-                    appLogic.ui.updateGameProgress(); // Update visual progress
-                    
                     const stage = document.getElementById('game-stage');
                     stage.innerHTML = `<div class="relative w-64 h-64 mb-8"><div id="wheel" class="w-full h-full rounded-full border-4 border-cyber-yellow flex items-center justify-center bg-black shadow-[0_0_30px_#FACC15]"><span class="text-4xl">❓</span></div></div><button id="spin-btn" class="px-8 py-3 bg-cyber-yellow text-black rounded-full font-bold animate-pulse">SPIN</button><div id="wheel-q" class="hidden glass-panel p-4 rounded-xl w-full text-center mt-4"></div>`;
                     document.getElementById('spin-btn').onclick = () => {
@@ -608,10 +602,7 @@
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
                     appLogic.ui.updateGameProgress();
                     const stage = document.getElementById('game-stage');
-                    
-                    if (!q.sentence || q.sentence.trim() === '') { appLogic.game.nextStandard(); return; }
-
-                    const sentence = q.sentence;
+                    const sentence = q.sentence || `This is a ${q.word}.`;
                     const blanked = sentence.replace(new RegExp(q.word, 'gi'), '_____');
                     stage.innerHTML = `<div class="glass-panel w-full max-w-sm p-6 rounded-2xl flex flex-col items-center text-center"><div class="text-xl text-white mb-6 font-serif leading-relaxed">"${blanked}"</div><div class="text-xs text-gray-500 mb-6 tracking-wider">${q.chinese}</div><div class="grid w-full gap-3" id="fill-options"></div></div>`;
                     const optContainer = document.getElementById('fill-options');
@@ -643,13 +634,10 @@
                         optContainer.appendChild(btn);
                     });
                 },
-                
-                checkStandard: (isCorrectStr) => { 
-                    if(isCorrectStr==='true') { appLogic.game.handleAnswer(true); setTimeout(()=>{ appLogic.state.currentQIndex++; appLogic.game.startWheelGame(); },1000); } 
-                    else { appLogic.game.handleAnswer(false); setTimeout(()=>{ appLogic.state.currentQIndex++; appLogic.game.startWheelGame(); },1000); } 
-                },
+                checkStandard: (isCorrectStr) => { if(isCorrectStr==='true') { appLogic.game.handleAnswer(true); setTimeout(()=>{ appLogic.state.currentQIndex++; appLogic.game.startWheelGame(); },1000); } else { appLogic.game.handleAnswer(false); setTimeout(()=>{ appLogic.state.currentQIndex++; appLogic.game.startWheelGame(); },1000); } },
 
                 handleAnswer: (isCorrect) => {
+                    const currentQ = appLogic.state.quizList[appLogic.state.currentQIndex];
                     if (isCorrect) {
                         appLogic.state.score += 10 + (appLogic.state.streak * 2);
                         appLogic.state.streak++; appLogic.state.correctCount++;
@@ -657,7 +645,6 @@
                         confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 }, colors: ['#06B6D4', '#8B5CF6'] });
                     } else {
                         appLogic.state.streak = 0;
-                        const currentQ = appLogic.state.quizList[appLogic.state.currentQIndex];
                         if (currentQ && !appLogic.state.wrongList.find(w => w.id === currentQ.id)) appLogic.state.wrongList.push(currentQ);
                         gsap.to("#app-container", { x: [-5, 5, -5, 5, 0], duration: 0.3 });
                     }
@@ -668,14 +655,8 @@
                 finish: async () => {
                     if(appLogic.state.timer) clearInterval(appLogic.state.timer);
                     document.getElementById('res-score').innerText = appLogic.state.score;
-                    
-                    // 修正：配對模式正確率分母不同
-                    let totalQ = appLogic.state.quizList.length;
-                    if(appLogic.state.gameType === 'match') totalQ = 5; // Match 固定 5 題
-                    const accuracy = Math.round((appLogic.state.correctCount / totalQ) * 100) || 0;
-                    document.getElementById('res-accuracy').innerText = accuracy + "%";
+                    document.getElementById('res-accuracy').innerText = (Math.round((appLogic.state.correctCount / appLogic.state.quizList.length) * 100) || 0) + "%";
                     document.getElementById('res-streak').innerText = appLogic.state.streak;
-                    
                     const reviewBtn = document.getElementById('btn-review-wrong');
                     if (appLogic.state.wrongList.length > 0) { reviewBtn.classList.remove('hidden'); document.getElementById('wrong-count').innerText = appLogic.state.wrongList.length; } else { reviewBtn.classList.add('hidden'); }
                     if (appLogic.state.mode === 'ranked') {
@@ -688,37 +669,56 @@
 
             ui: {
                 startTicker: () => { /* ... */ },
-                updateGameProgress: () => { 
-                    // 更新：顯示題號
-                    document.getElementById('game-mode-label').innerText = `${appLogic.state.gameType.toUpperCase()} • Q ${appLogic.state.currentQIndex + 1}/${appLogic.state.quizList.length}`;
-                    document.getElementById('game-progress').style.width = `${((appLogic.state.currentQIndex + 1) / appLogic.state.quizList.length) * 100}%`; 
-                },
+                updateGameProgress: () => { document.getElementById('game-mode-label').innerText = `${appLogic.state.gameType.toUpperCase()} • Q ${appLogic.state.currentQIndex + 1}/${appLogic.state.quizList.length}`; document.getElementById('game-progress').style.width = `${((appLogic.state.currentQIndex + 1) / appLogic.state.quizList.length) * 100}%`; },
                 updateHeader: () => { document.getElementById('header-avatar').src = appLogic.state.user.photoURL; document.getElementById('header-score').innerText = appLogic.state.user.score; document.getElementById('app-header').classList.remove('hidden'); document.getElementById('dash-name').innerText = appLogic.state.user.displayName; },
                 alert: (t, m) => { document.getElementById('alert-title').innerText=t; document.getElementById('alert-msg').innerText=m; document.getElementById('alert-box').classList.remove('hidden'); },
                 bgAnimation: () => { /* ... */ }
             },
-            team: { 
-                create: async () => { 
+            
+            // ★★★ 隊伍系統更新：代碼常駐 & 加入檢查 ★★★
+            team: {
+                create: async () => {
                     if (!appLogic.state.user) return;
-                    // 修正：檢查 user ID
-                    const name = prompt("隊名:"); if(!name) return;
-                    const code = Math.random().toString(36).substring(2,8).toUpperCase();
                     try {
+                        const name = prompt("隊名:"); if(!name) return;
+                        const code = Math.random().toString(36).substring(2,8).toUpperCase();
                         const ref = await addDoc(collection(db,"teams"), {
-                            code: code, 
-                            name: name, 
-                            leader: appLogic.state.user.uid, 
-                            members: [appLogic.state.user.uid], 
-                            score: 0
+                            code: code, name: name, leader: appLogic.state.user.uid, members: [appLogic.state.user.uid], score: 0
                         });
                         await updateDoc(doc(db,"users",appLogic.state.user.uid), {teamId: ref.id});
                         appLogic.state.user.teamId = ref.id; 
                         appLogic.team.load(ref.id);
                         appLogic.ui.alert("成功", `代碼: ${code}`);
                     } catch(e) { appLogic.ui.alert("失敗", e.message); }
+                },
+                join: async () => {
+                    if (!appLogic.state.user) return;
+                    const code = prompt("輸入代碼:"); if(!code) return;
+                    const q = query(collection(db,"teams"), where("code","==",code.toUpperCase()));
+                    const snap = await getDocs(q);
+                    if(snap.empty) { appLogic.ui.alert("錯誤","無效代碼"); return; }
+                    const t = snap.docs[0];
+                    if(t.data().members.length >= 3) { appLogic.ui.alert("錯誤","隊伍已滿 (Max 3)"); return; }
+                    
+                    await updateDoc(doc(db,"teams",t.id), {members: arrayUnion(appLogic.state.user.uid)});
+                    await updateDoc(doc(db,"users",appLogic.state.user.uid), {teamId: t.id});
+                    appLogic.state.user.teamId = t.id; 
+                    appLogic.team.load(t.id);
+                    appLogic.ui.alert("成功","已加入");
                 }, 
-                join: async () => { /* Same */ }, 
-                load: (tid) => { /* Same */ } 
+                load: (tid) => {
+                    onSnapshot(doc(db,"teams",tid), async(d)=>{
+                        if(!d.exists()) return;
+                        appLogic.state.team = {id:d.id, ...d.data()};
+                        document.getElementById('dash-team').innerText = d.data().name;
+                        document.getElementById('dash-team').classList.add('text-cyber-cyan');
+                        
+                        // 更新代碼並顯示
+                        const codeDisplay = document.getElementById('team-code-display');
+                        codeDisplay.innerText = d.data().code;
+                        document.getElementById('team-info-box').classList.remove('hidden');
+                    });
+                } 
             },
             admin: { uploadCSV: () => { /* Same */ }, hardReset: async () => { /* Same */ }, setSpeed: async (s) => { /* Same */ }, promptLogin: () => { /* Same */ }, downloadTemplate: () => { /* Same */ } },
             leaderboard: { renderPreview: async () => { /* Same */ }, show: () => { /* Same */ }, switchSubTab: (subTab) => { /* Same */ }, fetchData: async () => { /* Same */ } },
