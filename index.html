@@ -29,7 +29,8 @@
                             orange: '#F97316', 
                             yellow: '#FACC15',
                             green: '#22C55E',
-                            danger: '#EF4444'
+                            danger: '#EF4444',
+                            pink: '#EC4899'
                         }
                     },
                     fontFamily: { 
@@ -57,18 +58,20 @@
         .tug-node { width: 40px; height: 40px; background: #fff; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 30px #fff, 0 0 60px #06B6D4; z-index: 10; transition: left 0.3s ease-out; }
         @keyframes balloonFall { 0% { top: -120px; opacity: 0; transform: scale(0.8); } 10% { opacity: 1; transform: scale(1); } 100% { top: 100vh; opacity: 1; } }
         .balloon-item { position: absolute; animation-name: balloonFall; animation-timing-function: linear; cursor: pointer; z-index: 50; transition: transform 0.1s; will-change: top; }
-        .perspective-1000 { perspective: 1000px; }
-        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
-        .card-flipped .card-inner { transform: rotateY(180deg); }
-        .card-front, .card-back { position: absolute; inset: 0; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; }
-        .card-front { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); }
-        .card-back { background: #4c1d95; transform: rotateY(180deg); border: 1px solid #8B5CF6; }
+        
+        /* Word Pop Specific Styles */
+        .letter-slot { width: 40px; height: 50px; border-bottom: 2px solid #555; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-size: 24px; font-weight: bold; color: #06B6D4; margin: 0 4px; transition: all 0.3s; }
+        .letter-slot.filled { border-bottom-color: #06B6D4; text-shadow: 0 0 10px #06B6D4; }
+        .pop-bubble { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); font-size: 20px; user-select: none; }
+        .pop-bubble:active { transform: scale(0.9); }
+        .pop-bubble.hint-active { background: rgba(250, 204, 21, 0.2); border-color: #FACC15; box-shadow: 0 0 15px #FACC15; animation: pulse 1s infinite; }
+        
         .tab-active { background-color: rgba(6, 182, 212, 0.2); border-color: #06B6D4; color: #fff; }
     </style>
 </head>
 <body class="selection:bg-cyber-cyan selection:text-black">
 
-    <div class="version-tag">Ver 5.1.3</div>
+    <div class="version-tag">Ver 5.1.4</div>
     <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
 
     <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col z-10">
@@ -173,6 +176,18 @@
             <div>
                 <h3 class="text-base font-bold text-cyber-purple mb-4 tracking-wider font-display mt-4">團體競技區 (TEAM)</h3>
                 <div class="space-y-3">
+                    <!-- New Game: Word Pop -->
+                    <div onclick="window.app.game.setup('ranked', 'wordpop')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-pink cursor-pointer hover:bg-white/5 flex justify-between items-center group">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold text-cyber-pink group-hover:text-white transition-colors">🫧 Word Pop 字母爆破</h4>
+                                <span class="px-2 py-0.5 rounded-full bg-cyber-pink/20 text-cyber-pink text-[10px] font-bold">NEW</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">拼字重組 • 語音提示 • 鷹架學習</p>
+                        </div>
+                        <i data-lucide="dices" class="text-cyber-pink"></i>
+                    </div>
+
                     <div onclick="window.app.game.setup('ranked', 'tug')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-purple cursor-pointer hover:bg-white/5 flex justify-between items-center group">
                         <div>
                             <h4 class="font-bold text-cyber-purple group-hover:text-white transition-colors">🚀 光速拔河 (Tug-of-War)</h4>
@@ -214,9 +229,20 @@
                         <option value="all">全宇宙 (All Levels)</option>
                     </select>
                 </div>
+                
+                <!-- Word Pop Options -->
+                <div id="setup-wordpop-options" class="hidden p-4 bg-cyber-pink/10 border border-cyber-pink/30 rounded-xl">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="setup-short-only" class="w-5 h-5 accent-cyber-pink rounded border-gray-600">
+                        <div>
+                            <div class="text-white font-bold text-sm">基礎訓練模式 (Easy)</div>
+                            <div class="text-xs text-gray-400">僅出現 6 個字母以下的單字</div>
+                        </div>
+                    </label>
+                </div>
+
                 <div id="setup-count-group">
                     <label class="block text-xs text-gray-400 mb-4 uppercase flex justify-between"><span>選擇題數</span><span id="count-val" class="text-cyber-cyan font-bold font-mono text-lg">10</span></label>
-                    <!-- 修改：範圍改為 5-20, step=5 -->
                     <input type="range" id="setup-count" min="5" max="20" step="5" value="10" class="w-full accent-cyber-cyan h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" oninput="document.getElementById('count-val').innerText = this.value">
                 </div>
                 <div class="space-y-3 pt-4">
@@ -338,7 +364,7 @@
         };
 
         const appLogic = {
-            state: { user: null, team: null, words: [], quizList: [], wrongList: [], currentQIndex: 0, score: 0, streak: 0, correctCount: 0, mode: 'practice', gameType: 'standard', timer: null, tugPos: 50, lbSubTab: 'user', gameSpeed: 1 },
+            state: { user: null, team: null, words: [], quizList: [], wrongList: [], currentQIndex: 0, score: 0, streak: 0, correctCount: 0, mode: 'practice', gameType: 'standard', timer: null, tugPos: 50, lbSubTab: 'user', gameSpeed: 1, wordPop: { nextIndex: 0, scrambledLetters: [], idleTimer: null } },
             init: () => {
                 appLogic.ui.bgAnimation();
                 onAuthStateChanged(auth, async (user) => {
@@ -363,13 +389,11 @@
                 promptLogin: () => {
                     const pwd = prompt("請輸入管理員密碼：");
                     if (pwd === "admin123") {
-                        // 直接顯示後台 (不需要隱藏按鈕了)
                         window.app.nav.to('admin');
                         appLogic.admin.updateStats(); 
                         if (appLogic.state.user && appLogic.state.user.email === 'fuwen@ppsh.ptc.edu.tw') document.getElementById('super-admin-zone').classList.remove('hidden');
                     } else { appLogic.ui.alert("錯誤", "密碼錯誤"); }
                 },
-                // ... (其餘 admin 函式保持不變)
                 downloadTemplate: () => {
                     const csvContent = "級別,單字,中文,屬性,例句\n3,cupboard,櫥櫃,n.,We keep the mop in a cupboard under the stairs.\n2,thirsty,口渴的,adj.,I am very thirsty after running.\n1,office,辦公室,n.,My father works in a big office in Taipei.\n4,abandon,拋棄,v.,Do not abandon your dreams.";
                     const blob = new Blob(["\ufeff"+csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -450,7 +474,6 @@
             },
 
             game: {
-                // ... (遊戲邏輯省略，同 v5.1.1) ...
                 setup: async (mode, type) => {
                     appLogic.state.mode = mode; appLogic.state.gameType = type;
                     if (mode === 'review') { appLogic.game.start(); return; }
@@ -478,25 +501,43 @@
                         sel.innerHTML += `<option value="${l}">Level ${l}</option>`;
                     });
 
-                    // 修改：始終顯示選題區塊，不隱藏
                     document.getElementById('setup-count-group').style.display = 'block';
+                    
+                    // Show WordPop specific options
+                    const wpOpt = document.getElementById('setup-wordpop-options');
+                    if (type === 'wordpop') {
+                        wpOpt.classList.remove('hidden');
+                    } else {
+                        wpOpt.classList.add('hidden');
+                    }
+
                     appLogic.nav.to('setup');
                 },
                 start: () => {
                     appLogic.state.currentQIndex = 0; appLogic.state.score = 0; appLogic.state.streak = 0; appLogic.state.correctCount = 0; appLogic.state.tugPos = 50;
                     if (appLogic.state.timer) clearInterval(appLogic.state.timer);
+                    if (appLogic.state.wordPop.idleTimer) clearTimeout(appLogic.state.wordPop.idleTimer);
+
                     if (appLogic.state.mode !== 'review') {
                         appLogic.state.wrongList = [];
                         const level = document.getElementById('setup-level').value;
-                        // 修改：不再強制20題，而是讀取滑桿數值
                         const countVal = parseInt(document.getElementById('setup-count').value);
+                        
+                        // Word Pop Filter
+                        const onlyShort = document.getElementById('setup-short-only').checked;
+                        
                         let pool = appLogic.state.words.filter(w => {
+                            if (appLogic.state.gameType === 'wordpop' && onlyShort && w.word.length > 6) return false;
+
                             if (level === 'all') return true;
                             if (level === '1-3') return ['1','2','3'].includes(String(w.level));
                             if (level === '4-6') return ['4','5','6'].includes(String(w.level));
                             return String(w.level) === String(level);
                         });
-                        if (pool.length < 5) pool = appLogic.state.words;
+                        
+                        if (pool.length < 5 && appLogic.state.gameType !== 'wordpop') pool = appLogic.state.words;
+                        else if (pool.length === 0) { appLogic.ui.alert("提示", "符合條件的單字不足，請放寬條件"); return; }
+
                         pool.sort(() => Math.random() - 0.5);
                         appLogic.state.quizList = pool.slice(0, countVal);
                     }
@@ -507,9 +548,124 @@
                     else if (appLogic.state.gameType === 'match') appLogic.game.startMatchGame();
                     else if (appLogic.state.gameType === 'wheel') appLogic.game.startWheelGame();
                     else if (appLogic.state.gameType === 'fill') appLogic.game.startFillGame();
+                    else if (appLogic.state.gameType === 'wordpop') appLogic.game.startWordPopGame();
                     else appLogic.game.nextStandard(); 
                 },
-                quit: () => { gsap.killTweensOf("*"); appLogic.nav.to('dashboard'); },
+                quit: () => { 
+                    gsap.killTweensOf("*"); 
+                    if(appLogic.state.wordPop.idleTimer) clearTimeout(appLogic.state.wordPop.idleTimer);
+                    appLogic.nav.to('dashboard'); 
+                },
+
+                // === WORD POP GAME START ===
+                startWordPopGame: () => {
+                    if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
+                    const q = appLogic.state.quizList[appLogic.state.currentQIndex];
+                    appLogic.ui.updateGameProgress();
+                    appLogic.state.wordPop.nextIndex = 0;
+                    
+                    // Shuffle letters
+                    const original = q.word.split('');
+                    const scrambled = q.word.split('').map((char, i) => ({ char, id: i })).sort(() => Math.random() - 0.5);
+                    appLogic.state.wordPop.scrambledLetters = scrambled;
+
+                    // UI Layout
+                    const stage = document.getElementById('game-stage');
+                    stage.innerHTML = `
+                        <div class="flex flex-col items-center w-full max-w-md">
+                            <div class="text-xs text-cyber-pink tracking-widest mb-2 font-display">LEVEL ${q.level || 1} • POP THE BUBBLES</div>
+                            <div class="glass-panel w-full p-4 rounded-xl text-center mb-6">
+                                <div class="text-2xl font-bold text-white mb-1">${q.chinese}</div>
+                                <div class="text-xs text-gray-500 italic">${q.sentence ? q.sentence.replace(new RegExp(q.word, 'gi'), '_____') : ''}</div>
+                            </div>
+                            
+                            <!-- Answer Slots -->
+                            <div class="flex flex-wrap justify-center mb-10 gap-2" id="wp-slots">
+                                ${original.map((char, i) => `<div id="slot-${i}" class="letter-slot"></div>`).join('')}
+                            </div>
+
+                            <!-- Bubble Area -->
+                            <div class="flex flex-wrap justify-center gap-4 px-4" id="wp-bubbles">
+                                ${scrambled.map((item) => `<div id="bubble-${item.id}" class="pop-bubble" onclick="window.app.game.handleWordPopClick('${item.char}', ${item.id})">${item.char}</div>`).join('')}
+                            </div>
+                        </div>
+                    `;
+
+                    // TTS and Hint Start
+                    appLogic.game.speak(q.word);
+                    appLogic.game.resetIdleTimer();
+                },
+
+                handleWordPopClick: (char, id) => {
+                    const q = appLogic.state.quizList[appLogic.state.currentQIndex];
+                    const targetChar = q.word[appLogic.state.wordPop.nextIndex];
+                    const bubble = document.getElementById(`bubble-${id}`);
+                    const slot = document.getElementById(`slot-${appLogic.state.wordPop.nextIndex}`);
+
+                    appLogic.game.resetIdleTimer(); // Reset hint timer on action
+
+                    // Case Insensitive check
+                    if (char.toLowerCase() === targetChar.toLowerCase()) {
+                        // Correct
+                        gsap.to(bubble, { scale: 0, opacity: 0, duration: 0.2, onComplete: () => bubble.classList.add('invisible') });
+                        slot.innerText = targetChar;
+                        slot.classList.add('filled');
+                        gsap.from(slot, { y: -10, opacity: 0, duration: 0.3 });
+                        
+                        appLogic.state.wordPop.nextIndex++;
+
+                        // Check Finish
+                        if (appLogic.state.wordPop.nextIndex >= q.word.length) {
+                             if(appLogic.state.wordPop.idleTimer) clearTimeout(appLogic.state.wordPop.idleTimer);
+                             appLogic.state.score += 20 + (appLogic.state.streak * 5);
+                             appLogic.state.streak++; appLogic.state.correctCount++;
+                             document.getElementById('in-game-score').innerText = appLogic.state.score;
+                             
+                             // Reward Effects
+                             confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 }, colors: ['#EC4899', '#FACC15'] });
+                             const phrases = ["Good!", "Nice!", "Great!", "Super!"];
+                             const praise = phrases[Math.floor(Math.random()*phrases.length)];
+                             appLogic.game.speak(`${q.word}. ${praise}`);
+
+                             setTimeout(() => {
+                                 appLogic.state.currentQIndex++;
+                                 appLogic.game.startWordPopGame();
+                             }, 1500);
+                        }
+                    } else {
+                        // Wrong
+                        gsap.to(bubble, { x: [-5, 5, -5, 5, 0], duration: 0.3, color: '#EF4444', borderColor: '#EF4444', onComplete: () => {
+                             bubble.style.color = ''; bubble.style.borderColor = '';
+                        }});
+                        appLogic.state.streak = 0; // Break streak but don't fail question
+                        // No penalty in score for scaffolding
+                    }
+                },
+
+                resetIdleTimer: () => {
+                    if(appLogic.state.wordPop.idleTimer) clearTimeout(appLogic.state.wordPop.idleTimer);
+                    // Remove existing hint styling
+                    document.querySelectorAll('.pop-bubble').forEach(b => b.classList.remove('hint-active'));
+
+                    appLogic.state.wordPop.idleTimer = setTimeout(() => {
+                        appLogic.game.showWordPopHint();
+                    }, 5000);
+                },
+
+                showWordPopHint: () => {
+                    const q = appLogic.state.quizList[appLogic.state.currentQIndex];
+                    if (!q) return;
+                    const nextChar = q.word[appLogic.state.wordPop.nextIndex];
+                    
+                    // Find a visible bubble that matches the next char
+                    const bubbles = Array.from(document.querySelectorAll('.pop-bubble:not(.invisible)'));
+                    const targetBubble = bubbles.find(b => b.innerText.toLowerCase() === nextChar.toLowerCase());
+
+                    if (targetBubble) {
+                        targetBubble.classList.add('hint-active');
+                    }
+                },
+                // === WORD POP GAME END ===
 
                 startTugGame: () => {
                     const stage = document.getElementById('game-stage');
@@ -682,6 +838,8 @@
                 
                 finish: async () => {
                     if(appLogic.state.timer) clearInterval(appLogic.state.timer);
+                    if(appLogic.state.wordPop.idleTimer) clearTimeout(appLogic.state.wordPop.idleTimer);
+                    
                     document.getElementById('res-score').innerText = appLogic.state.score;
                     let totalQ = appLogic.state.quizList.length; if(appLogic.state.gameType === 'match') totalQ = 5;
                     const accuracy = Math.round((appLogic.state.correctCount / totalQ) * 100) || 0;
@@ -747,7 +905,6 @@
                 }
             },
             team: { /* Same */ create: async () => { if (!appLogic.state.user) return; try { const name = prompt("隊名:"); if(!name) return; const code = Math.random().toString(36).substring(2,8).toUpperCase(); const ref = await addDoc(collection(db,"teams"), {code, name, leader: appLogic.state.user.uid, members: [appLogic.state.user.uid], score: 0}); await updateDoc(doc(db,"users",appLogic.state.user.uid), {teamId: ref.id}); appLogic.state.user.teamId = ref.id; appLogic.team.load(ref.id); appLogic.ui.alert("成功", `代碼: ${code}`); } catch(e) { appLogic.ui.alert("失敗", e.message); } }, join: async () => { if (!appLogic.state.user) return; const code = prompt("輸入代碼:"); if(!code) return; const q = query(collection(db,"teams"), where("code","==",code.toUpperCase())); const snap = await getDocs(q); if(snap.empty) { appLogic.ui.alert("錯誤","無效代碼"); return; } const t = snap.docs[0]; if(t.data().members.length >= 3) { appLogic.ui.alert("錯誤","隊伍已滿 (Max 3)"); return; } await updateDoc(doc(db,"teams",t.id), {members: arrayUnion(appLogic.state.user.uid)}); await updateDoc(doc(db,"users",appLogic.state.user.uid), {teamId: t.id}); appLogic.state.user.teamId = t.id; appLogic.team.load(t.id); appLogic.ui.alert("成功","已加入"); }, load: (tid) => { onSnapshot(doc(db,"teams",tid), async(d)=>{ if(!d.exists()) return; appLogic.state.team = {id:d.id, ...d.data()}; document.getElementById('dash-team').innerText = d.data().name; document.getElementById('dash-team').classList.add('text-cyber-cyan'); document.getElementById('team-code-display').innerText = d.data().code; document.getElementById('team-info-box').classList.remove('hidden'); const editBtn = document.getElementById('edit-team-name-btn'); if (appLogic.state.user.uid === d.data().leader) editBtn.classList.remove('hidden'); else editBtn.classList.add('hidden'); }); }, editName: async () => { if (!appLogic.state.team) return; const newName = prompt("請輸入新隊名：", appLogic.state.team.name); if (newName && newName.trim() !== "") { try { await updateDoc(doc(db, "teams", appLogic.state.team.id), { name: newName.trim() }); appLogic.ui.alert("成功", "隊名已更新"); } catch(e) { appLogic.ui.alert("錯誤", "更新失敗"); } } } },
-            admin: { /* Same */ promptLogin: () => { const pwd = prompt("請輸入管理員密碼："); if (pwd === "admin123") { window.app.nav.to('admin'); appLogic.admin.updateStats(); if (appLogic.state.user && appLogic.state.user.email === 'fuwen@ppsh.ptc.edu.tw') document.getElementById('super-admin-zone').classList.remove('hidden'); } else { appLogic.ui.alert("錯誤", "密碼錯誤"); } }, downloadTemplate: () => { const csvContent = "級別,單字,中文,屬性,例句\n3,cupboard,櫥櫃,n.,We keep the mop in a cupboard under the stairs.\n2,thirsty,口渴的,adj.,I am very thirsty after running.\n1,office,辦公室,n.,My father works in a big office in Taipei.\n4,abandon,拋棄,v.,Do not abandon your dreams."; const blob = new Blob(["\ufeff"+csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "vocabulary_template.csv"; link.click(); }, uploadCSV: () => { const f = document.getElementById('csv-upload').files[0]; if(!f) return; Papa.parse(f, {header:true, skipEmptyLines: true, complete: async(r)=>{ const b = writeBatch(db); let count = 0; r.data.forEach(row=>{ if(row['單字']) { const sentence = row['例句'] ? row['例句'].trim() : ""; b.set(doc(collection(db,"words")), { word:row['單字'].trim(), chinese:row['中文'].trim(), level:row['級別']||'1', type:row['屬性']||'n.', sentence: sentence }); count++; } }); await b.commit(); appLogic.ui.alert("OK",`匯入 ${count} 筆單字`); appLogic.admin.updateStats(); }}); }, updateStats: async () => { const snap = await getDocs(collection(db, "words")); const counts = {}; snap.forEach(d => { const l = d.data().level; counts[l] = (counts[l] || 0) + 1; }); let text = `總單字: ${snap.size} | `; let opts = ''; Object.keys(counts).sort().forEach(k => { text += `L${k}: ${counts[k]} `; opts += `<option value="${k}">L${k} (${counts[k]})</option>`; }); document.getElementById('vocab-stats').innerText = text; document.getElementById('del-level').innerHTML = opts; }, deleteLevel: async () => { const lvl = document.getElementById('del-level').value; if(!confirm(`確定要刪除所有 Level ${lvl} 的單字嗎？`)) return; const q = query(collection(db, "words"), where("level", "==", lvl)); const snap = await getDocs(q); const b = writeBatch(db); snap.forEach(d => b.delete(d.ref)); await b.commit(); appLogic.ui.alert("完成", `已刪除 ${snap.size} 個單字`); appLogic.admin.updateStats(); }, hardReset: async () => { if(appLogic.state.user.email !== 'fuwen@ppsh.ptc.edu.tw') { appLogic.ui.alert("權限不足", "只有超級管理員可執行此操作"); return; } if(prompt("TYPE RESET")!=="RESET") return; const u = await getDocs(collection(db,"users")); const ub = writeBatch(db); u.forEach(d=>ub.delete(d.ref)); await ub.commit(); const t = await getDocs(collection(db,"teams")); const tb = writeBatch(db); t.forEach(d=>tb.delete(d.ref)); await tb.commit(); location.reload(); }, resetScores: async (type) => { if(!confirm(`確定要重設 ${type==='weekly'?'本週':'所有'} 積分嗎？`)) return; appLogic.ui.alert("處理中", "正在重設資料..."); try { const snap = await getDocs(collection(db, "users")); const batch = writeBatch(db); snap.forEach(d => { if(type === 'weekly') batch.update(d.ref, { weeklyScore: 0 }); else batch.update(d.ref, { score: 0, weeklyScore: 0 }); }); if(type === 'all') { const tSnap = await getDocs(collection(db, "teams")); tSnap.forEach(d => batch.update(d.ref, { score: 0 })); } await batch.commit(); appLogic.ui.alert("完成", "積分已重設"); } catch(e) { console.error(e); appLogic.ui.alert("錯誤", "重設失敗"); } }, setSpeed: async (s) => { await setDoc(doc(db, "settings", "game"), { speed: s }); appLogic.state.gameSpeed = s; appLogic.ui.alert("設定", "遊戲難度已更新"); } },
             nav: { to: (id) => { document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); document.getElementById('view-'+id).classList.remove('hidden'); if(id==='login') document.getElementById('app-header').classList.add('hidden'); else document.getElementById('app-header').classList.remove('hidden'); }}
         };
 
