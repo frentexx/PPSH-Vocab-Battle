@@ -68,7 +68,7 @@
 </head>
 <body class="selection:bg-cyber-cyan selection:text-black">
 
-    <div class="version-tag">Ver 5.1.3</div>
+    <div class="version-tag">Ver 5.1.1</div>
     <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
 
     <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col z-10">
@@ -118,7 +118,7 @@
         </section>
 
         <!-- VIEW 2: Dashboard -->
-        <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6 pb-20">
+        <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6 pb-32">
             <div class="glass-panel p-5 rounded-xl relative overflow-hidden">
                 <div class="absolute -right-6 -top-6 w-32 h-32 bg-cyber-cyan/5 rounded-full blur-2xl"></div>
                 <h2 id="dash-name" class="text-xl font-bold text-white relative z-10">載入中...</h2>
@@ -196,10 +196,12 @@
                 </div>
             </div>
 
-            <!-- Admin Button (Fixed Z-Index & Clickable) -->
-            <button onclick="window.app.admin.promptLogin()" class="mt-8 mx-auto flex items-center gap-2 text-xs text-gray-600 hover:text-white transition-colors cursor-pointer relative z-50 p-4 w-full justify-center">
-                <i data-lucide="lock" class="w-3 h-3"></i> Admin Access
-            </button>
+            <!-- ★★★ 修正後的 Admin 按鈕：固定在畫面最下方，層級最高 ★★★ -->
+            <div class="fixed bottom-0 left-0 w-full p-4 flex justify-center z-[999] pointer-events-none">
+                 <button onclick="window.app.admin.promptLogin()" class="pointer-events-auto bg-black/60 border border-white/20 text-gray-400 hover:text-white hover:bg-black/80 transition-all rounded-full px-4 py-2 text-xs flex items-center gap-2 backdrop-blur-md cursor-pointer shadow-lg">
+                    <i data-lucide="lock" class="w-3 h-3"></i> Admin Access
+                </button>
+            </div>
             
         </section>
 
@@ -210,7 +212,6 @@
                 <div>
                     <label class="block text-xs text-gray-400 mb-2 uppercase">Target Sector</label>
                     <select id="setup-level" class="w-full bg-black/30 border border-gray-600 rounded p-3 text-sm text-white focus:border-cyber-cyan outline-none">
-                        <!-- JS Dynamic -->
                         <option value="all">全宇宙 (All Levels)</option>
                     </select>
                 </div>
@@ -427,7 +428,6 @@
                     const t = await getDocs(collection(db,"teams")); const tb = writeBatch(db); t.forEach(d=>tb.delete(d.ref)); await tb.commit();
                     location.reload();
                 },
-                // ★★★ 修正點：使用 try-catch 與錯誤提示 ★★★
                 resetScores: async (type) => {
                     if(!confirm(`確定要重設 ${type==='weekly'?'本週':'所有'} 積分嗎？`)) return;
                     appLogic.ui.alert("處理中", "正在重設資料...");
@@ -438,19 +438,13 @@
                             if(type === 'weekly') batch.update(d.ref, { weeklyScore: 0 });
                             else batch.update(d.ref, { score: 0, weeklyScore: 0 });
                         });
-                        
                         if(type === 'all') {
                              const tSnap = await getDocs(collection(db, "teams"));
                              tSnap.forEach(d => batch.update(d.ref, { score: 0 }));
                         }
-                        
                         await batch.commit();
                         appLogic.ui.alert("完成", "積分已重設");
-                    } catch(e) { 
-                        console.error(e);
-                        // 顯示錯誤代碼
-                        appLogic.ui.alert("錯誤", `重設失敗：${e.code || e.message}\n請檢查 Firebase Rules`);
-                    }
+                    } catch(e) { console.error(e); appLogic.ui.alert("錯誤", "重設失敗"); }
                 },
                 setSpeed: async (s) => { await setDoc(doc(db, "settings", "game"), { speed: s }); appLogic.state.gameSpeed = s; appLogic.ui.alert("設定", "遊戲難度已更新"); }
             },
@@ -544,7 +538,7 @@
                     });
                 },
 
-                // 修正：錯誤回饋同時顯示中英文
+                // ★★★ 修正點：錯誤回饋顯示 ★★★
                 startSpeedGame: () => {
                     if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
@@ -561,8 +555,11 @@
                     
                     options.forEach((opt, i) => {
                         const balloon = document.createElement('div');
+                        // ★★★ 修正點：加入 break-words 與彈性高度 ★★★
                         balloon.className = "balloon-item absolute p-4 w-24 h-24 rounded-full flex items-center justify-center text-center text-sm font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] border border-white/20 backdrop-blur-md break-words overflow-hidden leading-tight";
                         if (i === 0) balloon.classList.add('bg-cyber-purple/80', 'text-white'); else if (i === 1) balloon.classList.add('bg-blue-600/80', 'text-white'); else balloon.classList.add('bg-cyber-cyan/80', 'text-black');
+                        
+                        // 動態字體縮放
                         if(opt[optDisplayKey].length > 8) balloon.classList.add('text-xs');
                         balloon.innerText = opt[optDisplayKey];
                         
@@ -577,7 +574,7 @@
                                 appLogic.game.handleAnswer(true); container.innerHTML = ''; setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 300); 
                             } else { 
                                 appLogic.game.handleAnswer(false); 
-                                // 修正點：錯誤顯示雙語
+                                // ★★★ 修正點：顯示雙語對照 ★★★
                                 appLogic.ui.alert("WRONG", `${q.word}\n(${q.chinese})`); 
                             } 
                         };
@@ -586,7 +583,7 @@
                             balloon.remove(); 
                             if (opt.id === q.id) { 
                                 appLogic.game.handleAnswer(false); 
-                                // 修正點：漏接顯示雙語
+                                // ★★★ 修正點：顯示雙語對照 ★★★
                                 appLogic.ui.alert("MISS!", `${q.word}\n(${q.chinese})`); 
                                 setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 1000); 
                             } 
