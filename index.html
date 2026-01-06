@@ -68,7 +68,7 @@
 </head>
 <body class="selection:bg-cyber-cyan selection:text-black">
 
-    <div class="version-tag">Ver 5.1.1</div>
+    <div class="version-tag">Ver 5.1.2</div>
     <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
 
     <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col z-10">
@@ -118,7 +118,7 @@
         </section>
 
         <!-- VIEW 2: Dashboard -->
-        <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6 pb-32">
+        <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6 pb-20">
             <div class="glass-panel p-5 rounded-xl relative overflow-hidden">
                 <div class="absolute -right-6 -top-6 w-32 h-32 bg-cyber-cyan/5 rounded-full blur-2xl"></div>
                 <h2 id="dash-name" class="text-xl font-bold text-white relative z-10">載入中...</h2>
@@ -196,13 +196,10 @@
                 </div>
             </div>
 
-            <!-- ★★★ 修正後的 Admin 按鈕：固定在畫面最下方，層級最高 ★★★ -->
-            <div class="fixed bottom-0 left-0 w-full p-4 flex justify-center z-[999] pointer-events-none">
-                 <button onclick="window.app.admin.promptLogin()" class="pointer-events-auto bg-black/60 border border-white/20 text-gray-400 hover:text-white hover:bg-black/80 transition-all rounded-full px-4 py-2 text-xs flex items-center gap-2 backdrop-blur-md cursor-pointer shadow-lg">
-                    <i data-lucide="lock" class="w-3 h-3"></i> Admin Access
-                </button>
-            </div>
-            
+            <!-- Admin Button -->
+            <button onclick="window.app.admin.showLogin()" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 text-xs text-gray-600 hover:text-white transition-colors z-[999] cursor-pointer py-2 px-4 bg-black/60 rounded-full border border-white/10 backdrop-blur">
+                <i data-lucide="lock" class="w-3 h-3"></i> Admin Access
+            </button>
         </section>
 
         <!-- VIEW 3: Setup -->
@@ -250,6 +247,7 @@
             </div>
             <div class="glass-panel w-full max-w-sm p-8 rounded-2xl text-center space-y-6 z-10 border-t-4 border-cyber-cyan">
                 <div><div class="text-xs text-gray-500 uppercase tracking-widest mb-1">Total Score</div><div class="text-6xl font-display font-bold text-white drop-shadow-lg" id="res-score">0</div></div>
+                <div class="text-xs text-center text-gray-500" id="res-mode-hint">(練習模式不計分)</div>
                 <div id="res-stats" class="grid grid-cols-2 gap-4 text-xs"><div class="bg-white/5 p-3 rounded border border-white/5">正確率 <br> <span id="res-accuracy" class="text-cyber-cyan font-bold text-lg">100%</span></div><div class="bg-white/5 p-3 rounded border border-white/5">連擊 <br> <span id="res-streak" class="text-cyber-orange font-bold text-lg">0</span></div></div>
                 <button id="btn-review-wrong" onclick="window.app.game.startWrongReview()" class="hidden w-full py-3 bg-red-900/20 border border-red-500/30 text-red-400 font-bold rounded flex items-center justify-center gap-2"><i data-lucide="flame" class="w-4 h-4"></i> 特訓錯題 (<span id="wrong-count">0</span>)</button>
                 <div class="grid grid-cols-2 gap-3 pt-4 border-t border-white/10"><button onclick="window.app.nav.to('dashboard')" class="py-3 bg-gray-700/50 rounded font-bold text-sm hover:bg-gray-700 transition-colors">回首頁</button><button onclick="window.app.game.setup(window.app.state.mode, window.app.state.gameType)" class="py-3 bg-cyber-purple text-white rounded font-bold text-sm hover:bg-purple-600 shadow-lg transition-colors">再玩一次</button></div>
@@ -272,7 +270,7 @@
         <!-- VIEW 7: Admin -->
         <section id="view-admin" class="hidden flex-1 flex flex-col p-4 gap-4">
             <h2 class="text-xl font-bold text-cyber-orange flex gap-2 items-center"><i data-lucide="shield-alert"></i> ADMIN CONSOLE</h2>
-            <div class="glass-panel p-4 rounded-xl space-y-4">
+            <div class="glass-panel p-4 rounded-xl space-y-4 overflow-y-auto max-h-[80vh] hide-scrollbar">
                 <button onclick="window.app.admin.downloadTemplate()" class="w-full py-2 bg-white/5 border border-white/20 rounded text-sm text-gray-300 hover:bg-white/10 mb-2">📥 下載 CSV 範例檔</button>
                 <div class="border border-dashed border-gray-600 p-4 rounded text-center"><input type="file" id="csv-upload" accept=".csv" class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-cyber-purple file:text-white"/></div>
                 <button onclick="window.app.admin.uploadCSV()" class="w-full py-2 bg-blue-600 rounded text-sm font-bold">Process Upload</button>
@@ -299,6 +297,18 @@
                 <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 bg-gray-700 rounded text-sm">Exit</button>
             </div>
         </section>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="admin-login-modal" class="fixed inset-0 z-[1000] flex items-center justify-center bg-black/90 backdrop-blur-md hidden">
+        <div class="glass-panel p-6 rounded-xl max-w-xs w-full text-center border border-cyber-purple/50 shadow-[0_0_50px_rgba(139,92,246,0.3)]">
+            <h3 class="text-lg font-bold mb-4 text-white font-display">SECURITY CHECK</h3>
+            <input type="password" id="admin-pwd-input" placeholder="Enter Passcode" class="w-full bg-black/50 border border-white/20 rounded p-2 text-white text-center mb-4 focus:border-cyber-purple outline-none">
+            <div class="flex gap-2">
+                <button onclick="document.getElementById('admin-login-modal').classList.add('hidden')" class="flex-1 py-2 bg-gray-700 rounded text-sm text-gray-300">CANCEL</button>
+                <button onclick="window.app.admin.verifyLogin()" class="flex-1 py-2 bg-cyber-purple text-white rounded text-sm font-bold">ACCESS</button>
+            </div>
+        </div>
     </div>
 
     <!-- Alert Modal -->
@@ -360,15 +370,24 @@
             auth: { login: () => signInWithPopup(auth, googleProvider).catch(e => appLogic.ui.alert("錯誤", e.message)) },
 
             admin: {
-                promptLogin: () => {
-                    const pwd = prompt("請輸入管理員密碼：");
+                showLogin: () => {
+                    document.getElementById('admin-login-modal').classList.remove('hidden');
+                    document.getElementById('admin-pwd-input').value = '';
+                    document.getElementById('admin-pwd-input').focus();
+                },
+                promptLogin: () => { appLogic.admin.showLogin(); }, // Alias for compatibility
+                verifyLogin: () => {
+                    const pwd = document.getElementById('admin-pwd-input').value;
                     if (pwd === "admin123") {
+                        document.getElementById('admin-login-modal').classList.add('hidden');
                         window.app.nav.to('admin');
                         appLogic.admin.updateStats(); 
                         if (appLogic.state.user && appLogic.state.user.email === 'fuwen@ppsh.ptc.edu.tw') {
                             document.getElementById('super-admin-zone').classList.remove('hidden');
                         }
-                    } else { appLogic.ui.alert("錯誤", "密碼錯誤"); }
+                    } else {
+                        appLogic.ui.alert("錯誤", "密碼錯誤");
+                    }
                 },
                 downloadTemplate: () => {
                     const csvContent = "級別,單字,中文,屬性,例句\n3,cupboard,櫥櫃,n.,We keep the mop in a cupboard under the stairs.\n2,thirsty,口渴的,adj.,I am very thirsty after running.\n1,office,辦公室,n.,My father works in a big office in Taipei.\n4,abandon,拋棄,v.,Do not abandon your dreams.";
@@ -444,7 +463,7 @@
                         }
                         await batch.commit();
                         appLogic.ui.alert("完成", "積分已重設");
-                    } catch(e) { console.error(e); appLogic.ui.alert("錯誤", "重設失敗"); }
+                    } catch(e) { console.error(e); appLogic.ui.alert("錯誤", `重設失敗：${e.code || e.message}`); }
                 },
                 setSpeed: async (s) => { await setDoc(doc(db, "settings", "game"), { speed: s }); appLogic.state.gameSpeed = s; appLogic.ui.alert("設定", "遊戲難度已更新"); }
             },
@@ -538,7 +557,6 @@
                     });
                 },
 
-                // ★★★ 修正點：錯誤回饋顯示 ★★★
                 startSpeedGame: () => {
                     if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
@@ -555,11 +573,8 @@
                     
                     options.forEach((opt, i) => {
                         const balloon = document.createElement('div');
-                        // ★★★ 修正點：加入 break-words 與彈性高度 ★★★
                         balloon.className = "balloon-item absolute p-4 w-24 h-24 rounded-full flex items-center justify-center text-center text-sm font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] border border-white/20 backdrop-blur-md break-words overflow-hidden leading-tight";
                         if (i === 0) balloon.classList.add('bg-cyber-purple/80', 'text-white'); else if (i === 1) balloon.classList.add('bg-blue-600/80', 'text-white'); else balloon.classList.add('bg-cyber-cyan/80', 'text-black');
-                        
-                        // 動態字體縮放
                         if(opt[optDisplayKey].length > 8) balloon.classList.add('text-xs');
                         balloon.innerText = opt[optDisplayKey];
                         
@@ -574,16 +589,13 @@
                                 appLogic.game.handleAnswer(true); container.innerHTML = ''; setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 300); 
                             } else { 
                                 appLogic.game.handleAnswer(false); 
-                                // ★★★ 修正點：顯示雙語對照 ★★★
                                 appLogic.ui.alert("WRONG", `${q.word}\n(${q.chinese})`); 
                             } 
                         };
-                        
                         balloon.addEventListener('animationend', () => { 
                             balloon.remove(); 
                             if (opt.id === q.id) { 
                                 appLogic.game.handleAnswer(false); 
-                                // ★★★ 修正點：顯示雙語對照 ★★★
                                 appLogic.ui.alert("MISS!", `${q.word}\n(${q.chinese})`); 
                                 setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 1000); 
                             } 
@@ -684,6 +696,8 @@
                 finish: async () => {
                     if(appLogic.state.timer) clearInterval(appLogic.state.timer);
                     document.getElementById('res-score').innerText = appLogic.state.score;
+                    document.getElementById('res-mode-hint').innerText = appLogic.state.mode === 'practice' ? "(練習模式不計分)" : "";
+                    
                     let totalQ = appLogic.state.quizList.length; if(appLogic.state.gameType === 'match') totalQ = 5;
                     const accuracy = Math.round((appLogic.state.correctCount / totalQ) * 100) || 0;
                     document.getElementById('res-accuracy').innerText = accuracy + "%";
@@ -691,7 +705,16 @@
                     const reviewBtn = document.getElementById('btn-review-wrong');
                     if (appLogic.state.wrongList.length > 0) { reviewBtn.classList.remove('hidden'); document.getElementById('wrong-count').innerText = appLogic.state.wrongList.length; } else { reviewBtn.classList.add('hidden'); }
                     if (appLogic.state.mode === 'ranked') {
-                        try { const userRef = doc(db, "users", appLogic.state.user.uid); await updateDoc(userRef, { score: increment(appLogic.state.score), weeklyScore: increment(appLogic.state.score), lastPlayed: serverTimestamp() }); if (appLogic.state.user.teamId) await updateDoc(doc(db, "teams", appLogic.state.user.teamId), { score: increment(appLogic.state.score) }); appLogic.state.user.score += appLogic.state.score; appLogic.ui.updateHeader(); } catch(e) { console.error(e); }
+                        try { 
+                            const userRef = doc(db, "users", appLogic.state.user.uid); 
+                            await updateDoc(userRef, { score: increment(appLogic.state.score), weeklyScore: increment(appLogic.state.score), lastPlayed: serverTimestamp() }); 
+                            if (appLogic.state.user.teamId) await updateDoc(doc(db, "teams", appLogic.state.user.teamId), { score: increment(appLogic.state.score) }); 
+                            appLogic.state.user.score += appLogic.state.score; 
+                            appLogic.ui.updateHeader(); 
+                        } catch(e) { 
+                            console.error(e); 
+                            appLogic.ui.alert("錯誤", "分數上傳失敗 (請檢查網路或權限)"); 
+                        }
                     }
                     appLogic.nav.to('result');
                 },
@@ -706,8 +729,16 @@
                 bgAnimation: () => { /* ... */ }
             },
             team: { create: async () => { /* Same */ }, join: async () => { /* Same */ }, load: (tid) => { /* Same */ }, editName: async () => { /* Same */ } },
-            admin: { uploadCSV: () => { /* Same */ }, hardReset: async () => { /* Same */ }, setSpeed: async (s) => { /* Same */ }, promptLogin: () => { /* Same */ }, downloadTemplate: () => { /* Same */ }, resetScores: async (type) => { /* Same */ }, updateStats: async () => { /* Same */ }, deleteLevel: async () => { /* Same */ } },
-            leaderboard: { renderPreview: async () => { /* Same */ }, show: () => { /* Same */ }, switchSubTab: (subTab) => { /* Same */ }, fetchData: async () => { /* Same */ } },
+            admin: { uploadCSV: () => { /* Same */ }, hardReset: async () => { /* Same */ }, setSpeed: async (s) => { /* Same */ }, showLogin: () => { document.getElementById('admin-login-modal').classList.remove('hidden'); }, promptLogin: () => { appLogic.admin.showLogin(); }, verifyLogin: () => { const pwd = document.getElementById('admin-pwd-input').value; if (pwd === "admin123") { document.getElementById('admin-login-modal').classList.add('hidden'); window.app.nav.to('admin'); appLogic.admin.updateStats(); if (appLogic.state.user && appLogic.state.user.email === 'fuwen@ppsh.ptc.edu.tw') document.getElementById('super-admin-zone').classList.remove('hidden'); } else { appLogic.ui.alert("錯誤", "密碼錯誤"); } }, downloadTemplate: () => { /* Same */ }, resetScores: async (type) => { /* Same */ }, updateStats: async () => { /* Same */ }, deleteLevel: async () => { /* Same */ } },
+            leaderboard: { 
+                renderPreview: async () => { /* Same */ }, 
+                show: () => { 
+                    appLogic.nav.to('leaderboard'); 
+                    appLogic.leaderboard.fetchData(); 
+                }, 
+                switchSubTab: (subTab) => { /* Same */ }, 
+                fetchData: async () => { /* Same */ } 
+            },
             nav: { to: (id) => { document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); document.getElementById('view-'+id).classList.remove('hidden'); if(id==='login') document.getElementById('app-header').classList.add('hidden'); else document.getElementById('app-header').classList.remove('hidden'); }}
         };
 
