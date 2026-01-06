@@ -68,7 +68,7 @@
 </head>
 <body class="selection:bg-cyber-cyan selection:text-black">
 
-    <div class="version-tag">Ver 5.2.0 (Stable)</div>
+    <div class="version-tag">Ver 5.3.0</div>
     <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
 
     <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col z-10">
@@ -118,7 +118,7 @@
         </section>
 
         <!-- VIEW 2: Dashboard -->
-        <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6 pb-24">
+        <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6 pb-20">
             <div class="glass-panel p-5 rounded-xl relative overflow-hidden">
                 <div class="absolute -right-6 -top-6 w-32 h-32 bg-cyber-cyan/5 rounded-full blur-2xl"></div>
                 <h2 id="dash-name" class="text-xl font-bold text-white relative z-10">載入中...</h2>
@@ -197,7 +197,7 @@
             </div>
         </section>
 
-        <!-- ★★★ Admin Button (Fixed Global) ★★★ -->
+        <!-- Admin Button (Fixed Global) -->
         <button onclick="window.app.admin.promptLogin()" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] text-xs text-gray-500 hover:text-white transition-colors flex items-center gap-2 cursor-pointer py-2 px-4 bg-black/80 rounded-full border border-white/20 shadow-lg backdrop-blur-md">
             <i data-lucide="lock" class="w-3 h-3"></i> Admin Access
         </button>
@@ -212,10 +212,18 @@
                         <option value="all">全宇宙 (All Levels)</option>
                     </select>
                 </div>
+                <!-- ★★★ 修改處：題數選擇 ★★★ -->
                 <div id="setup-count-group">
-                    <label class="block text-xs text-gray-400 mb-4 uppercase flex justify-between"><span>選擇題數</span><span id="count-val" class="text-cyber-cyan font-bold font-mono text-lg">10</span></label>
-                    <input type="range" id="setup-count" min="10" max="30" step="5" value="10" class="w-full accent-cyber-cyan h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" oninput="document.getElementById('count-val').innerText = this.value">
+                    <label class="block text-xs text-gray-400 mb-4 uppercase flex justify-between">
+                        <span>選擇題數</span>
+                        <span id="count-val" class="text-cyber-cyan font-bold font-mono text-lg">5</span>
+                    </label>
+                    <input type="range" id="setup-count" min="5" max="20" step="5" value="5" class="w-full accent-cyber-cyan h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" oninput="document.getElementById('count-val').innerText = this.value">
+                    <div class="flex justify-between text-[10px] text-gray-600 mt-2 font-mono">
+                        <span>5</span><span>10</span><span>15</span><span>20</span>
+                    </div>
                 </div>
+
                 <div class="space-y-3 pt-4">
                     <button onclick="window.app.game.start()" class="w-full py-4 bg-cyber-cyan text-black font-bold font-display tracking-widest rounded hover:bg-cyan-400 transition-colors shadow-[0_0_20px_rgba(6,182,212,0.3)]">INITIATE</button>
                     <button onclick="window.app.nav.to('dashboard')" class="w-full py-3 text-gray-500 text-xs tracking-widest hover:text-white">ABORT</button>
@@ -342,7 +350,7 @@
                     if (user) {
                         const valid = user.email.endsWith("@ppsh.ptc.edu.tw") || user.email.endsWith("@gmail.com");
                         if (!valid) { appLogic.ui.alert("存取被拒", "僅限 @ppsh.ptc.edu.tw 或 Gmail 帳號"); await signOut(auth); return; }
-                        
+                        if (["fuwen@ppsh.ptc.edu.tw"].includes(user.email)) document.getElementById('admin-btn').classList.remove('hidden');
                         const userRef = doc(db, "users", user.uid); const userSnap = await getDoc(userRef);
                         if (!userSnap.exists()) await setDoc(userRef, { email: user.email, displayName: user.displayName, photoURL: user.photoURL, score: 0, weeklyScore: 0, teamId: null, lastPlayed: serverTimestamp() });
                         appLogic.state.user = { uid: user.uid, ...userSnap.data() || { score:0 } };
@@ -360,6 +368,7 @@
                 promptLogin: () => {
                     const pwd = prompt("請輸入管理員密碼：");
                     if (pwd === "admin123") {
+                        // 直接顯示後台 (不需要隱藏按鈕了)
                         window.app.nav.to('admin');
                         appLogic.admin.updateStats(); 
                         if (appLogic.state.user && appLogic.state.user.email === 'fuwen@ppsh.ptc.edu.tw') {
@@ -447,8 +456,10 @@
             },
 
             game: {
+                // ★★★ 修正這裡：Setup 函式必須強制顯示 Setup 頁面 ★★★
                 setup: async (mode, type) => {
-                    appLogic.state.mode = mode; appLogic.state.gameType = type;
+                    appLogic.state.mode = mode; 
+                    appLogic.state.gameType = type;
                     if (mode === 'review') { appLogic.game.start(); return; }
                     
                     const q = query(collection(db, "words")); 
@@ -457,6 +468,7 @@
                     
                     appLogic.state.words = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                     
+                    // 動態產生級別
                     const levels = new Set();
                     appLogic.state.words.forEach(w => levels.add(w.level));
                     const sortedLevels = Array.from(levels).sort((a,b) => {
@@ -474,16 +486,22 @@
                         sel.innerHTML += `<option value="${l}">Level ${l}</option>`;
                     });
 
-                    document.getElementById('setup-count-group').style.display = mode === 'ranked' ? 'none' : 'block';
+                    // ★★★ 修正這裡：強制顯示 setup-count-group，讓所有模式都能選題數 ★★★
+                    document.getElementById('setup-count-group').style.display = 'block';
+                    
                     appLogic.nav.to('setup');
                 },
                 start: () => {
                     appLogic.state.currentQIndex = 0; appLogic.state.score = 0; appLogic.state.streak = 0; appLogic.state.correctCount = 0; appLogic.state.tugPos = 50;
                     if (appLogic.state.timer) clearInterval(appLogic.state.timer);
+                    
                     if (appLogic.state.mode !== 'review') {
                         appLogic.state.wrongList = [];
                         const level = document.getElementById('setup-level').value;
-                        const countVal = appLogic.state.mode === 'ranked' ? 20 : parseInt(document.getElementById('setup-count').value);
+                        
+                        // ★★★ 修正這裡：強制讀取 setup-count 的值 ★★★
+                        const countVal = parseInt(document.getElementById('setup-count').value);
+                        
                         let pool = appLogic.state.words.filter(w => {
                             if (level === 'all') return true;
                             if (level === '1-3') return ['1','2','3'].includes(String(w.level));
@@ -494,7 +512,11 @@
                         pool.sort(() => Math.random() - 0.5);
                         appLogic.state.quizList = pool.slice(0, countVal);
                     }
-                    appLogic.nav.to('game'); document.getElementById('game-mode-label').innerText = `${appLogic.state.gameType.toUpperCase()} • Q 1/${appLogic.state.quizList.length}`; document.getElementById('in-game-score').innerText = "0"; document.getElementById('danger-line').classList.add('hidden');
+
+                    appLogic.nav.to('game'); 
+                    document.getElementById('game-mode-label').innerText = `${appLogic.state.gameType.toUpperCase()} • Q 1/${appLogic.state.quizList.length}`; 
+                    document.getElementById('in-game-score').innerText = "0"; 
+                    document.getElementById('danger-line').classList.add('hidden');
                     
                     if (appLogic.state.gameType === 'speed') appLogic.game.startSpeedGame();
                     else if (appLogic.state.gameType === 'tug') appLogic.game.startTugGame();
@@ -535,7 +557,7 @@
                     });
                 },
 
-                // ★★★ 修正點：錯誤回饋顯示 ★★★
+                // 2. Speed Pop
                 startSpeedGame: () => {
                     if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
@@ -552,11 +574,8 @@
                     
                     options.forEach((opt, i) => {
                         const balloon = document.createElement('div');
-                        // ★★★ 修正點：加入 break-words 與彈性高度 ★★★
                         balloon.className = "balloon-item absolute p-4 w-24 h-24 rounded-full flex items-center justify-center text-center text-sm font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] border border-white/20 backdrop-blur-md break-words overflow-hidden leading-tight";
                         if (i === 0) balloon.classList.add('bg-cyber-purple/80', 'text-white'); else if (i === 1) balloon.classList.add('bg-blue-600/80', 'text-white'); else balloon.classList.add('bg-cyber-cyan/80', 'text-black');
-                        
-                        // 動態字體縮放
                         if(opt[optDisplayKey].length > 8) balloon.classList.add('text-xs');
                         balloon.innerText = opt[optDisplayKey];
                         
@@ -570,18 +589,13 @@
                             if (opt.id === q.id) { 
                                 appLogic.game.handleAnswer(true); container.innerHTML = ''; setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 300); 
                             } else { 
-                                appLogic.game.handleAnswer(false); 
-                                // ★★★ 修正點：顯示雙語對照 ★★★
-                                appLogic.ui.alert("WRONG", `${q.word}\n(${q.chinese})`); 
+                                appLogic.game.handleAnswer(false); appLogic.ui.alert("WRONG", `${q.word}\n(${q.chinese})`); 
                             } 
                         };
-                        
                         balloon.addEventListener('animationend', () => { 
                             balloon.remove(); 
                             if (opt.id === q.id) { 
-                                appLogic.game.handleAnswer(false); 
-                                // ★★★ 修正點：顯示雙語對照 ★★★
-                                appLogic.ui.alert("MISS!", `${q.word}\n(${q.chinese})`); 
+                                appLogic.game.handleAnswer(false); appLogic.ui.alert("MISS!", `${q.word}\n(${q.chinese})`); 
                                 setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 1000); 
                             } 
                         });
