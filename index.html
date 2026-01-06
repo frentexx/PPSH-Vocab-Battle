@@ -68,7 +68,7 @@
 </head>
 <body class="selection:bg-cyber-cyan selection:text-black">
 
-    <div class="version-tag">Ver 5.0.0</div>
+    <div class="version-tag">Ver 5.1.0</div>
     <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
 
     <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col z-10">
@@ -124,10 +124,8 @@
                 <h2 id="dash-name" class="text-xl font-bold text-white relative z-10">載入中...</h2>
                 <div class="flex items-center gap-2 mt-1">
                     <p id="dash-team" class="text-xs text-gray-400 relative z-10 font-mono">NO TEAM</p>
-                    <!-- 隊長修改隊名按鈕 (動態顯示) -->
                     <button id="edit-team-name-btn" onclick="window.app.team.editName()" class="hidden relative z-10 p-1 text-gray-400 hover:text-white"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
                 </div>
-
                 <div class="mt-4 pt-4 border-t border-white/10 flex gap-2">
                     <button onclick="window.app.team.create()" class="flex-1 py-2 bg-cyber-cyan/10 border border-cyber-cyan/30 rounded text-xs text-cyber-cyan">建立隊伍</button>
                     <button onclick="window.app.team.join()" class="flex-1 py-2 bg-cyber-purple/10 border border-cyber-purple/30 rounded text-xs text-cyber-purple">輸入代碼</button>
@@ -198,11 +196,9 @@
                 </div>
             </div>
 
-            <!-- Admin Button (Fixed Z-Index) -->
-            <button onclick="window.app.admin.promptLogin()" class="mt-8 mx-auto flex items-center gap-2 text-xs text-gray-600 hover:text-white transition-colors z-50 relative pointer-events-auto cursor-pointer p-4">
+            <button onclick="window.app.admin.promptLogin()" class="mt-8 mx-auto flex items-center gap-2 text-xs text-gray-600 hover:text-white transition-colors">
                 <i data-lucide="lock" class="w-3 h-3"></i> Admin Access
             </button>
-            
             <button id="admin-btn" onclick="window.app.nav.to('admin')" class="hidden fixed bottom-4 right-4 p-3 bg-gray-800 rounded-full text-gray-400 hover:text-white shadow-lg border border-gray-700 z-50">
                 <i data-lucide="settings" class="w-4 h-4"></i>
             </button>
@@ -276,35 +272,30 @@
         <!-- VIEW 7: Admin -->
         <section id="view-admin" class="hidden flex-1 flex flex-col p-4 gap-4">
             <h2 class="text-xl font-bold text-cyber-orange flex gap-2 items-center"><i data-lucide="shield-alert"></i> ADMIN CONSOLE</h2>
-            <div class="glass-panel p-4 rounded-xl space-y-4 overflow-y-auto max-h-[80vh] hide-scrollbar">
+            <div class="glass-panel p-4 rounded-xl space-y-4">
                 <button onclick="window.app.admin.downloadTemplate()" class="w-full py-2 bg-white/5 border border-white/20 rounded text-sm text-gray-300 hover:bg-white/10 mb-2">📥 下載 CSV 範例檔</button>
                 <div class="border border-dashed border-gray-600 p-4 rounded text-center"><input type="file" id="csv-upload" accept=".csv" class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-cyber-purple file:text-white"/></div>
                 <button onclick="window.app.admin.uploadCSV()" class="w-full py-2 bg-blue-600 rounded text-sm font-bold">Process Upload</button>
-                
                 <hr class="border-gray-700">
                 <div class="space-y-2">
-                    <h3 class="text-xs text-cyber-cyan font-bold">單字庫管理</h3>
+                    <h3 class="text-xs text-cyber-cyan font-bold">VOCABULARY MANAGEMENT</h3>
                     <div id="vocab-stats" class="text-xs text-gray-400 mb-2"></div>
                     <div class="grid grid-cols-2 gap-2">
                         <select id="del-level" class="bg-black/30 border border-gray-600 rounded px-2 py-1 text-xs text-white"><option value="">Loading...</option></select>
                         <button onclick="window.app.admin.deleteLevel()" class="py-1 bg-red-900/50 border border-red-500 text-red-200 rounded text-xs hover:bg-red-800">🗑️ 刪除該級別</button>
                     </div>
                 </div>
-
                 <hr class="border-gray-700">
                 <div class="space-y-2">
-                    <h3 class="text-xs text-cyber-cyan font-bold">排行榜管理 (LEADERBOARD)</h3>
+                    <h3 class="text-xs text-cyber-cyan font-bold">排行榜管理</h3>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="window.app.admin.resetScores('weekly')" class="py-2 bg-red-900/30 border border-red-500/50 text-red-300 rounded text-xs hover:bg-red-900/50">重設本週積分</button>
-                        <button onclick="window.app.admin.resetScores('all')" class="py-2 bg-red-900/30 border border-red-500/50 text-red-300 rounded text-xs hover:bg-red-900/50">重設所有積分</button>
+                        <button onclick="window.app.admin.resetScores('weekly')" class="py-2 bg-red-900/30 border border-red-500/50 text-red-300 rounded text-xs">重設本週</button>
+                        <button onclick="window.app.admin.resetScores('all')" class="py-2 bg-red-900/30 border border-red-500/50 text-red-300 rounded text-xs">重設所有</button>
                     </div>
                 </div>
-
                 <hr class="border-gray-700">
-                <div class="space-y-2"><h3 class="text-xs text-cyber-cyan font-bold">遊戲設定</h3><div class="grid grid-cols-2 gap-2"><button onclick="window.app.admin.setSpeed(1)" class="py-2 bg-white/5 border border-white/10 rounded text-xs">慢速 (Easy)</button><button onclick="window.app.admin.setSpeed(2)" class="py-2 bg-white/5 border border-white/10 rounded text-xs">快速 (Hard)</button></div></div>
-                
+                <div class="space-y-2"><h3 class="text-xs text-cyber-cyan font-bold">GAME SETTINGS</h3><div class="grid grid-cols-2 gap-2"><button onclick="window.app.admin.setSpeed(1)" class="py-2 bg-white/5 border border-white/10 rounded text-xs">慢速 (Easy)</button><button onclick="window.app.admin.setSpeed(2)" class="py-2 bg-white/5 border border-white/10 rounded text-xs">快速 (Hard)</button></div></div>
                 <div id="super-admin-zone" class="hidden space-y-2 pt-2 border-t border-red-900/50"><h3 class="text-xs text-red-500 font-bold">DANGER ZONE</h3><button onclick="window.app.admin.hardReset()" class="w-full py-3 bg-red-900/50 text-red-200 font-bold rounded text-sm border border-red-500">SYSTEM HARD RESET</button></div>
-                
                 <button onclick="window.app.nav.to('dashboard')" class="w-full py-2 bg-gray-700 rounded text-sm">Exit</button>
             </div>
         </section>
@@ -437,11 +428,8 @@
                     const t = await getDocs(collection(db,"teams")); const tb = writeBatch(db); t.forEach(d=>tb.delete(d.ref)); await tb.commit();
                     location.reload();
                 },
-                setSpeed: async (s) => { await setDoc(doc(db, "settings", "game"), { speed: s }); appLogic.state.gameSpeed = s; appLogic.ui.alert("設定", "遊戲難度已更新"); },
-                
-                // ★★★ 新增：排行榜重設 ★★★
                 resetScores: async (type) => {
-                    if(!confirm(`確定要重設 ${type==='weekly'?'本週':'所有'} 積分嗎？此操作不可逆！`)) return;
+                    if(!confirm(`確定要重設 ${type==='weekly'?'本週':'所有'} 積分嗎？`)) return;
                     appLogic.ui.alert("處理中", "正在重設資料...");
                     try {
                         const snap = await getDocs(collection(db, "users"));
@@ -450,17 +438,15 @@
                             if(type === 'weekly') batch.update(d.ref, { weeklyScore: 0 });
                             else batch.update(d.ref, { score: 0, weeklyScore: 0 });
                         });
-                        
-                        // 若重設所有，也要重設隊伍總分
                         if(type === 'all') {
                              const tSnap = await getDocs(collection(db, "teams"));
                              tSnap.forEach(d => batch.update(d.ref, { score: 0 }));
                         }
-                        
                         await batch.commit();
                         appLogic.ui.alert("完成", "積分已重設");
-                    } catch(e) { console.error(e); appLogic.ui.alert("錯誤", "重設失敗 (可能資料過多)"); }
-                }
+                    } catch(e) { console.error(e); appLogic.ui.alert("錯誤", "重設失敗"); }
+                },
+                setSpeed: async (s) => { await setDoc(doc(db, "settings", "game"), { speed: s }); appLogic.state.gameSpeed = s; appLogic.ui.alert("設定", "遊戲難度已更新"); }
             },
 
             game: {
@@ -552,6 +538,7 @@
                     });
                 },
 
+                // ★★★ 修正點：錯誤回饋顯示 ★★★
                 startSpeedGame: () => {
                     if (appLogic.state.currentQIndex >= appLogic.state.quizList.length) { appLogic.game.finish(); return; }
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
@@ -565,11 +552,17 @@
                     if(subType === 0) appLogic.game.speak(q.word);
                     let options = appLogic.game.getDistractors(q, 2); options.sort(() => Math.random() - 0.5);
                     const container = document.getElementById('balloon-container');
+                    
                     options.forEach((opt, i) => {
                         const balloon = document.createElement('div');
-                        balloon.className = "balloon-item absolute p-4 w-24 h-24 rounded-full flex items-center justify-center text-center text-sm font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] border border-white/20 backdrop-blur-md break-all";
+                        // ★★★ 修正點：加入 break-words 與彈性高度 ★★★
+                        balloon.className = "balloon-item absolute p-4 w-24 h-24 rounded-full flex items-center justify-center text-center text-sm font-bold shadow-[0_0_20px_rgba(255,255,255,0.2)] border border-white/20 backdrop-blur-md break-words overflow-hidden leading-tight";
                         if (i === 0) balloon.classList.add('bg-cyber-purple/80', 'text-white'); else if (i === 1) balloon.classList.add('bg-blue-600/80', 'text-white'); else balloon.classList.add('bg-cyber-cyan/80', 'text-black');
+                        
+                        // 動態字體縮放
+                        if(opt[optDisplayKey].length > 8) balloon.classList.add('text-xs');
                         balloon.innerText = opt[optDisplayKey];
+                        
                         balloon.style.left = `${10 + Math.random() * 70}%`;
                         balloon.style.animationDelay = `${i * 0.8}s`;
                         const baseSpeed = appLogic.state.gameSpeed === 2 ? 3 : 6;
@@ -580,18 +573,17 @@
                             if (opt.id === q.id) { 
                                 appLogic.game.handleAnswer(true); container.innerHTML = ''; setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 300); 
                             } else { 
-                                appLogic.game.handleAnswer(false);
-                                appLogic.game.speak(q.word); 
-                                appLogic.ui.alert("WRONG", `${q.word}\n${q.chinese}`); 
+                                appLogic.game.handleAnswer(false); 
+                                // ★★★ 修正點：顯示雙語對照 ★★★
+                                appLogic.ui.alert("WRONG", `${q.word}\n(${q.chinese})`); 
                             } 
                         };
-                        
                         balloon.addEventListener('animationend', () => { 
                             balloon.remove(); 
                             if (opt.id === q.id) { 
                                 appLogic.game.handleAnswer(false); 
-                                appLogic.game.speak(q.word); 
-                                appLogic.ui.alert("MISS!", `${q.word}\n${q.chinese}`); 
+                                // ★★★ 修正點：顯示雙語對照 ★★★
+                                appLogic.ui.alert("MISS!", `${q.word}\n(${q.chinese})`); 
                                 setTimeout(() => { appLogic.state.currentQIndex++; appLogic.game.startSpeedGame(); }, 1000); 
                             } 
                         });
@@ -603,7 +595,6 @@
                     const stage = document.getElementById('game-stage');
                     const batch = appLogic.state.quizList.slice(0, 5); 
                     if(batch.length === 0) { appLogic.game.finish(); return; }
-                    appLogic.state.correctCount = 0; 
                     let left = [...batch].sort(()=>Math.random()-0.5), right = [...batch].sort(()=>Math.random()-0.5);
                     let sel = null, matched = 0;
                     stage.innerHTML = `<div class="grid grid-cols-2 gap-4 w-full h-full content-center" id="match-grid"></div>`;
@@ -638,21 +629,9 @@
                     const q = appLogic.state.quizList[appLogic.state.currentQIndex];
                     appLogic.ui.updateGameProgress();
                     const stage = document.getElementById('game-stage');
-                    
-                    if (!q.sentence || q.sentence.trim() === '') { appLogic.game.nextStandard(); return; }
-
-                    const sentence = q.sentence;
+                    const sentence = q.sentence || `This is a ${q.word}.`;
                     const blanked = sentence.replace(new RegExp(q.word, 'gi'), '_____');
-                    
-                    stage.innerHTML = `
-                        <div class="glass-panel w-full max-w-sm p-6 rounded-2xl flex flex-col items-center text-center">
-                            <div class="text-lg text-white mb-6 font-serif leading-relaxed px-2 border-l-2 border-cyber-orange pl-4 text-left w-full">
-                                "${blanked}"
-                            </div>
-                            <div class="text-xs text-gray-500 mb-6 tracking-wider w-full text-right">- ${q.chinese} -</div>
-                            <div class="grid w-full gap-3" id="fill-options"></div>
-                        </div>
-                    `;
+                    stage.innerHTML = `<div class="glass-panel w-full max-w-sm p-6 rounded-2xl flex flex-col items-center text-center"><div class="text-xl text-white mb-6 font-serif leading-relaxed">"${blanked}"</div><div class="text-xs text-gray-500 mb-6 tracking-wider">${q.chinese}</div><div class="grid w-full gap-3" id="fill-options"></div></div>`;
                     const optContainer = document.getElementById('fill-options');
                     let options = appLogic.game.getDistractors(q, 3);
                     options.forEach(opt => {
@@ -703,13 +682,10 @@
                 finish: async () => {
                     if(appLogic.state.timer) clearInterval(appLogic.state.timer);
                     document.getElementById('res-score').innerText = appLogic.state.score;
-                    
-                    let totalQ = appLogic.state.quizList.length;
-                    if(appLogic.state.gameType === 'match') totalQ = 5;
+                    let totalQ = appLogic.state.quizList.length; if(appLogic.state.gameType === 'match') totalQ = 5;
                     const accuracy = Math.round((appLogic.state.correctCount / totalQ) * 100) || 0;
                     document.getElementById('res-accuracy').innerText = accuracy + "%";
                     document.getElementById('res-streak').innerText = appLogic.state.streak;
-                    
                     const reviewBtn = document.getElementById('btn-review-wrong');
                     if (appLogic.state.wrongList.length > 0) { reviewBtn.classList.remove('hidden'); document.getElementById('wrong-count').innerText = appLogic.state.wrongList.length; } else { reviewBtn.classList.add('hidden'); }
                     if (appLogic.state.mode === 'ranked') {
@@ -727,10 +703,8 @@
                 alert: (t, m) => { document.getElementById('alert-title').innerText=t; document.getElementById('alert-msg').innerText=m; document.getElementById('alert-box').classList.remove('hidden'); },
                 bgAnimation: () => { /* ... */ }
             },
-            
-            // ★★★ 隊伍系統更新：修改隊名 ★★★
-            team: {
-                create: async () => {
+            team: { 
+                create: async () => { 
                     if (!appLogic.state.user) return;
                     try {
                         const name = prompt("隊名:"); if(!name) return;
@@ -744,7 +718,21 @@
                         appLogic.ui.alert("成功", `代碼: ${code}`);
                     } catch(e) { appLogic.ui.alert("失敗", e.message); }
                 },
-                join: async () => { /* Same */ }, 
+                join: async () => {
+                    if (!appLogic.state.user) return;
+                    const code = prompt("輸入代碼:"); if(!code) return;
+                    const q = query(collection(db,"teams"), where("code","==",code.toUpperCase()));
+                    const snap = await getDocs(q);
+                    if(snap.empty) { appLogic.ui.alert("錯誤","無效代碼"); return; }
+                    const t = snap.docs[0];
+                    if(t.data().members.length >= 3) { appLogic.ui.alert("錯誤","隊伍已滿 (Max 3)"); return; }
+                    
+                    await updateDoc(doc(db,"teams",t.id), {members: arrayUnion(appLogic.state.user.uid)});
+                    await updateDoc(doc(db,"users",appLogic.state.user.uid), {teamId: t.id});
+                    appLogic.state.user.teamId = t.id; 
+                    appLogic.team.load(t.id);
+                    appLogic.ui.alert("成功","已加入");
+                }, 
                 load: (tid) => {
                     onSnapshot(doc(db,"teams",tid), async(d)=>{
                         if(!d.exists()) return;
@@ -753,26 +741,15 @@
                         document.getElementById('dash-team').classList.add('text-cyber-cyan');
                         document.getElementById('team-code-display').innerText = d.data().code;
                         document.getElementById('team-info-box').classList.remove('hidden');
-                        
-                        // ★ 檢查是否為隊長，顯示編輯按鈕
                         const editBtn = document.getElementById('edit-team-name-btn');
-                        if (appLogic.state.user.uid === d.data().leader) {
-                            editBtn.classList.remove('hidden');
-                        } else {
-                            editBtn.classList.add('hidden');
-                        }
+                        if (appLogic.state.user.uid === d.data().leader) editBtn.classList.remove('hidden'); else editBtn.classList.add('hidden');
                     });
                 },
                 editName: async () => {
                     if (!appLogic.state.team) return;
                     const newName = prompt("請輸入新隊名：", appLogic.state.team.name);
                     if (newName && newName.trim() !== "") {
-                        try {
-                            await updateDoc(doc(db, "teams", appLogic.state.team.id), { name: newName.trim() });
-                            appLogic.ui.alert("成功", "隊名已更新");
-                        } catch(e) {
-                            appLogic.ui.alert("錯誤", "更新失敗");
-                        }
+                        try { await updateDoc(doc(db, "teams", appLogic.state.team.id), { name: newName.trim() }); appLogic.ui.alert("成功", "隊名已更新"); } catch(e) { appLogic.ui.alert("錯誤", "更新失敗"); }
                     }
                 }
             },
