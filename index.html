@@ -4,9 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PPSH Vocabulary Battle V6 | 屏北單字星際爭霸</title>
+    <title>PPSH Vocabulary Battle V6.1 | 屏北單字星際爭霸修正版</title>
     
-    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -21,9 +20,7 @@
                 extend: {
                     colors: {
                         cyber: { bg: '#0B0F19', card: '#131B2E', cyan: '#06B6D4', purple: '#8B5CF6', orange: '#F97316', yellow: '#FACC15', green: '#22C55E', danger: '#EF4444', pink: '#EC4899' }
-                    },
-                    fontFamily: { display: ['Orbitron', 'sans-serif'], body: ['Noto Sans TC', 'sans-serif'] },
-                    animation: { 'pulse-fast': 'pulse 0.5s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
+                    }
                 }
             }
         }
@@ -31,41 +28,34 @@
 
     <style>
         body { background-color: #0B0F19; color: #E2E8F0; font-family: 'Noto Sans TC', sans-serif; min-height: 100vh; overflow-x: hidden; user-select: none; }
-        .glass-panel { background: rgba(19, 27, 46, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .version-tag { position: fixed; top: 10px; right: 10px; font-family: 'Orbitron'; font-size: 10px; color: rgba(255,255,255,0.3); z-index: 9999; }
+        .glass-panel { background: rgba(19, 27, 46, 0.9); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
         
-        /* Game Specific */
-        .tug-beam { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #8B5CF6, #06B6D4, #8B5CF6); transform: translateY(-50%); box-shadow: 0 0 15px #06B6D4; }
-        .tug-node { width: 40px; height: 40px; background: #fff; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 30px #fff, 0 0 60px #06B6D4; z-index: 10; transition: left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        
-        .balloon-item { position: absolute; cursor: pointer; z-index: 50; will-change: top; }
-        .balloon-paused { animation-play-state: paused !important; }
+        /* 修正遮罩層：確保預設隱藏且點擊不穿透 */
+        .feedback-overlay { position: fixed; inset: 0; background: rgba(11, 15, 25, 0.95); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .feedback-overlay.active { display: flex; animation: fadeIn 0.3s ease-out forwards; }
 
-        .letter-slot { width: 35px; height: 45px; border-bottom: 2px solid #334155; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-size: 20px; font-weight: bold; color: #06B6D4; margin: 0 2px; }
-        .letter-slot.filled { border-bottom-color: #06B6D4; animation: slotPop 0.3s ease-out; }
-        @keyframes slotPop { 0% { transform: scale(1.5); color: #fff; } 100% { transform: scale(1); } }
-
-        .pop-bubble { width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; transition: all 0.2s; }
-        .pop-bubble:active { transform: scale(0.9); }
-        .pop-bubble.hint-active { background: rgba(250, 204, 21, 0.2); border-color: #FACC15; box-shadow: 0 0 15px #FACC15; animation: pulse 1s infinite; }
-
-        .feedback-overlay { position: absolute; inset: 0; background: rgba(11, 15, 25, 0.9); z-index: 100; display: flex; flex-direction: column; items-center; justify-content: center; animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* 遊戲元素 */
+        .match-btn { transition: all 0.2s; cursor: pointer; }
+        .match-btn:active { transform: scale(0.95); }
+        .wrong-shake { animation: shake 0.4s ease-in-out; border-color: #EF4444 !important; background: rgba(239, 68, 68, 0.2) !important; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
 
-        .wrong-match { animation: shake 0.4s; border-color: #EF4444 !important; background: rgba(239, 68, 68, 0.2) !important; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .letter-slot { width: 35px; height: 45px; border-bottom: 3px solid #334155; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-size: 24px; font-weight: bold; color: #06B6D4; margin: 0 4px; }
+        .letter-slot.filled { border-bottom-color: #06B6D4; color: #fff; animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
 
-        @keyframes balloonFall { 0% { top: -100px; opacity: 0; } 10% { opacity: 1; } 100% { top: 100vh; opacity: 1; } }
+        .balloon-item { position: absolute; cursor: pointer; z-index: 50; animation: balloonFall linear forwards; }
+        @keyframes balloonFall { from { top: -100px; } to { top: 100vh; } }
     </style>
 </head>
-<body class="selection:bg-cyber-cyan selection:text-black">
-
-    <div class="version-tag">Ver 6.0.0 Alpha</div>
+<body>
 
     <div id="app-container" class="max-w-md mx-auto min-h-screen relative flex flex-col z-10">
         
         <!-- HEADER -->
-        <header id="app-header" class="hidden p-4 flex justify-between items-center glass-panel sticky top-0 z-50 rounded-b-2xl border-b border-white/5">
+        <header id="app-header" class="hidden p-4 flex justify-between items-center glass-panel sticky top-0 z-50 rounded-b-2xl">
             <div class="flex flex-col leading-none">
                 <span class="text-[10px] text-cyber-cyan tracking-widest font-display">PPSH GALAXY</span>
                 <span id="nav-title" class="font-display font-bold text-lg text-white">BATTLE</span>
@@ -79,212 +69,77 @@
             </div>
         </header>
 
-        <!-- VIEW 1: Login -->
+        <!-- VIEWS -->
         <section id="view-login" class="flex-1 flex flex-col justify-center px-6">
             <div class="flex flex-col items-center mb-12">
                 <div class="w-24 h-24 rounded-full bg-cyber-cyan/20 border-2 border-cyber-cyan flex items-center justify-center mb-6 shadow-[0_0_30px_#06B6D4]">
                     <i data-lucide="rocket" class="w-10 h-10 text-cyber-cyan"></i>
                 </div>
-                <h1 class="text-3xl font-bold text-center tracking-tight">
-                    屏北高中<br>
-                    <span class="text-cyber-cyan font-display uppercase text-xl">Vocabulary Battle</span>
-                </h1>
+                <h1 class="text-3xl font-bold text-center tracking-tight">屏北高中<br><span class="text-cyber-cyan font-display uppercase text-xl">Vocab Battle</span></h1>
             </div>
-            <button onclick="window.app.auth.login()" class="w-full py-4 rounded-xl bg-white text-black font-bold flex items-center justify-center gap-2 hover:bg-gray-200 transition-all">
-                <i data-lucide="log-in"></i> 使用 Google 帳號登入
-            </button>
+            <button onclick="window.app.auth.login()" class="w-full py-4 rounded-xl bg-white text-black font-bold flex items-center justify-center gap-2">登入 Google 帳號</button>
         </section>
 
-        <!-- VIEW 2: Dashboard -->
-        <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6 pb-20">
+        <section id="view-dashboard" class="hidden flex-1 flex flex-col p-4 gap-6">
             <div class="glass-panel p-5 rounded-2xl">
                 <h2 id="dash-name" class="text-xl font-bold">載入中...</h2>
-                <div class="flex items-center gap-2 text-xs text-gray-400 mt-1">
-                    <span id="dash-team">無所屬戰隊</span>
-                    <button onclick="window.app.team.join()" class="text-cyber-cyan underline">加入隊伍</button>
-                </div>
+                <p id="dash-team" class="text-xs text-gray-400 mt-1">無所屬戰隊</p>
             </div>
 
-            <!-- 音訊提醒 -->
-            <div class="bg-cyber-purple/10 border border-cyber-purple/30 p-3 rounded-xl flex items-center gap-3">
-                <div class="bg-cyber-purple p-2 rounded-lg animate-pulse">
-                    <i data-lucide="headphones" class="w-4 h-4 text-white"></i>
-                </div>
-                <div class="text-xs">
-                    <strong class="text-cyber-purple">作戰準備：</strong> 請開啟音量或佩戴耳機，聽力題目是獲勝關鍵！
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 gap-4">
+            <div class="space-y-4 overflow-y-auto pb-20">
                 <div class="text-xs font-bold text-gray-500 uppercase tracking-widest">個人訓練基地</div>
                 <div class="grid grid-cols-2 gap-3">
-                    <div onclick="window.app.game.setup('practice', 'match')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-green">
-                        <i data-lucide="layers" class="text-cyber-green mb-2"></i>
-                        <div class="font-bold text-sm">配對遊戲</div>
-                        <div class="text-[10px] text-gray-400">Match Pair</div>
-                    </div>
-                    <div onclick="window.app.game.setup('practice', 'wheel')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-yellow">
-                        <i data-lucide="refresh-cw" class="text-cyber-yellow mb-2"></i>
-                        <div class="font-bold text-sm">命運輪盤</div>
-                        <div class="text-[10px] text-gray-400">Wheel of Luck</div>
-                    </div>
+                    <div onclick="window.app.game.setup('practice', 'match')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-green cursor-pointer"><i data-lucide="layers" class="text-cyber-green mb-2"></i><div class="font-bold text-sm">配對遊戲</div></div>
+                    <div onclick="window.app.game.setup('practice', 'wheel')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-yellow cursor-pointer"><i data-lucide="refresh-cw" class="text-cyber-yellow mb-2"></i><div class="font-bold text-sm">命運輪盤</div></div>
+                    <div onclick="window.app.game.setup('practice', 'standard')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-cyan cursor-pointer"><i data-lucide="volume-2" class="text-cyber-cyan mb-2"></i><div class="font-bold text-sm">聽音辨義</div></div>
+                    <div onclick="window.app.game.setup('practice', 'fill')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-orange cursor-pointer"><i data-lucide="pen-tool" class="text-cyber-orange mb-2"></i><div class="font-bold text-sm">短句填空</div></div>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div onclick="window.app.game.setup('practice', 'standard')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-cyan">
-                        <i data-lucide="volume-2" class="text-cyber-cyan mb-2"></i>
-                        <div class="font-bold text-sm">聽音辨義</div>
-                        <div class="text-[10px] text-gray-400">Audio Quiz</div>
-                    </div>
-                    <div onclick="window.app.game.setup('practice', 'fill')" class="glass-panel p-4 rounded-xl border-l-4 border-cyber-orange">
-                        <i data-lucide="pen-tool" class="text-cyber-orange mb-2"></i>
-                        <div class="font-bold text-sm">短句填空</div>
-                        <div class="text-[10px] text-gray-400">Sentence Fill</div>
-                    </div>
-                </div>
-
                 <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-4">戰隊競技場</div>
-                <div class="space-y-3">
-                    <div onclick="window.app.game.setup('ranked', 'wordpop')" class="glass-panel p-4 rounded-xl border border-cyber-pink/30 flex justify-between items-center group cursor-pointer hover:bg-cyber-pink/5">
-                        <div>
-                            <h4 class="font-bold text-cyber-pink">🫧 字母爆破 (Word Pop)</h4>
-                            <p class="text-[10px] text-gray-400 mt-1">拼字重組 • 聽音辨位 • 鷹架訓練</p>
-                        </div>
-                        <i data-lucide="zap" class="text-cyber-pink group-hover:scale-125 transition-transform"></i>
-                    </div>
-                    <div onclick="window.app.game.setup('ranked', 'tug')" class="glass-panel p-4 rounded-xl border border-cyber-purple/30 flex justify-between items-center group cursor-pointer hover:bg-cyber-purple/5">
-                        <div>
-                            <h4 class="font-bold text-cyber-purple">🚀 光速拔河 (Tug-of-War)</h4>
-                            <p class="text-[10px] text-gray-400 mt-1">極限反應 • 強制學習機制</p>
-                        </div>
-                        <i data-lucide="swords" class="text-cyber-purple group-hover:scale-125 transition-transform"></i>
-                    </div>
-                    <div onclick="window.app.game.setup('ranked', 'speed')" class="glass-panel p-4 rounded-xl border border-cyber-danger/30 flex justify-between items-center group cursor-pointer hover:bg-cyber-danger/5">
-                        <div>
-                            <h4 class="font-bold text-cyber-danger">🎈 疾速破冰 (Speed Pop)</h4>
-                            <p class="text-[10px] text-gray-400 mt-1">下降泡泡 • 暫停重試機制</p>
-                        </div>
-                        <i data-lucide="timer" class="text-cyber-danger group-hover:scale-125 transition-transform"></i>
-                    </div>
+                <div onclick="window.app.game.setup('ranked', 'wordpop')" class="glass-panel p-4 rounded-xl border border-cyber-pink/30 cursor-pointer flex justify-between items-center">
+                    <div><h4 class="font-bold text-cyber-pink">🫧 字母爆破 (Word Pop)</h4><p class="text-[10px] text-gray-400">聽音拼字 • 字母爆破</p></div><i data-lucide="zap" class="text-cyber-pink"></i>
                 </div>
             </div>
         </section>
 
-        <!-- VIEW 3: Setup -->
         <section id="view-setup" class="hidden flex-1 flex flex-col p-6 justify-center">
-            <h2 class="text-2xl font-display font-bold text-center mb-8">MISSION SETUP</h2>
             <div class="glass-panel p-6 rounded-2xl space-y-6">
-                <div>
-                    <label class="block text-xs text-gray-400 mb-2 uppercase font-bold tracking-widest">目標區域</label>
-                    <select id="setup-level" class="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white focus:border-cyber-cyan outline-none"></select>
-                </div>
-                <div>
-                    <label class="flex justify-between text-xs text-gray-400 mb-2 uppercase font-bold tracking-widest">
-                        <span>題目數量</span>
-                        <span id="count-val" class="text-cyber-cyan">10</span>
-                    </label>
-                    <input type="range" id="setup-count" min="5" max="20" step="5" value="10" class="w-full accent-cyber-cyan" oninput="document.getElementById('count-val').innerText = this.value">
-                </div>
-                <div id="setup-wordpop-options" class="hidden">
-                    <label class="flex items-center gap-3 cursor-pointer bg-white/5 p-3 rounded-lg border border-white/10">
-                        <input type="checkbox" id="setup-short-only" class="w-5 h-5 accent-cyber-pink">
-                        <span class="text-sm">簡易模式 (僅出現 6 字母以下單字)</span>
-                    </label>
-                </div>
-                <button onclick="window.app.game.start()" class="w-full py-4 bg-cyber-cyan text-black font-bold rounded-lg shadow-[0_0_20px_rgba(6,182,212,0.4)]">開始作戰</button>
+                <h2 class="text-xl font-bold text-center">任務設定</h2>
+                <select id="setup-level" class="w-full bg-black/40 border border-white/10 rounded-lg p-3"></select>
+                <input type="range" id="setup-count" min="5" max="20" step="5" value="10" class="w-full">
+                <button onclick="window.app.game.start()" class="w-full py-4 bg-cyber-cyan text-black font-bold rounded-lg">開始作戰</button>
             </div>
         </section>
 
-        <!-- VIEW 4: Game -->
         <section id="view-game" class="hidden flex-1 flex flex-col relative overflow-hidden">
-            <!-- Game HUD -->
-            <div class="p-4 flex justify-between items-center z-50">
-                <button onclick="window.app.game.quit()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center"><i data-lucide="x"></i></button>
-                <div class="flex-1 px-6">
-                    <div id="game-progress-bar" class="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                        <div id="game-progress-fill" class="h-full bg-cyber-cyan w-0 transition-all"></div>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <div class="text-[10px] text-gray-400 font-display">SCORE</div>
-                    <div id="in-game-score" class="text-lg font-bold font-mono text-cyber-orange">0</div>
-                </div>
+            <div class="p-4 flex justify-between items-center z-40">
+                <button onclick="window.app.game.quit()" class="p-2 bg-white/5 rounded-full"><i data-lucide="x"></i></button>
+                <div id="in-game-score" class="text-lg font-bold font-mono text-cyber-orange">0</div>
             </div>
-            
-            <!-- Stage -->
-            <div id="game-stage" class="flex-1 relative flex flex-col items-center justify-center p-4"></div>
-            
-            <!-- Feedback Overlay (Shared) -->
-            <div id="game-feedback" class="hidden feedback-overlay">
-                <div id="fb-icon" class="mb-4"></div>
-                <div id="fb-word" class="text-4xl font-bold text-white mb-2">Word</div>
-                <div id="fb-type" class="text-cyber-cyan font-bold text-sm mb-1 uppercase">n.</div>
-                <div id="fb-chinese" class="text-xl text-gray-300 mb-6">中文意思</div>
-                <div id="fb-sentence" class="text-sm text-gray-400 text-center px-8 italic max-w-sm">Example sentence goes here.</div>
-                <div class="mt-8 flex items-center gap-2 text-cyber-cyan animate-pulse">
-                    <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>
-                    <span class="text-xs font-bold tracking-widest">正在掃描單字核心...</span>
-                </div>
-            </div>
+            <div id="game-stage" class="flex-1 flex flex-col items-center justify-center p-4"></div>
         </section>
 
-        <!-- VIEW 5: Result -->
-        <section id="view-result" class="hidden flex-1 flex flex-col p-6 items-center overflow-y-auto pb-10">
-            <div id="result-animation" class="w-32 h-32 mb-4 flex items-center justify-center text-6xl">🚀</div>
-            <h2 class="text-3xl font-display font-black text-white mb-1">MISSION COMPLETE</h2>
-            <p class="text-gray-400 text-xs tracking-widest mb-8">戰果評估報告</p>
-            
-            <div class="grid grid-cols-2 gap-4 w-full mb-8">
-                <div class="glass-panel p-4 rounded-2xl text-center">
-                    <div class="text-[10px] text-gray-500 uppercase">Total XP</div>
-                    <div id="res-score" class="text-3xl font-display font-bold text-cyber-cyan">0</div>
-                </div>
-                <div class="glass-panel p-4 rounded-2xl text-center">
-                    <div class="text-[10px] text-gray-500 uppercase">Accuracy</div>
-                    <div id="res-accuracy" class="text-3xl font-display font-bold text-cyber-green">0%</div>
-                </div>
-            </div>
-
-            <!-- 學習清單 (NEW) -->
-            <div class="w-full flex-1 flex flex-col">
-                <h3 class="text-xs font-bold text-cyber-orange mb-3 flex items-center gap-2">
-                    <i data-lucide="book-open" class="w-4 h-4"></i> 今日重點複習清單
-                </h3>
-                <div id="res-study-list" class="space-y-2 flex-1">
-                    <!-- Dynamic -->
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 w-full mt-6">
-                <button onclick="window.app.nav.to('dashboard')" class="py-4 bg-white/5 rounded-xl font-bold border border-white/10">回主選單</button>
-                <button onclick="window.app.game.retryWrong()" id="btn-retry-wrong" class="py-4 bg-cyber-purple text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2">
-                    <i data-lucide="zap"></i> 特訓錯題
-                </button>
-            </div>
+        <!-- RESULT & STUDY LIST -->
+        <section id="view-result" class="hidden flex-1 flex flex-col p-6 items-center overflow-y-auto">
+            <h2 class="text-3xl font-black mb-8">MISSION COMPLETE</h2>
+            <div id="res-score" class="text-5xl font-bold text-cyber-cyan mb-8">0</div>
+            <div class="w-full space-y-2" id="res-study-list"></div>
+            <button onclick="window.app.nav.to('dashboard')" class="w-full py-4 mt-8 bg-white/10 rounded-xl">回主選單</button>
         </section>
 
-        <!-- VIEW 6: Leaderboard -->
-        <section id="view-leaderboard" class="hidden fixed inset-0 z-[100] bg-cyber-bg flex flex-col p-4">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="trophy" class="text-cyber-yellow"></i> 屏北單字排行</h2>
-                <button onclick="window.app.nav.to('dashboard')" class="p-2"><i data-lucide="x"></i></button>
-            </div>
-            <div id="lb-content" class="space-y-2 overflow-y-auto"></div>
-        </section>
-    </div>
-
-    <!-- Alert Modal -->
-    <div id="alert-box" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 hidden px-6">
-        <div class="glass-panel p-6 rounded-2xl w-full max-w-xs text-center border border-white/10 shadow-2xl">
-            <h3 id="alert-title" class="text-lg font-bold mb-2">通知</h3>
-            <p id="alert-msg" class="text-gray-400 text-sm mb-6"></p>
-            <button onclick="document.getElementById('alert-box').classList.add('hidden')" class="w-full py-3 bg-cyber-cyan text-black font-bold rounded-lg">確認</button>
+        <!-- FEEDBACK OVERLAY (修正：移至外層且 z-index 最高) -->
+        <div id="game-feedback" class="feedback-overlay">
+            <div id="fb-icon" class="mb-4"></div>
+            <div id="fb-word" class="text-5xl font-bold text-white mb-2"></div>
+            <div id="fb-chinese" class="text-2xl text-cyber-cyan mb-4"></div>
+            <div id="fb-sentence" class="text-gray-400 italic px-8 max-w-sm"></div>
+            <div class="mt-12 text-xs text-white/30 animate-pulse tracking-widest">AUTO-SCANNING...</div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, getDocs, orderBy, limit, increment, serverTimestamp, arrayUnion } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCQC4nD1ceknWbYq0DwY461XgPMSpzxzoE",
@@ -300,591 +155,232 @@
         const db = getFirestore(fbApp);
         const googleProvider = new GoogleAuthProvider();
 
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const audioCtx = new AudioContext();
+        let audioCtx;
+        const initAudio = () => { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); };
 
-        const appLogic = {
-            state: {
-                user: null, words: [], quizList: [], currentIdx: 0, score: 0, 
-                wrongList: [], // 當次遊戲錯題
-                sessionMistakes: [], // 統整所有學習清單
-                mode: 'practice', type: 'standard',
-                tugPos: 50, gameTimer: null, isPaused: false
-            },
+        window.app = {
+            state: { user: null, words: [], quizList: [], currentIdx: 0, score: 0, mistakes: [], type: '' },
 
             init: () => {
                 lucide.createIcons();
                 onAuthStateChanged(auth, async (u) => {
                     if (u) {
-                        const userRef = doc(db, "users", u.uid);
-                        const snap = await getDoc(userRef);
-                        if (!snap.exists()) {
-                            await setDoc(userRef, { displayName: u.displayName, photoURL: u.photoURL, score: 0, mistakes: [] });
-                        }
-                        appLogic.state.user = { uid: u.uid, ...snap.data() };
-                        appLogic.ui.updateHeader();
-                        appLogic.nav.to('dashboard');
+                        const snap = await getDoc(doc(db, "users", u.uid));
+                        if (!snap.exists()) await setDoc(doc(db, "users", u.uid), { displayName: u.displayName, photoURL: u.photoURL, score: 0 });
+                        app.state.user = { uid: u.uid, ...snap.data() };
+                        app.ui.updateHeader();
+                        app.nav.to('dashboard');
+                        // 預先載入單字
+                        const wSnap = await getDocs(collection(db, "words"));
+                        app.state.words = wSnap.docs.map(d => ({ id: d.id, ...d.data() }));
                     } else {
-                        appLogic.nav.to('login');
+                        app.nav.to('login');
                     }
                 });
             },
 
-            // --- AUDIO TOOLS ---
-            audio: {
-                speak: (text, callback) => {
-                    window.speechSynthesis.cancel();
-                    const u = new SpeechSynthesisUtterance(text);
-                    u.lang = 'en-US'; u.rate = 0.9;
-                    if (callback) u.onend = callback;
-                    window.speechSynthesis.speak(u);
-                },
-                beepError: () => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                    osc.connect(gain); gain.connect(audioCtx.destination);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-                },
-                beepSuccess: () => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-                    osc.connect(gain); gain.connect(audioCtx.destination);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-                }
-            },
+            auth: { login: () => signInWithPopup(auth, googleProvider) },
 
-            // --- NAVIGATION ---
             nav: {
                 to: (id) => {
                     document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
                     document.getElementById('view-' + id).classList.remove('hidden');
-                    const titles = { dashboard: 'BATTLE', setup: 'MISSION SETUP', game: 'ON MISSION', result: 'REPORT' };
-                    document.getElementById('nav-title').innerText = titles[id] || 'BATTLE';
-                    if (id === 'dashboard') appLogic.ui.updateHeader();
                 }
             },
 
-            // --- AUTH ---
-            auth: {
-                login: () => signInWithPopup(auth, googleProvider).catch(e => alert(e.message))
-            },
-
-            // --- GAME ENGINE ---
             game: {
-                setup: async (mode, type) => {
-                    appLogic.state.mode = mode;
-                    appLogic.state.type = type;
-                    const snap = await getDocs(collection(db, "words"));
-                    appLogic.state.words = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    
-                    const levels = [...new Set(appLogic.state.words.map(w => w.level))].sort();
+                setup: (mode, type) => {
+                    if (app.state.words.length === 0) return alert("單字載入中，請稍候...");
+                    app.state.type = type;
+                    const levels = [...new Set(app.state.words.map(w => w.level))].sort();
                     const sel = document.getElementById('setup-level');
-                    sel.innerHTML = '<option value="all">全宇宙 (混合)</option>';
+                    sel.innerHTML = '<option value="all">所有級別</option>';
                     levels.forEach(l => sel.innerHTML += `<option value="${l}">Level ${l}</option>`);
-
-                    document.getElementById('setup-wordpop-options').className = (type === 'wordpop') ? 'block' : 'hidden';
-                    appLogic.nav.to('setup');
+                    app.nav.to('setup');
                 },
 
                 start: () => {
-                    const level = document.getElementById('setup-level').value;
+                    initAudio();
+                    const lvl = document.getElementById('setup-level').value;
                     const count = parseInt(document.getElementById('setup-count').value);
-                    const wpShort = document.getElementById('setup-short-only').checked;
-
-                    let pool = [...appLogic.state.words];
-                    if (level !== 'all') pool = pool.filter(w => String(w.level) === level);
-                    if (appLogic.state.type === 'wordpop' && wpShort) pool = pool.filter(w => w.word.length <= 6);
-                    
-                    // 優先加入之前的錯題 (簡單的加權機制)
-                    if (appLogic.state.user.mistakes && appLogic.state.user.mistakes.length > 0) {
-                        const mIds = appLogic.state.user.mistakes.slice(-5);
-                        const mWords = appLogic.state.words.filter(w => mIds.includes(w.id));
-                        pool = [...mWords, ...pool.sort(() => Math.random() - 0.5)];
-                    } else {
-                        pool.sort(() => Math.random() - 0.5);
-                    }
-
-                    appLogic.state.quizList = pool.slice(0, count);
-                    appLogic.state.currentIdx = 0;
-                    appLogic.state.score = 0;
-                    appLogic.state.wrongList = [];
-                    appLogic.nav.to('game');
-                    appLogic.game.nextQuestion();
+                    let pool = app.state.words.filter(w => lvl === 'all' || String(w.level) === lvl);
+                    app.state.quizList = pool.sort(() => Math.random() - 0.5).slice(0, count);
+                    app.state.currentIdx = 0; app.state.score = 0; app.state.mistakes = [];
+                    app.nav.to('game');
+                    app.game.next();
                 },
 
-                nextQuestion: () => {
-                    if (appLogic.state.currentIdx >= appLogic.state.quizList.length) {
-                        appLogic.game.finish();
-                        return;
+                next: () => {
+                    if (app.state.currentIdx >= app.state.quizList.length) return app.game.finish();
+                    document.getElementById('in-game-score').innerText = app.state.score;
+                    const q = app.state.quizList[app.state.currentIdx];
+                    const stage = document.getElementById('game-stage');
+                    stage.innerHTML = ''; // 清空舞台
+
+                    switch(app.state.type) {
+                        case 'match': app.game.modes.match(q); break;
+                        case 'wheel': app.game.modes.wheel(q); break;
+                        case 'standard': app.game.modes.standard(q); break;
+                        case 'wordpop': app.game.modes.wordpop(q); break;
+                        case 'fill': app.game.modes.fill(q); break;
                     }
-                    appLogic.ui.updateHUD();
-                    const type = appLogic.state.type;
-                    if (type === 'wordpop') appLogic.game.modes.wordPop();
-                    else if (type === 'tug') appLogic.game.modes.tug();
-                    else if (type === 'speed') appLogic.game.modes.speed();
-                    else if (type === 'match') appLogic.game.modes.match();
-                    else if (type === 'wheel') appLogic.game.modes.wheel();
-                    else if (type === 'fill') appLogic.game.modes.fill();
-                    else appLogic.game.modes.standard();
+                    lucide.createIcons();
                 },
 
-                // 核心：顯示反饋強制學習
                 showFeedback: (isCorrect, callback) => {
-                    const q = appLogic.state.quizList[appLogic.state.currentIdx];
-                    const fb = document.getElementById('game-feedback');
-                    fb.classList.remove('hidden');
+                    const q = app.state.quizList[app.state.currentIdx];
+                    const overlay = document.getElementById('game-feedback');
                     
-                    document.getElementById('fb-icon').innerHTML = isCorrect ? 
-                        `<div class="w-16 h-16 bg-cyber-green/20 rounded-full flex items-center justify-center text-cyber-green text-3xl">✓</div>` :
-                        `<div class="w-16 h-16 bg-cyber-danger/20 rounded-full flex items-center justify-center text-cyber-danger text-3xl">✕</div>`;
-                    
+                    document.getElementById('fb-icon').innerHTML = isCorrect ? '✅' : '❌';
                     document.getElementById('fb-word').innerText = q.word;
-                    document.getElementById('fb-type').innerText = q.type || '';
                     document.getElementById('fb-chinese').innerText = q.chinese;
                     document.getElementById('fb-sentence').innerText = q.sentence || '';
+                    
+                    overlay.classList.add('active');
+                    app.audio.speak(q.word);
 
-                    appLogic.audio.speak(q.word);
-
-                    // 儲存錯題
-                    if (!isCorrect) {
-                        if (!appLogic.state.wrongList.find(w => w.id === q.id)) {
-                            appLogic.state.wrongList.push(q);
-                        }
-                        // 如果沒在 session 清單中則加入
-                        if (!appLogic.state.sessionMistakes.find(w => w.id === q.id)) {
-                            appLogic.state.sessionMistakes.push(q);
-                        }
-                    }
+                    if (!isCorrect) app.state.mistakes.push(q);
 
                     setTimeout(() => {
-                        fb.classList.add('hidden');
+                        overlay.classList.remove('active');
                         callback();
-                    }, 3000); // 強制停留 3 秒
+                    }, 3000);
                 },
 
                 modes: {
-                    wordPop: () => {
-                        const q = appLogic.state.quizList[appLogic.state.currentIdx];
+                    standard: (q) => {
                         const stage = document.getElementById('game-stage');
-                        let nextCharIdx = 0;
-                        const scrambled = q.word.split('').map((c, i) => ({c, id: i})).sort(() => Math.random() - 0.5);
-
-                        stage.innerHTML = `
-                            <div class="flex flex-col items-center w-full">
-                                <div class="glass-panel p-4 rounded-xl w-full text-center mb-8">
-                                    <div class="text-2xl font-bold text-cyber-pink mb-1">${q.chinese}</div>
-                                    <button id="wp-audio-btn" class="p-2 bg-white/5 rounded-lg text-xs flex items-center gap-1 mx-auto">
-                                        <i data-lucide="volume-2" class="w-3 h-3"></i> 聽音拼字 (Phonics)
-                                    </button>
-                                </div>
-                                <div class="flex justify-center mb-12" id="wp-slots">
-                                    ${q.word.split('').map((_, i) => `<div id="slot-${i}" class="letter-slot"></div>`).join('')}
-                                </div>
-                                <div class="flex flex-wrap justify-center gap-3" id="wp-bubbles">
-                                    ${scrambled.map(item => `<div id="bub-${item.id}" class="pop-bubble">${item.c}</div>`).join('')}
-                                </div>
-                            </div>
-                        `;
-                        lucide.createIcons();
-                        appLogic.audio.speak(q.word);
-
-                        document.getElementById('wp-audio-btn').onclick = () => appLogic.audio.speak(q.word);
-
-                        scrambled.forEach(item => {
-                            const btn = document.getElementById(`bub-${item.id}`);
-                            btn.onclick = () => {
-                                const target = q.word[nextCharIdx];
-                                if (item.c.toLowerCase() === target.toLowerCase()) {
-                                    appLogic.audio.beepSuccess();
-                                    const slot = document.getElementById(`slot-${nextCharIdx}`);
-                                    slot.innerText = target;
-                                    slot.classList.add('filled');
-                                    btn.classList.add('invisible');
-                                    nextCharIdx++;
-                                    if (nextCharIdx >= q.word.length) {
-                                        appLogic.state.score += 20;
-                                        appLogic.game.showFeedback(true, () => {
-                                            appLogic.state.currentIdx++;
-                                            appLogic.game.nextQuestion();
-                                        });
-                                    }
-                                } else {
-                                    appLogic.audio.beepError();
-                                    btn.classList.add('wrong-match');
-                                    setTimeout(() => btn.classList.remove('wrong-match'), 400);
-                                }
-                            };
-                        });
-                    },
-
-                    tug: () => {
-                        const q = appLogic.state.quizList[appLogic.state.currentIdx];
-                        const stage = document.getElementById('game-stage');
-                        appLogic.state.tugPos = 50;
-                        
-                        stage.innerHTML = `
-                            <div class="w-full h-full flex flex-col items-center">
-                                <div class="flex justify-between w-full text-[10px] font-bold tracking-widest px-4 mb-2">
-                                    <span class="text-cyber-cyan">PLAYER</span><span class="text-cyber-danger">SYSTEM</span>
-                                </div>
-                                <div class="w-full h-8 bg-black/40 rounded-full relative border border-white/10 mb-12">
-                                    <div class="tug-beam"></div>
-                                    <div id="tug-node" class="tug-node"></div>
-                                </div>
-                                <div class="flex-1 flex flex-col items-center justify-center w-full">
-                                    <div class="text-3xl font-bold mb-8 text-center">${Math.random() > 0.5 ? q.word : q.chinese}</div>
-                                    <div id="tug-opts" class="grid grid-cols-2 gap-3 w-full"></div>
-                                </div>
-                            </div>
-                        `;
-                        
-                        const opts = appLogic.game.utils.getOptions(q, 4);
-                        const optContainer = document.getElementById('tug-opts');
-                        opts.forEach(o => {
-                            const btn = document.createElement('button');
-                            btn.className = "py-4 glass-panel rounded-xl font-bold border border-white/10 hover:border-cyber-cyan";
-                            btn.innerText = (o.id === q.id) ? (stage.innerText.includes(q.word) ? q.chinese : q.word) : (Math.random() > 0.5 ? o.word : o.chinese);
-                            btn.onclick = () => {
-                                if (o.id === q.id) {
-                                    appLogic.audio.beepSuccess();
-                                    appLogic.state.score += 15;
-                                    appLogic.game.showFeedback(true, () => {
-                                        appLogic.state.currentIdx++;
-                                        appLogic.game.nextQuestion();
-                                    });
-                                } else {
-                                    appLogic.audio.beepError();
-                                    appLogic.game.showFeedback(false, () => {
-                                        appLogic.state.currentIdx++;
-                                        appLogic.game.nextQuestion();
-                                    });
-                                }
-                            };
-                            optContainer.appendChild(btn);
-                        });
-                    },
-
-                    speed: () => {
-                        const q = appLogic.state.quizList[appLogic.state.currentIdx];
-                        const stage = document.getElementById('game-stage');
-                        stage.innerHTML = `
-                            <div class="text-center mb-4"><div class="text-4xl font-bold">${q.word}</div></div>
-                            <div id="speed-container" class="absolute inset-0 pointer-events-none"></div>
-                            <div id="speed-controls" class="absolute bottom-10 grid grid-cols-2 gap-4 w-full px-10"></div>
-                        `;
-                        
-                        const opts = appLogic.game.utils.getOptions(q, 4);
-                        const ctrl = document.getElementById('speed-controls');
-                        opts.forEach(o => {
+                        stage.innerHTML = `<button id="play-btn" class="w-20 h-20 bg-cyber-cyan/20 rounded-full mb-8"><i data-lucide="volume-2"></i></button><div class="grid grid-cols-2 gap-3 w-full" id="opts"></div>`;
+                        document.getElementById('play-btn').onclick = () => app.audio.speak(q.word);
+                        app.audio.speak(q.word);
+                        app.game.utils.getOptions(q, 4).forEach(o => {
                             const b = document.createElement('button');
-                            b.className = "py-4 bg-white/10 backdrop-blur-md rounded-xl font-bold border border-white/20";
+                            b.className = "p-4 glass-panel rounded-xl font-bold";
                             b.innerText = o.chinese;
-                            b.onclick = () => {
-                                if (o.id === q.id) {
-                                    appLogic.audio.beepSuccess();
-                                    appLogic.state.score += 10;
-                                    appLogic.game.showFeedback(true, () => {
-                                        appLogic.state.currentIdx++;
-                                        appLogic.game.nextQuestion();
-                                    });
-                                } else {
-                                    appLogic.audio.beepError();
-                                    // 暫停機制
-                                    document.querySelectorAll('.balloon-item').forEach(el => el.classList.add('balloon-paused'));
-                                    appLogic.game.showFeedback(false, () => {
-                                        appLogic.state.currentIdx++;
-                                        appLogic.game.nextQuestion();
-                                    });
-                                }
-                            };
-                            ctrl.appendChild(b);
+                            b.onclick = () => app.game.showFeedback(o.id === q.id, () => { if(o.id===q.id) app.state.score+=10; app.state.currentIdx++; app.game.next(); });
+                            document.getElementById('opts').appendChild(b);
                         });
-
-                        // 下降動畫
-                        const container = document.getElementById('speed-container');
-                        const bubble = document.createElement('div');
-                        bubble.className = "balloon-item glass-panel px-6 py-2 rounded-full border border-cyber-cyan text-cyber-cyan font-bold";
-                        bubble.innerText = q.chinese;
-                        bubble.style.left = "40%";
-                        bubble.style.animation = `balloonFall ${8 / (1 + (appLogic.state.currentIdx * 0.05))}s linear forwards`;
-                        bubble.addEventListener('animationend', () => {
-                            appLogic.audio.beepError();
-                            appLogic.game.showFeedback(false, () => {
-                                appLogic.state.currentIdx++;
-                                appLogic.game.nextQuestion();
-                            });
-                        });
-                        container.appendChild(bubble);
                     },
-
                     match: () => {
-                        const batch = appLogic.state.quizList.slice(appLogic.state.currentIdx, appLogic.state.currentIdx + 4);
-                        if (batch.length === 0) { appLogic.game.finish(); return; }
+                        const batch = app.state.quizList.slice(app.state.currentIdx, app.state.currentIdx + 4);
                         const stage = document.getElementById('game-stage');
-                        let left = [...batch].sort(() => Math.random() - 0.5);
-                        let right = [...batch].sort(() => Math.random() - 0.5);
-                        let selected = null;
-
+                        let left = [...batch].sort(() => Math.random() - 0.5), right = [...batch].sort(() => Math.random() - 0.5);
+                        let sel = null;
                         stage.innerHTML = `<div class="grid grid-cols-2 gap-4 w-full" id="match-grid"></div>`;
                         const render = () => {
-                            const grid = document.getElementById('match-grid');
-                            grid.innerHTML = '';
-                            left.forEach(w => {
-                                if(!w.done) grid.innerHTML += `<button data-id="${w.id}" class="p-4 glass-panel border border-cyber-green/30 text-sm rounded-xl match-btn">${w.word}</button>`;
-                            });
-                            right.forEach(w => {
-                                if(!w.done) grid.innerHTML += `<button data-id="${w.id}" class="p-4 glass-panel border border-cyber-purple/30 text-sm rounded-xl match-btn">${w.chinese}</button>`;
-                            });
-                            
-                            grid.querySelectorAll('.match-btn').forEach(btn => {
-                                btn.onclick = () => {
-                                    const id = btn.dataset.id;
-                                    const wordObj = batch.find(b => b.id === id);
-                                    appLogic.audio.speak(wordObj.word);
-
-                                    if (!selected) {
-                                        selected = btn;
-                                        btn.classList.add('bg-white/20', 'border-white');
-                                    } else {
-                                        if (selected.dataset.id === id && selected !== btn) {
-                                            appLogic.audio.beepSuccess();
-                                            left.find(l => l.id === id).done = true;
-                                            right.find(r => r.id === id).done = true;
-                                            appLogic.state.score += 10;
-                                            if (left.every(l => l.done)) {
-                                                appLogic.state.currentIdx += 4;
-                                                setTimeout(appLogic.game.nextQuestion, 500);
-                                            } else {
-                                                render();
-                                            }
+                            const grid = document.getElementById('match-grid'); grid.innerHTML = '';
+                            left.concat(right).forEach(w => {
+                                if (w.done) return;
+                                const b = document.createElement('button');
+                                b.className = `p-4 glass-panel rounded-xl text-xs match-btn ${sel?.el === b ? 'border-white' : ''}`;
+                                b.innerText = left.includes(w) ? w.word : w.chinese;
+                                b.onclick = () => {
+                                    app.audio.speak(w.word);
+                                    if (!sel) { sel = { w, el: b }; render(); }
+                                    else {
+                                        if (sel.w.id === w.id && sel.el !== b) {
+                                            app.audio.playTone(880, 0.2); w.done = true; app.state.score += 10;
+                                            if (batch.every(i => i.done)) { app.state.currentIdx += 4; app.game.next(); } else render();
                                         } else {
-                                            appLogic.audio.beepError();
-                                            selected.classList.remove('bg-white/20', 'border-white');
-                                            btn.classList.add('wrong-match');
-                                            setTimeout(() => btn.classList.remove('wrong-match'), 400);
+                                            app.audio.playTone(150, 0.4); b.classList.add('wrong-shake'); setTimeout(() => render(), 400);
                                         }
-                                        selected = null;
+                                        sel = null;
                                     }
                                 };
+                                grid.appendChild(b);
                             });
                         };
                         render();
                     },
-
-                    wheel: () => {
-                        const q = appLogic.state.quizList[appLogic.state.currentIdx];
+                    wheel: (q) => {
                         const stage = document.getElementById('game-stage');
-                        stage.innerHTML = `
-                            <div class="w-64 h-64 rounded-full border-8 border-cyber-yellow relative flex items-center justify-center mb-10 shadow-[0_0_50px_rgba(250,204,21,0.2)]" id="wheel-body">
-                                <div class="text-4xl">?</div>
-                            </div>
-                            <button id="spin-btn" class="px-10 py-4 bg-cyber-yellow text-black font-bold rounded-full">SPIN TO DISCOVER</button>
-                        `;
-
-                        document.getElementById('spin-btn').onclick = () => {
-                            const wheel = document.getElementById('wheel-body');
-                            wheel.style.transition = "transform 2s cubic-bezier(0.1, 0, 0.2, 1)";
-                            wheel.style.transform = `rotate(${1080 + Math.random() * 360}deg)`;
-                            document.getElementById('spin-btn').classList.add('invisible');
-
+                        stage.innerHTML = `<div id="wheel" class="w-48 h-48 rounded-full border-4 border-cyber-yellow flex items-center justify-center text-2xl font-bold mb-8 transition-transform duration-[2s]">?</div><button id="spin" class="px-8 py-3 bg-cyber-yellow text-black font-bold rounded-full">SPIN</button>`;
+                        document.getElementById('spin').onclick = () => {
+                            const w = document.getElementById('wheel');
+                            w.style.transform = `rotate(${1440 + Math.random() * 360}deg)`;
                             setTimeout(() => {
-                                wheel.innerHTML = `<div class="text-2xl font-bold text-cyber-yellow">${q.word}</div>`;
-                                appLogic.audio.speak(q.word);
-                                const optArea = document.createElement('div');
-                                optArea.className = "grid grid-cols-2 gap-3 w-full mt-6";
-                                const opts = appLogic.game.utils.getOptions(q, 4);
-                                opts.forEach(o => {
-                                    const b = document.createElement('button');
-                                    b.className = "p-4 glass-panel border border-white/10 rounded-xl text-sm font-bold";
-                                    b.innerText = o.chinese;
-                                    b.onclick = () => {
-                                        appLogic.audio.beepSuccess(); // Wheel 不扣分但強制學習
-                                        appLogic.game.showFeedback(o.id === q.id, () => {
-                                            appLogic.state.currentIdx++;
-                                            appLogic.game.nextQuestion();
-                                        });
-                                    };
-                                    optArea.appendChild(b);
-                                });
-                                stage.appendChild(optArea);
+                                w.innerText = q.word; app.audio.speak(q.word);
+                                app.game.showFeedback(true, () => { app.state.currentIdx++; app.game.next(); });
                             }, 2100);
                         };
                     },
-
-                    fill: () => {
-                        const q = appLogic.state.quizList[appLogic.state.currentIdx];
+                    wordpop: (q) => {
                         const stage = document.getElementById('game-stage');
-                        const sentence = q.sentence || `The word is ${q.word}.`;
-                        const displaySent = sentence.replace(new RegExp(q.word, 'gi'), '______');
-
-                        stage.innerHTML = `
-                            <div class="glass-panel p-6 rounded-2xl w-full text-center">
-                                <div class="text-xl leading-relaxed mb-4">"${displaySent}"</div>
-                                <div class="text-cyber-cyan text-sm mb-8">${q.chinese}</div>
-                                <div id="fill-opts" class="grid grid-cols-2 gap-3"></div>
-                                <button id="skip-btn" class="mt-6 text-[10px] text-gray-500 underline uppercase tracking-widest">跳過此題</button>
-                            </div>
-                        `;
-
-                        const renderOpts = () => {
-                            const optArea = document.getElementById('fill-opts');
-                            optArea.innerHTML = '';
-                            const opts = appLogic.game.utils.getOptions(q, 4);
-                            opts.forEach(o => {
-                                const b = document.createElement('button');
-                                b.className = "py-4 bg-white/5 border border-white/10 rounded-xl font-mono text-cyber-orange";
-                                b.innerText = o.word;
-                                b.onclick = () => {
-                                    if (o.id === q.id) {
-                                        appLogic.audio.beepSuccess();
-                                        appLogic.state.score += 20;
-                                        appLogic.game.showFeedback(true, () => {
-                                            appLogic.state.currentIdx++;
-                                            appLogic.game.nextQuestion();
-                                        });
-                                    } else {
-                                        appLogic.audio.beepError();
-                                        b.classList.add('wrong-match');
-                                        setTimeout(() => b.classList.remove('wrong-match'), 400);
-                                    }
-                                };
-                                optArea.appendChild(b);
-                            });
-                        };
-                        renderOpts();
-                        document.getElementById('skip-btn').onclick = () => {
-                            appLogic.game.showFeedback(false, () => {
-                                appLogic.state.currentIdx++;
-                                appLogic.game.nextQuestion();
-                            });
-                        };
-                    },
-
-                    standard: () => {
-                        const q = appLogic.state.quizList[appLogic.state.currentIdx];
-                        const stage = document.getElementById('game-stage');
-                        stage.innerHTML = `
-                            <button id="audio-play" class="w-24 h-24 rounded-full bg-cyber-cyan/10 border-2 border-cyber-cyan flex items-center justify-center mb-10 shadow-[0_0_30px_rgba(6,182,212,0.3)]">
-                                <i data-lucide="volume-2" class="w-10 h-10 text-cyber-cyan"></i>
-                            </button>
-                            <div class="grid grid-cols-2 gap-4 w-full" id="std-opts"></div>
-                        `;
-                        lucide.createIcons();
-                        appLogic.audio.speak(q.word);
-                        document.getElementById('audio-play').onclick = () => appLogic.audio.speak(q.word);
-
-                        const opts = appLogic.game.utils.getOptions(q, 4);
-                        opts.forEach(o => {
+                        let idx = 0;
+                        stage.innerHTML = `<div class="text-xl font-bold text-cyber-pink mb-4">${q.chinese}</div><div class="flex mb-8" id="slots">${q.word.split('').map((_, i) => `<div id="s-${i}" class="letter-slot"></div>`).join('')}</div><div class="flex flex-wrap justify-center gap-2" id="bubs"></div>`;
+                        q.word.split('').sort(() => Math.random() - 0.5).forEach((c, i) => {
                             const b = document.createElement('button');
-                            b.className = "py-6 glass-panel border border-white/10 rounded-xl font-bold hover:border-cyber-cyan transition-all";
-                            b.innerText = o.chinese;
+                            b.className = "w-12 h-12 glass-panel rounded-full font-bold text-xl";
+                            b.innerText = c;
                             b.onclick = () => {
-                                appLogic.game.showFeedback(o.id === q.id, () => {
-                                    if (o.id === q.id) appLogic.state.score += 10;
-                                    appLogic.state.currentIdx++;
-                                    appLogic.game.nextQuestion();
-                                });
+                                if (c.toLowerCase() === q.word[idx].toLowerCase()) {
+                                    document.getElementById('s-'+idx).innerText = q.word[idx];
+                                    document.getElementById('s-'+idx).classList.add('filled');
+                                    b.classList.add('invisible'); idx++;
+                                    if(idx === q.word.length) app.game.showFeedback(true, () => { app.state.score += 20; app.state.currentIdx++; app.game.next(); });
+                                } else {
+                                    app.audio.playTone(150, 0.4); b.classList.add('wrong-shake'); setTimeout(() => b.classList.remove('wrong-shake'), 400);
+                                }
                             };
-                            document.getElementById('std-opts').appendChild(b);
+                            document.getElementById('bubs').appendChild(b);
                         });
+                    },
+                    fill: (q) => {
+                        const stage = document.getElementById('game-stage');
+                        const s = (q.sentence || "The word is _____.").replace(new RegExp(q.word, 'gi'), '_____');
+                        stage.innerHTML = `<div class="text-lg text-center mb-6">${s}</div><div class="grid grid-cols-2 gap-3 w-full" id="opts"></div><button id="skip" class="mt-8 text-xs underline">跳過此題</button>`;
+                        app.game.utils.getOptions(q, 4).forEach(o => {
+                            const b = document.createElement('button'); b.className="p-4 glass-panel rounded-xl"; b.innerText=o.word;
+                            b.onclick = () => { if(o.id===q.id) app.game.showFeedback(true, ()=>{ app.state.score+=20; app.state.currentIdx++; app.game.next(); }); else { app.audio.playTone(150, 0.4); b.classList.add('wrong-shake'); setTimeout(() => b.classList.remove('wrong-shake'), 400); } };
+                            document.getElementById('opts').appendChild(b);
+                        });
+                        document.getElementById('skip').onclick = () => app.game.showFeedback(false, () => { app.state.currentIdx++; app.game.next(); });
                     }
                 },
 
                 utils: {
-                    getOptions: (correct, count) => {
-                        let res = [correct];
-                        let pool = [...appLogic.state.words].filter(w => w.id !== correct.id);
-                        while (res.length < count) {
-                            const r = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
-                            if (r) res.push(r); else break;
-                        }
+                    getOptions: (q, count) => {
+                        let res = [q];
+                        let pool = app.state.words.filter(w => w.id !== q.id);
+                        while(res.length < count && pool.length > 0) res.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
                         return res.sort(() => Math.random() - 0.5);
                     }
                 },
 
-                finish: async () => {
-                    appLogic.nav.to('result');
-                    document.getElementById('res-score').innerText = appLogic.state.score;
-                    const accuracy = Math.round(((appLogic.state.quizList.length - appLogic.state.wrongList.length) / appLogic.state.quizList.length) * 100);
-                    document.getElementById('res-accuracy').innerText = accuracy + '%';
-                    
-                    // 顯示激勵動畫
-                    const ani = document.getElementById('result-animation');
-                    if (accuracy >= 90) { ani.innerText = '🏆'; confetti(); }
-                    else if (accuracy >= 60) { ani.innerText = '🚀'; }
-                    else { ani.innerText = '💪'; }
+                finish: () => {
+                    app.nav.to('result');
+                    document.getElementById('res-score').innerText = app.state.score;
+                    const list = document.getElementById('res-study-list'); list.innerHTML = '';
+                    app.state.mistakes.forEach(m => {
+                        list.innerHTML += `<div class="p-3 glass-panel rounded-xl flex justify-between"><div><div class="font-bold">${m.word}</div><div class="text-xs text-gray-400">${m.chinese}</div></div><button onclick="window.app.audio.speak('${m.word}')">🔊</button></div>`;
+                    });
+                    if (app.state.user) updateDoc(doc(db, "users", app.state.user.uid), { score: increment(app.state.score) });
+                }
+            },
 
-                    // 渲染學習清單
-                    const list = document.getElementById('res-study-list');
-                    list.innerHTML = '';
-                    if (appLogic.state.sessionMistakes.length === 0) {
-                        list.innerHTML = `<div class="text-center py-6 text-cyber-green text-sm">完美作戰！今日無錯題。</div>`;
-                    } else {
-                        appLogic.state.sessionMistakes.forEach(w => {
-                            const item = document.createElement('div');
-                            item.className = "p-3 glass-panel rounded-xl flex justify-between items-center border-l-2 border-cyber-orange";
-                            item.innerHTML = `
-                                <div>
-                                    <div class="font-bold text-sm text-white">${w.word}</div>
-                                    <div class="text-[10px] text-gray-400">${w.chinese}</div>
-                                </div>
-                                <button class="p-2 hover:text-cyber-cyan" onclick="window.app.audio.speak('${w.word}')">
-                                    <i data-lucide="volume-2" class="w-4 h-4"></i>
-                                </button>
-                            `;
-                            list.appendChild(item);
-                        });
-                        lucide.createIcons();
-                    }
-
-                    // 更新 Firebase
-                    if (appLogic.state.user) {
-                        const userRef = doc(db, "users", appLogic.state.user.uid);
-                        await updateDoc(userRef, {
-                            score: increment(appLogic.state.score),
-                            mistakes: arrayUnion(...appLogic.state.wrongList.map(w => w.id))
-                        });
-                    }
-                },
-
-                retryWrong: () => {
-                    if (appLogic.state.wrongList.length === 0) return;
-                    appLogic.state.quizList = [...appLogic.state.wrongList];
-                    appLogic.state.currentIdx = 0;
-                    appLogic.state.wrongList = [];
-                    appLogic.nav.to('game');
-                    appLogic.game.nextQuestion();
-                },
-
-                quit: () => {
-                    if (confirm("確定要中止任務嗎？進度將不會儲存。")) appLogic.nav.to('dashboard');
+            audio: {
+                speak: (t) => { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; window.speechSynthesis.speak(u); },
+                playTone: (freq, dur) => {
+                    if (!audioCtx) return;
+                    const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    g.gain.setValueAtTime(0.1, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+                    osc.connect(g); g.connect(audioCtx.destination);
+                    osc.start(); osc.stop(audioCtx.currentTime + dur);
                 }
             },
 
             ui: {
                 updateHeader: () => {
-                    if (!appLogic.state.user) return;
+                    document.getElementById('header-avatar').src = app.state.user.photoURL;
+                    document.getElementById('header-score').innerText = app.state.user.score;
+                    document.getElementById('dash-name').innerText = app.state.user.displayName;
                     document.getElementById('app-header').classList.remove('hidden');
-                    document.getElementById('header-avatar').src = appLogic.state.user.photoURL;
-                    document.getElementById('header-score').innerText = appLogic.state.user.score;
-                    document.getElementById('dash-name').innerText = appLogic.state.user.displayName;
-                },
-                updateHUD: () => {
-                    const progress = ((appLogic.state.currentIdx) / appLogic.state.quizList.length) * 100;
-                    document.getElementById('game-progress-fill').style.width = `${progress}%`;
-                    document.getElementById('in-game-score').innerText = appLogic.state.score;
                 }
             }
         };
 
-        window.app = appLogic;
-        window.addEventListener('DOMContentLoaded', appLogic.init);
+        window.addEventListener('DOMContentLoaded', app.init);
     </script>
 </body>
 </html>
